@@ -62,5 +62,5 @@
 
 ## 参考
 
-- CLAUDE.md「4.4 ログインユーザー専用ページ」
-- CLAUDE.md「8.3 profiles」
+- [specs/pages.md](./specs/pages.md) — ログインユーザー専用ページ
+- [specs/database.md](./specs/database.md) — profiles

@@ -79,6 +79,6 @@
 
 ## 参考
 
-- CLAUDE.md「4.2 公開ページ一覧」
-- CLAUDE.md「8.3 spots / spot_flowers」
+- [specs/pages.md](./specs/pages.md) — 公開ページ一覧
+- [specs/database.md](./specs/database.md) — spots / spot_flowers
 - CLAUDE.md「Next.js App Router ベストプラクティス - URL検索パラメータを状態として活用」

@@ -81,6 +81,6 @@
 
 ## 参考
 
-- CLAUDE.md「8.3 spots / images / spot_flowers / reviews」
-- CLAUDE.md「12.5 構造化データ（JSON-LD）」
-- CLAUDE.md「13. オーバーツーリズム対策」
+- [specs/database.md](./specs/database.md) — spots / images / spot_flowers / reviews
+- [specs/seo.md](./specs/seo.md) — 構造化データ（JSON-LD）
+- [specs/operations.md](./specs/operations.md) — オーバーツーリズム対策

@@ -38,5 +38,5 @@
 
 ## 参考
 
-- CLAUDE.md「4.2 公開ページ一覧」
-- CLAUDE.md「8.3 prefectures」
+- [specs/pages.md](./specs/pages.md) — 公開ページ一覧
+- [specs/database.md](./specs/database.md) — prefectures

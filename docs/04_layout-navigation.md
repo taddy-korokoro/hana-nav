@@ -59,5 +59,5 @@
 
 ## 参考
 
-- CLAUDE.md「6. ディレクトリ構成」
+- [specs/tech-stack.md](./specs/tech-stack.md) — ディレクトリ構成
 - CLAUDE.md「Next.js App Router ベストプラクティス」

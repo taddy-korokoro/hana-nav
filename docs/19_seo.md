@@ -76,4 +76,4 @@
 
 ## 参考
 
-- CLAUDE.md「12. SEO実装」
+- [specs/seo.md](./specs/seo.md)

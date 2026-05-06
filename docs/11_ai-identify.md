@@ -49,7 +49,7 @@
 - [ ] FormData で画像 + userId（任意） + anonId 受領
 - [ ] レート制限チェック（`checkRateLimit`）
 - [ ] 同一画像ハッシュの 24h キャッシュ確認（任意：`ai_response_cache` テーブル or KV）
-- [ ] Gemini `gemini-2.5-flash` を呼び出し（プロンプトは CLAUDE.md 9.2 の通り）
+- [ ] Gemini `gemini-2.5-flash` を呼び出し（プロンプトは [specs/ai-identify.md](./specs/ai-identify.md) の通り）
 - [ ] レスポンス JSON をパース・サニタイズ
 - [ ] 3段階フォールバックでマスターマッチング
   - [ ] `flowers.name` 完全一致
@@ -98,6 +98,5 @@
 
 ## 参考
 
-- CLAUDE.md「9. AI花判定」
-- CLAUDE.md「14. コスト管理」
-- CLAUDE.md「16. 技術的懸念点 - Gemini APIコスト爆発」
+- [specs/ai-identify.md](./specs/ai-identify.md)
+- [specs/operations.md](./specs/operations.md) — コスト管理 / Gemini API コスト爆発リスク

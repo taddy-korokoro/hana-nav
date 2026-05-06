@@ -56,5 +56,5 @@
 
 ## 参考
 
-- CLAUDE.md「8.3 bookmarks」
-- CLAUDE.md「5.1 ユーザー向け API」
+- [specs/database.md](./specs/database.md) — bookmarks
+- [specs/api.md](./specs/api.md) — ユーザー向け API
