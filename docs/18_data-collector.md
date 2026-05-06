@@ -37,7 +37,7 @@ data_collector/
 - [ ] `requirements.txt`（requests, beautifulsoup4, pyyaml, tqdm, google-generativeai, googlemaps, supabase, python-dotenv）
 - [ ] `.env`（GEMINI_API_KEY, GOOGLE_MAPS_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY）
 - [ ] `config/sources.yaml`（収集対象サイト一覧、selector 定義）
-- [ ] `config/prefecture_map.py`（CLAUDE.md 11 章のマップ）
+- [ ] `config/prefecture_map.py`（[specs/data-collector.md](./specs/data-collector.md) のマップ）
 
 ### 01_scrape.py
 
@@ -94,5 +94,5 @@ data_collector/
 
 ## 参考
 
-- CLAUDE.md「11. 初期データ投入（Python）」
-- CLAUDE.md「13. オーバーツーリズム対策」
+- [specs/data-collector.md](./specs/data-collector.md)
+- [specs/operations.md](./specs/operations.md) — オーバーツーリズム対策

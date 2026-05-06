@@ -67,5 +67,5 @@
 
 ## 参考
 
-- CLAUDE.md「8.3 flowers / flower_aliases / images」
-- CLAUDE.md「4.5 管理者専用ページ」
+- [specs/database.md](./specs/database.md) — flowers / flower_aliases / images
+- [specs/pages.md](./specs/pages.md) — 管理者専用ページ

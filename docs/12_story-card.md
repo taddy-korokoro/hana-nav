@@ -67,5 +67,5 @@
 
 ## 参考
 
-- CLAUDE.md「10. 旅のしおり生成（Canvas API）」
-- CLAUDE.md「16. 技術的懸念点 - モバイルでのCanvas性能」
+- [specs/story-card.md](./specs/story-card.md)
+- [specs/operations.md](./specs/operations.md) — モバイルでの Canvas 性能リスク

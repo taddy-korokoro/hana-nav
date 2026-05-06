@@ -82,5 +82,5 @@
 
 ## 参考
 
-- CLAUDE.md「4.5 管理者専用ページ」
-- CLAUDE.md「8.3 profiles / reviews / ai_usage_logs」
+- [specs/pages.md](./specs/pages.md) — 管理者専用ページ
+- [specs/database.md](./specs/database.md) — profiles / reviews / ai_usage_logs

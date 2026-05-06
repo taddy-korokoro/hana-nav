@@ -65,5 +65,5 @@
 
 ## 参考
 
-- CLAUDE.md「4.2 公開ページ一覧」
-- CLAUDE.md「8.3 spots テーブル / 月またぎ見頃判定クエリ」
+- [specs/pages.md](./specs/pages.md) — 公開ページ一覧
+- [specs/database.md](./specs/database.md) — spots / 月またぎ見頃判定クエリ

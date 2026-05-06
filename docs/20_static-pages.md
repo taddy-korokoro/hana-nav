@@ -53,5 +53,5 @@
 
 ## 参考
 
-- CLAUDE.md「4.2 公開ページ一覧」
-- CLAUDE.md「18. ローンチチェックリスト」
+- [specs/pages.md](./specs/pages.md) — 公開ページ一覧
+- [specs/operations.md](./specs/operations.md) — ローンチチェックリスト

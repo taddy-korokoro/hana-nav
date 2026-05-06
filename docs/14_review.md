@@ -70,5 +70,5 @@
 
 ## 参考
 
-- CLAUDE.md「8.3 reviews」
-- CLAUDE.md「16. 技術的懸念点 - レビューの誹謗中傷」
+- [specs/database.md](./specs/database.md) — reviews
+- [specs/operations.md](./specs/operations.md) — レビューの誹謗中傷リスク

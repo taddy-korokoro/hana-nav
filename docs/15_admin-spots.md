@@ -80,6 +80,6 @@
 
 ## 参考
 
-- CLAUDE.md「4.5 管理者専用ページ」
-- CLAUDE.md「5.2 管理者向け API」
-- CLAUDE.md「8.3 spots / images / spot_flowers」
+- [specs/pages.md](./specs/pages.md) — 管理者専用ページ
+- [specs/api.md](./specs/api.md) — 管理者向け API
+- [specs/database.md](./specs/database.md) — spots / images / spot_flowers
