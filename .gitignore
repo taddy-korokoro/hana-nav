@@ -42,3 +42,6 @@ next-env.d.ts
 
 # mcp
 .mcp.json
+
+# claude code (個人ローカル設定。共有対象は .claude/commands/ や .claude/settings.json)
+.claude/settings.local.json
