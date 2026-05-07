@@ -248,7 +248,7 @@ export default async function SpotsPage({
             <span className="ml-2">件 / 全 {SPOTS.length} 件</span>
           </p>
           {hasFilter && (
-            <Link href="/spots" className="text-xs font-medium text-muted hover:text-ink">
+            <Link href="/demo/spots" className="text-xs font-medium text-muted hover:text-ink">
               フィルターをクリア
             </Link>
           )}

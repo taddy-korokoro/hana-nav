@@ -83,7 +83,7 @@ npm run lint     # ESLint実行
 ### 3. Mutation は Server Actions または Route Handler
 
 - フォーム送信・データ更新は原則 **Server Actions（`'use server'`）** を第一選択にする。`useState` でフォーム状態を持って `fetch` を投げる構成は避ける。
-- 外部からの呼び出し（AI 判定 API、Webhook、外部連携）や、明確に REST 的な公開 API が必要なものは **Route Handler（`app/api/**/route.ts`）\*\* で実装する。
+- 外部からの呼び出し（AI 判定 API、Webhook、外部連携）や、明確に REST 的な公開 API が必要なものは **Route Handler**（`app/api/**/route.ts`）で実装する。
 - Server Action 後の再取得は **`revalidatePath` / `revalidateTag`** で行う。`router.refresh()` の連発でしのがない。
 
 ### 4. キャッシュとレンダリング戦略
