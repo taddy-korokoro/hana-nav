@@ -14,17 +14,22 @@ allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git a
 
 ### 1. 変更状態の把握（並列実行）
 
-以下を **1 メッセージ内で並列に** 実行してから、結果を読み解いてください：
+まず `git fetch origin --quiet` を実行して `origin/main` を最新化する（§2 のマージ済みブランチ判定に必要）。続けて以下を **1 メッセージ内で並列に** 実行してから、結果を読み解いてください：
 
 - `git status`（**`-uall` フラグは絶対に付けない** — 大規模リポでメモリ事故を起こす）
 - `git diff`（unstaged の変更）
 - `git diff --staged`（staged の変更）
 - `git log -10 --oneline`（過去のコミットメッセージスタイル踏襲のため）
 - `git branch --show-current`（ブランチ名から `main` 直 commit を検出）
+- `git merge-base --is-ancestor HEAD origin/main; echo "merged_into_main=$?"`（exit `0` なら HEAD が `origin/main` に完全に取り込み済み = §2 でマージ済みブランチ警告の対象）
 
 ### 2. ブランチ・対象ファイルの安全チェック
 
 - **`main` ブランチに直接 commit しようとしている場合は止めて警告**。「feature/NN-xxx ブランチを切るべきでは？」と確認する。ユーザーが「そのまま」と明言した場合のみ続行。
+- **現ブランチが既に `origin/main` に取り込み済みの場合は止めて警告**。§1 の `git merge-base --is-ancestor HEAD origin/main` が exit `0`（= HEAD のすべてのコミットが既に main に乗っている）なら、**マージ済みブランチに新規 commit しようとしている可能性が高い**。以下を案内し、ユーザーが「そのまま」と明言した場合のみ続行：
+  - 「現ブランチ (`<branch>`) は既に `origin/main` にマージ済みです。`git checkout -B <type>/<topic> origin/main` で新ブランチを切ってから commit しますか？」
+  - 未 commit の変更がある場合は `git stash -u` → 新ブランチ作成 → `git stash pop` の順で退避・復元する手順を提示する。
+  - 既に commit してしまった後で気付いた場合は、`git checkout -B <new> origin/main && git cherry-pick <sha> && git branch -f <old> origin/<old>` で新ブランチに移し替えるリカバリ手順を案内する。
 - staged に以下が含まれていたら **必ず警告して確認を取る**：
   - `.env`, `.env.local`, `.env.*`（環境変数ファイル）
   - `*.pem`, `*.key`, `id_rsa*`, `credentials.json`, `service-account*.json`
