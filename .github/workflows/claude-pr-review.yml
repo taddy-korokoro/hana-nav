@@ -1,0 +1,73 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - "package-lock.json"
+      - "**/.next/**"
+      - "**/node_modules/**"
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >-
+      github.event.pull_request.draft == false &&
+      vars.CLAUDE_REVIEW_ENABLED != 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            このリポジトリの規約は CLAUDE.md と docs/specs/ にすべて書かれている。
+            まず CLAUDE.md（特に「Next.js App Router ベストプラクティス」「Supabase Auth
+            実装ルール」「プロジェクト共通規約」セクション）を読んで規約を頭に入れたうえで、
+            PR の差分を以下の観点でレビューせよ。
+
+            ## 観点
+            - **Supabase / 認証境界**: SERVICE_ROLE_KEY の NEXT_PUBLIC_ 露出 /
+              server↔client クライアントの取り違え / 認可判定での getSession 使用 /
+              middleware で createServerClient と getUser() の間への処理挿入
+            - **論理削除**: .is('deleted_at', null) 漏れ /
+              新規テーブルの deleted_at 列欠落 / images INSERT 前の validateImageOwner 未呼び出し
+            - **Next.js App Router 規約**: Pages Router 構文混入 /
+              'use client' の上層付与 / <a>・<img> 直書き /
+              params の同期参照 / fetch のキャッシュ未指定
+            - **その他**: isInBestSeason / requireAdmin の未使用 /
+              外部 API のレート制限欠如 / スポット投入の is_published デフォルト /
+              console.log のデバッグ残骸
+
+            該当しない項目は飛ばしてよい。`lib/utils/*` 等の既存ヘルパーを指摘の根拠にする
+            場合は Read / Grep で実在を確認してから書くこと（ハルシネーション防止）。
+
+            ## 出力
+            - 違反箇所: mcp__github_inline_comment__create_inline_comment で該当行に短く指摘
+            - 全体総括: gh pr comment で 1 通だけ post。**末尾に必ず以下を 1 行で明記**:
+              `VERDICT: APPROVE` / `VERDICT: REQUEST_CHANGES` / `VERDICT: COMMENT`
+              - APPROVE = 規約上の懸念なし
+              - REQUEST_CHANGES = 重大違反あり（Supabase 境界破り・SERVICE_ROLE_KEY 露出 等）
+              - COMMENT = 軽微な懸念のみ
+            - 問題がなければ「規約観点で懸念は見つかりませんでした」と短く返す（VERDICT は APPROVE）
+
+            Note: PR ブランチはすでに checkout 済み。
+
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(rg:*),Bash(grep:*)"
