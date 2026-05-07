@@ -301,7 +301,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 
 - 基本：`strokeWidth={1.5}`、`fill="none"`、`stroke="currentColor"` の細線
 - サイズ：`size-4`（本文内）／ `size-5`（フィールド内）／ `size-6`（ナビ）
-- ライブラリ：当面 `@/components/ui/icons.tsx` の自前 SVG を使用。本番では `lucide-react` を導入予定（チケット 01）— 線の太さ・形状の方向性が同じなので置換は機械的に可能
+- ライブラリ：当面 `app/demo/_components/icons.tsx` の自前 SVG を使用（本番共有時は `@/components/ui/icons.tsx` に昇格）。本番では `lucide-react` を導入予定（チケット 01）— 線の太さ・形状の方向性が同じなので置換は機械的に可能
 
 ## コンポーネント階層
 
