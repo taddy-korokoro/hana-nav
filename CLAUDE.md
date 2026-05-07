@@ -37,19 +37,20 @@ npm run lint     # ESLint実行
 
 実装時に詳細を確認する詳細仕様。チケットの「参考」セクションから辿る。
 
-| ファイル | 内容 |
-|---|---|
-| [`product.md`](./docs/specs/product.md) | プロダクト概要・機能一覧（F-01〜F-12） |
-| [`tech-stack.md`](./docs/specs/tech-stack.md) | 技術スタック・想定コスト・環境変数・ディレクトリ構成 |
-| [`pages.md`](./docs/specs/pages.md) | ページ構成・URL 設計・認証ルール |
-| [`api.md`](./docs/specs/api.md) | Route Handler 一覧（ユーザー向け / 管理者向け） |
-| [`database.md`](./docs/specs/database.md) | テーブル定義・RLS・トリガー・インデックス |
-| [`ai-identify.md`](./docs/specs/ai-identify.md) | Gemini API 呼び出し・3 段階フォールバックマッチング・UI |
-| [`story-card.md`](./docs/specs/story-card.md) | Canvas API でのしおり生成 |
+| ファイル                                              | 内容                                                                 |
+| ----------------------------------------------------- | -------------------------------------------------------------------- |
+| [`product.md`](./docs/specs/product.md)               | プロダクト概要・機能一覧（F-01〜F-12）                               |
+| [`tech-stack.md`](./docs/specs/tech-stack.md)         | 技術スタック・想定コスト・環境変数・ディレクトリ構成                 |
+| [`pages.md`](./docs/specs/pages.md)                   | ページ構成・URL 設計・認証ルール                                     |
+| [`api.md`](./docs/specs/api.md)                       | Route Handler 一覧（ユーザー向け / 管理者向け）                      |
+| [`database.md`](./docs/specs/database.md)             | テーブル定義・RLS・トリガー・インデックス                            |
+| [`ai-identify.md`](./docs/specs/ai-identify.md)       | Gemini API 呼び出し・3 段階フォールバックマッチング・UI              |
+| [`story-card.md`](./docs/specs/story-card.md)         | Canvas API でのしおり生成                                            |
 | [`data-collector.md`](./docs/specs/data-collector.md) | Python スクレイパー 5 本（scrape→normalize→geocode→validate→upload） |
-| [`seo.md`](./docs/specs/seo.md) | メタデータ・sitemap・robots・JSON-LD |
-| [`operations.md`](./docs/specs/operations.md) | オーバーツーリズム対策・コスト管理・技術的懸念点・ローンチチェック |
-| [`roadmap.md`](./docs/specs/roadmap.md) | 4 週間ロードマップ・v2 拡張・未確定事項 |
+| [`seo.md`](./docs/specs/seo.md)                       | メタデータ・sitemap・robots・JSON-LD                                 |
+| [`operations.md`](./docs/specs/operations.md)         | オーバーツーリズム対策・コスト管理・技術的懸念点・ローンチチェック   |
+| [`roadmap.md`](./docs/specs/roadmap.md)               | 4 週間ロードマップ・v2 拡張・未確定事項                              |
+| [`design.md`](./docs/specs/design.md)                 | デザイン規約（トークン・画面パターン・やらないこと）                 |
 
 ### この CLAUDE.md（規約）
 
@@ -82,7 +83,7 @@ npm run lint     # ESLint実行
 ### 3. Mutation は Server Actions または Route Handler
 
 - フォーム送信・データ更新は原則 **Server Actions（`'use server'`）** を第一選択にする。`useState` でフォーム状態を持って `fetch` を投げる構成は避ける。
-- 外部からの呼び出し（AI 判定 API、Webhook、外部連携）や、明確に REST 的な公開 API が必要なものは **Route Handler（`app/api/**/route.ts`）** で実装する。
+- 外部からの呼び出し（AI 判定 API、Webhook、外部連携）や、明確に REST 的な公開 API が必要なものは **Route Handler（`app/api/**/route.ts`）\*\* で実装する。
 - Server Action 後の再取得は **`revalidatePath` / `revalidateTag`** で行う。`router.refresh()` の連発でしのがない。
 
 ### 4. キャッシュとレンダリング戦略
@@ -129,18 +130,18 @@ npm run lint     # ESLint実行
 
 ### 11. やりがちな NG パターン
 
-| NG | 正しいやり方 |
-|---|---|
-| ページ全体に `'use client'` を付けてから `useEffect` でデータ取得 | Server Component で `async/await` 取得、Client は末端のみ |
-| `getServerSideProps` / `getStaticProps` を書く | App Router では存在しない。`generateStaticParams` / Server Component で取得 |
-| `pages/api/*` に API を書く | `app/api/**/route.ts` の Route Handler を使う |
-| `_app.tsx` / `_document.tsx` でプロバイダ設定 | `app/layout.tsx` に書く。Provider が Client 必須なら Client Component に切り出す |
-| `<Head>` で title/meta を設定 | `metadata` / `generateMetadata` を使う |
-| `<a href="/spots">` で内部遷移 | `<Link href="/spots">` を使う |
-| `params.id` を同期的に参照 | `const { id } = await params;`（Next.js 15+） |
-| `fetch` のキャッシュ指定なしで書きっぱなし | `cache` / `next.revalidate` / `next.tags` を明示する |
-| Server Action 後に `router.refresh()` で更新 | `revalidatePath` / `revalidateTag` を使う |
-| Client Component から Server Component を `import` して描画 | `children` として Client に渡すか、Server Component 側で組み立てる |
+| NG                                                                | 正しいやり方                                                                     |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| ページ全体に `'use client'` を付けてから `useEffect` でデータ取得 | Server Component で `async/await` 取得、Client は末端のみ                        |
+| `getServerSideProps` / `getStaticProps` を書く                    | App Router では存在しない。`generateStaticParams` / Server Component で取得      |
+| `pages/api/*` に API を書く                                       | `app/api/**/route.ts` の Route Handler を使う                                    |
+| `_app.tsx` / `_document.tsx` でプロバイダ設定                     | `app/layout.tsx` に書く。Provider が Client 必須なら Client Component に切り出す |
+| `<Head>` で title/meta を設定                                     | `metadata` / `generateMetadata` を使う                                           |
+| `<a href="/spots">` で内部遷移                                    | `<Link href="/spots">` を使う                                                    |
+| `params.id` を同期的に参照                                        | `const { id } = await params;`（Next.js 15+）                                    |
+| `fetch` のキャッシュ指定なしで書きっぱなし                        | `cache` / `next.revalidate` / `next.tags` を明示する                             |
+| Server Action 後に `router.refresh()` で更新                      | `revalidatePath` / `revalidateTag` を使う                                        |
+| Client Component から Server Component を `import` して描画       | `children` として Client に渡すか、Server Component 側で組み立てる               |
 
 迷ったら `node_modules/next/dist/docs/01-app/` の該当ガイドを必ず読んでから書く。
 
@@ -188,7 +189,7 @@ import { createBrowserClient } from '@supabase/ssr';
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 }
 ```
@@ -200,7 +201,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function createClient() {
-  const cookieStore = await cookies();   // Next.js 15+ で async
+  const cookieStore = await cookies(); // Next.js 15+ で async
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -221,7 +222,7 @@ export async function createClient() {
           }
         },
       },
-    }
+    },
   );
 }
 ```
@@ -244,16 +245,14 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // ⚠️ createServerClient と getUser() の間に他のコードを書かない。
@@ -263,8 +262,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isProtected =
-    pathname.startsWith('/mypage') || pathname.startsWith('/admin');
+  const isProtected = pathname.startsWith('/mypage') || pathname.startsWith('/admin');
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
@@ -375,16 +373,16 @@ export async function login(formData: FormData) {
 
 ### 10. 絶対に守るルール（DO / DON'T）
 
-| ✅ DO | ❌ DON'T |
-|---|---|
-| 保護されたページ・middleware では **`supabase.auth.getUser()`** を使う（毎回 Auth サーバーに JWT 検証を投げる） | `supabase.auth.getSession()` をサーバー側で「ログイン判定」に使う。**Cookie は user が改ざん可能で、検証されないため信用できない** |
-| `lib/supabase/server.ts` の `createClient()` は **リクエストごとに新規生成** する（モジュールスコープでキャッシュしない） | `const supabase = createClient()` を top-level で書いて使い回す |
-| Server Component で書き込み時の例外は **`try/catch` で握りつぶす**（cookies() が writable でないため） | Server Component で setAll 失敗を上位に投げる |
-| `updateSession` 内では `createServerClient` の直後に `getUser()` を呼び、その間に処理を挟まない | 認可チェックや DB クエリを `createServerClient` と `getUser()` の間に書く（セッション喪失バグの原因） |
-| middleware は **`supabaseResponse` をそのまま return**。Cookie を別レスポンスに移す場合は `setAll(supabaseResponse.cookies.getAll())` で全コピー | 新しい `NextResponse.next()` を作って return（Cookie が消える） |
-| `@supabase/ssr` の **`getAll` / `setAll`** Cookie インターフェースを使う | 古い `get` / `set` / `remove` の3メソッド形式を使う |
-| `SUPABASE_SERVICE_ROLE_KEY` は Route Handler / Server Action / バッチ内に閉じる | Client Component で参照する／`NEXT_PUBLIC_` プレフィックスを付ける |
-| Client Component では `lib/supabase/client.ts` を、Server では `lib/supabase/server.ts` を使う | Client で `createServerClient` を import、Server で `createBrowserClient` を import |
+| ✅ DO                                                                                                                                            | ❌ DON'T                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 保護されたページ・middleware では **`supabase.auth.getUser()`** を使う（毎回 Auth サーバーに JWT 検証を投げる）                                  | `supabase.auth.getSession()` をサーバー側で「ログイン判定」に使う。**Cookie は user が改ざん可能で、検証されないため信用できない** |
+| `lib/supabase/server.ts` の `createClient()` は **リクエストごとに新規生成** する（モジュールスコープでキャッシュしない）                        | `const supabase = createClient()` を top-level で書いて使い回す                                                                    |
+| Server Component で書き込み時の例外は **`try/catch` で握りつぶす**（cookies() が writable でないため）                                           | Server Component で setAll 失敗を上位に投げる                                                                                      |
+| `updateSession` 内では `createServerClient` の直後に `getUser()` を呼び、その間に処理を挟まない                                                  | 認可チェックや DB クエリを `createServerClient` と `getUser()` の間に書く（セッション喪失バグの原因）                              |
+| middleware は **`supabaseResponse` をそのまま return**。Cookie を別レスポンスに移す場合は `setAll(supabaseResponse.cookies.getAll())` で全コピー | 新しい `NextResponse.next()` を作って return（Cookie が消える）                                                                    |
+| `@supabase/ssr` の **`getAll` / `setAll`** Cookie インターフェースを使う                                                                         | 古い `get` / `set` / `remove` の3メソッド形式を使う                                                                                |
+| `SUPABASE_SERVICE_ROLE_KEY` は Route Handler / Server Action / バッチ内に閉じる                                                                  | Client Component で参照する／`NEXT_PUBLIC_` プレフィックスを付ける                                                                 |
+| Client Component では `lib/supabase/client.ts` を、Server では `lib/supabase/server.ts` を使う                                                   | Client で `createServerClient` を import、Server で `createBrowserClient` を import                                                |
 
 迷ったら公式 SSR ガイド（<https://supabase.com/docs/guides/auth/server-side/nextjs>）の最新版を再確認すること。
 
@@ -411,6 +409,10 @@ export async function login(formData: FormData) {
 - AI 判定など外部 API 呼び出しは **必ずレート制限**（匿名 1/日、ログイン 3/日）を `ai_usage_logs` で管理。匿名 ID は `localStorage` の UUID。
 - 画像はアップロード前にクライアントで **max-width 1024px、JPEG 0.8、2MB 以下にリサイズ**。同一画像（SHA-256 ハッシュ）は 24h キャッシュして API 呼び出しを抑制。
 - スポットは **`is_published=false` で投入 → 管理者が出典を確認 → 公開**。`official_url` が NULL の場合は `source` 必須（オーバーツーリズム対策）。
+
+### デザイン
+
+UI 実装は [`docs/specs/design.md`](./docs/specs/design.md) のトークン・パターンに従う。色・角丸・フォントは `app/globals.css` の `@theme` トークン経由のみ（`bg-brand` / `text-ink` / `font-serif` / `rounded-card` 等）。Tailwind の生パレット（`bg-pink-300` 等）を本番コードに直書きしない（**例外**：花の写真がない時のグラデーション・プレースホルダーのみ可）。新しい色や画面パターンを追加する場合は、コードと `docs/specs/design.md` を**同時に更新**する。実装サンプルは `app/demo/page.tsx`。
 
 ### 命名・規約
 
