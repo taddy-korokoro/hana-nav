@@ -427,3 +427,5 @@ UI 実装は [`docs/specs/design.md`](./docs/specs/design.md) のトークン・
 3. 「参考」の `docs/specs/*.md` を読んで詳細仕様を把握
 4. 実装 → TODO を `[x]` に更新
 5. 仕様の不整合に気付いたら **specs を先に直してから** 実装する（CLAUDE.md には触らない）
+6. **1 チケット = 1 ブランチ**。`<type>/NN-<topic>` 形式で `origin/main` から切る（例：`chore/01-project-setup`、`feat/05-top-page`）
+7. **コミットは機能単位で分割する**。1 コミット = 1 論理変更を原則とし、`feat`（実装）/ `refactor`（リネーム・整理）/ `docs`（仕様・README 更新）/ `chore`（設定・スケルトン）などは別コミットに分ける。分割が困難な場合のみ 1 コミットに集約してよい。コミット時の手順・チェックは `/commit` スキル参照
