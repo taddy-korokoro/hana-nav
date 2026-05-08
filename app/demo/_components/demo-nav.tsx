@@ -26,7 +26,7 @@ export function DemoNav({ current }: { current: string }) {
             );
           })}
         </nav>
-        <span className="ml-auto text-faint">設計サンドボックス。本番ルートとは独立</span>
+        <span className="ml-auto text-ink-faint">設計サンドボックス。本番ルートとは独立</span>
       </div>
     </div>
   );
