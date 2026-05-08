@@ -26,8 +26,8 @@
 | `surface`     | `#fafaf9` | ページ背景。暖色寄りオフホワイト                |
 | `surface-2`   | `#f5f5f4` | フッター・サブブロック背景                      |
 | `ink`         | `#1c1917` | 本文・主要テキスト                              |
-| `muted`       | `#78716c` | 補助テキスト（メタ情報、二行目）                |
-| `faint`       | `#a8a29e` | さらに薄い情報（タイムスタンプ等）              |
+| `ink-muted`   | `#78716c` | 補助テキスト（メタ情報、二行目）                |
+| `ink-faint`   | `#a8a29e` | さらに薄い情報（タイムスタンプ等）              |
 | `line`        | `#e7e5e4` | 境界線。**最小限。多用しない**                  |
 | `line-strong` | `#d6d3d1` | hover 時の境界強調                              |
 | `brand`       | `#c66487` | CTA、リンク強調、ブックマーク済み、eyebrow 文字 |
@@ -123,10 +123,10 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
   <div className="mt-3 flex items-baseline justify-between gap-3">
     <div className="min-w-0">
       <p className="truncate font-serif text-base font-semibold">{name}</p>
-      <p className="truncate text-xs text-muted">{prefecture} ・ {flower}</p>
-      <p className="mt-0.5 text-xs text-faint">{peak}</p>
+      <p className="truncate text-xs text-ink-muted">{prefecture} ・ {flower}</p>
+      <p className="mt-0.5 text-xs text-ink-faint">{peak}</p>
     </div>
-    <ArrowRightIcon className="size-4 shrink-0 text-faint transition group-hover:translate-x-1 group-hover:text-ink" />
+    <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />
   </div>
 </Link>
 ```
@@ -143,7 +143,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
   <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-6xl">
     {headline}
   </h1>
-  <p className="mt-4 max-w-xl text-base leading-7 text-muted">{lead}</p>
+  <p className="mt-4 max-w-xl text-base leading-7 text-ink-muted">{lead}</p>
 </section>
 ```
 
@@ -170,9 +170,9 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 <div className="flex flex-col gap-2 rounded-card border border-line bg-white p-2 shadow-sm sm:flex-row">
   {fields.map((f) => (
     <button className="flex flex-1 items-center gap-3 rounded-card px-4 py-3 text-left transition hover:bg-surface">
-      <Icon className="size-5 text-muted" />
+      <Icon className="size-5 text-ink-muted" />
       <span>
-        <span className="block text-xs font-semibold text-muted">{f.label}</span>
+        <span className="block text-xs font-semibold text-ink-muted">{f.label}</span>
         <span className="block text-sm">{f.value ?? f.placeholder}</span>
       </span>
     </button>
@@ -195,7 +195,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
   <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-5xl">
     {title}
   </h1>
-  <p className="mt-3 max-w-xl text-sm leading-7 text-muted">{description}</p>
+  <p className="mt-3 max-w-xl text-sm leading-7 text-ink-muted">{description}</p>
 </section>
 ```
 
@@ -210,7 +210,9 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 <section className="space-y-5 pb-8">
   {filterGroups.map((g) => (
     <div key={g.label}>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted">{g.label}</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
+        {g.label}
+      </p>
       <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {g.options.map((opt) => (
           <Link
@@ -231,7 +233,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 </section>
 ```
 
-- ラベルは `text-muted` の英字風（`uppercase tracking-[0.2em]`）。eyebrow より字間は狭め
+- ラベルは `text-ink-muted` の英字風（`uppercase tracking-[0.2em]`）。eyebrow より字間は狭め
 - チップ自体はパターン 5 を踏襲、選択状態は `bg-brand-soft text-brand border-brand`
 - フィルター状態は **URL `searchParams` に保持**（CLAUDE.md「9. URL 検索パラメータを状態として活用」）
 
@@ -241,12 +243,12 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 
 ```tsx
 <section className="flex items-baseline justify-between border-t border-line pt-6">
-  <p className="text-sm text-muted">
+  <p className="text-sm text-ink-muted">
     <span className="font-serif text-2xl font-bold text-ink">{count}</span>
     <span className="ml-2">件 / 全 {total} 件</span>
   </p>
   {hasFilter && (
-    <Link href={resetHref} className="text-xs font-medium text-muted hover:text-ink">
+    <Link href={resetHref} className="text-xs font-medium text-ink-muted hover:text-ink">
       フィルターをクリア
     </Link>
   )}
@@ -254,7 +256,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 ```
 
 - **数字だけ `font-serif` で大きく**（明朝の数字は太く存在感が出る）
-- 単位「件」は `font-sans` のまま、`text-muted` で抑える
+- 単位「件」は `font-sans` のまま、`text-ink-muted` で抑える
 - フィルター適用時のみ「フィルターをクリア」リンクを右に出す
 - このパターン**だけ** `border-t border-line` で上線を許可（フィルターと結果の境界）
 
@@ -265,7 +267,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
   <p className="font-serif text-lg font-bold">
     {title} {/* "該当するスポットがありません" */}
   </p>
-  <p className="mt-2 text-sm text-muted">{description}</p>
+  <p className="mt-2 text-sm text-ink-muted">{description}</p>
   <Link
     href={recoveryHref}
     className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-hover"
@@ -284,8 +286,8 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 
 - 見出し（h1〜h3）：`font-serif font-bold tracking-tight`
 - 本文：デフォルト（`font-sans`）、`leading-7` 推奨
-- 補助テキスト：`text-xs text-muted`
-- さらに薄い情報：`text-xs text-faint`
+- 補助テキスト：`text-xs text-ink-muted`
+- さらに薄い情報：`text-xs text-ink-faint`
 - 英字 eyebrow：`uppercase tracking-[0.25em] text-brand`
 - 日本語の詰め組みは `body` で `font-feature-settings: "palt"` を一括適用（`globals.css`）
 
@@ -293,8 +295,8 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 
 - **`brand`**：CTA・eyebrow・ブックマーク済み・選択状態。**1 画面で多用しない**（ピンクが氾濫すると軽くなる）
 - **季節色（`spring`/`summer`/`autumn`/`winter`）**：花カテゴリ・タグ・季節フィルタの選択状態のみ
-- **`muted`**：メタ情報。**本文には使わない**（読みづらい）
-- **`faint`**：日付・ピーク時期・補助の補助
+- **`ink-muted`**：メタ情報。**本文には使わない**（読みづらい）
+- **`ink-faint`**：日付・ピーク時期・補助の補助
 - **`line`**：検索バー・チップ・入力欄のみ。**カードは原則ボーダーなし**
 
 ## アイコン

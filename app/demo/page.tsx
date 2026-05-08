@@ -160,7 +160,7 @@ export default function DemoPage() {
           <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-6xl">
             満開を、見逃さない。
           </h1>
-          <p className="mt-4 max-w-xl text-base leading-7 text-muted">
+          <p className="mt-4 max-w-xl text-base leading-7 text-ink-muted">
             全国の花畑スポットを、エリア・季節・花の種類から探せます。今が見頃の場所も、来月の予習も。
           </p>
 
@@ -169,9 +169,9 @@ export default function DemoPage() {
               type="button"
               className="flex flex-1 items-center gap-3 rounded-card px-4 py-3 text-left transition hover:bg-surface"
             >
-              <MapPinIcon className="size-5 text-muted" />
+              <MapPinIcon className="size-5 text-ink-muted" />
               <span className="flex-1">
-                <span className="block text-xs font-semibold text-muted">エリア</span>
+                <span className="block text-xs font-semibold text-ink-muted">エリア</span>
                 <span className="block text-sm">どこで見たい？</span>
               </span>
             </button>
@@ -180,9 +180,9 @@ export default function DemoPage() {
               type="button"
               className="flex flex-1 items-center gap-3 rounded-card px-4 py-3 text-left transition hover:bg-surface"
             >
-              <CalendarIcon className="size-5 text-muted" />
+              <CalendarIcon className="size-5 text-ink-muted" />
               <span className="flex-1">
-                <span className="block text-xs font-semibold text-muted">時期</span>
+                <span className="block text-xs font-semibold text-ink-muted">時期</span>
                 <span className="block text-sm">5月</span>
               </span>
             </button>
@@ -191,9 +191,9 @@ export default function DemoPage() {
               type="button"
               className="flex flex-1 items-center gap-3 rounded-card px-4 py-3 text-left transition hover:bg-surface"
             >
-              <FlowerIcon className="size-5 text-muted" />
+              <FlowerIcon className="size-5 text-ink-muted" />
               <span className="flex-1">
-                <span className="block text-xs font-semibold text-muted">花</span>
+                <span className="block text-xs font-semibold text-ink-muted">花</span>
                 <span className="block text-sm">何を見たい？</span>
               </span>
             </button>
@@ -223,7 +223,7 @@ export default function DemoPage() {
                     <p className="text-xs text-white/85">{f.peak}</p>
                   </div>
                 </div>
-                <p className="mt-2 text-xs text-muted">{f.area}</p>
+                <p className="mt-2 text-xs text-ink-muted">{f.area}</p>
               </Link>
             ))}
           </div>
@@ -313,12 +313,12 @@ export default function DemoPage() {
                 <div className="mt-3 flex items-baseline justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-serif text-base font-semibold">{s.name}</p>
-                    <p className="truncate text-xs text-muted">
+                    <p className="truncate text-xs text-ink-muted">
                       {s.prefecture} ・ {s.flower}
                     </p>
-                    <p className="mt-0.5 text-xs text-faint">{s.peak}</p>
+                    <p className="mt-0.5 text-xs text-ink-faint">{s.peak}</p>
                   </div>
-                  <ArrowRightIcon className="size-4 shrink-0 text-faint transition group-hover:translate-x-1 group-hover:text-ink" />
+                  <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />
                 </div>
               </Link>
             ))}
