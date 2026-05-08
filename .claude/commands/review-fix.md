@@ -1,7 +1,7 @@
 ---
 description: PR レビュー指摘を取得して修正する（未解決スレッドの抽出・修正・返信を一気通貫）
 argument-hint: '[PR 番号 / URL / 省略時は現ブランチの PR] [追加コンテキスト]'
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git fetch:*), Bash(git pull:*), Bash(git push:*), Bash(git rev-parse:*), Bash(gh pr:*), Bash(gh api:*), Bash(gh repo:*), Bash(gh auth:*), Bash(grep:*), Bash(rg:*), Read, Edit, Grep, Glob
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git fetch:*), Bash(git pull:*), Bash(git push:*), Bash(git rev-parse:*), Bash(gh pr:*), Bash(gh api:*), Bash(gh repo:*), Bash(gh auth:*), Bash(grep:*), Bash(rg:*), Read, Edit, Write, Grep, Glob, TodoWrite
 ---
 
 # /review-fix — hana-nav 用 PR レビュー指摘修正コマンド
