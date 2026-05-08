@@ -2,8 +2,6 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
   /* Surfaces — 暖色寄りオフホワイト系 */
   --color-surface: #fafaf9;
