@@ -211,7 +211,7 @@ export default async function SpotsPage({
           <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-5xl">
             スポットを探す
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-muted">
+          <p className="mt-3 max-w-xl text-sm leading-7 text-ink-muted">
             エリア・時期・花の種類でフィルター。複数組み合わせ可能。
           </p>
         </section>
@@ -243,12 +243,12 @@ export default async function SpotsPage({
         </section>
 
         <section className="flex items-baseline justify-between border-t border-line pt-6">
-          <p className="text-sm text-muted">
+          <p className="text-sm text-ink-muted">
             <span className="font-serif text-2xl font-bold text-ink">{filtered.length}</span>
             <span className="ml-2">件 / 全 {SPOTS.length} 件</span>
           </p>
           {hasFilter && (
-            <Link href="/demo/spots" className="text-xs font-medium text-muted hover:text-ink">
+            <Link href="/demo/spots" className="text-xs font-medium text-ink-muted hover:text-ink">
               フィルターをクリア
             </Link>
           )}
@@ -257,7 +257,7 @@ export default async function SpotsPage({
         {filtered.length === 0 ? (
           <div className="mt-8 rounded-card border border-line bg-white p-10 text-center">
             <p className="font-serif text-lg font-bold">該当するスポットがありません</p>
-            <p className="mt-2 text-sm text-muted">
+            <p className="mt-2 text-sm text-ink-muted">
               フィルターを絞りすぎている可能性があります。条件を変えてもう一度お試しください。
             </p>
             <Link
@@ -288,12 +288,12 @@ export default async function SpotsPage({
                 <div className="mt-3 flex items-baseline justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-serif text-base font-semibold">{s.name}</p>
-                    <p className="truncate text-xs text-muted">
+                    <p className="truncate text-xs text-ink-muted">
                       {s.pref} ・ {s.flower}
                     </p>
-                    <p className="mt-0.5 text-xs text-faint">{s.peak}</p>
+                    <p className="mt-0.5 text-xs text-ink-faint">{s.peak}</p>
                   </div>
-                  <ArrowRightIcon className="size-4 shrink-0 text-faint transition group-hover:translate-x-1 group-hover:text-ink" />
+                  <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />
                 </div>
               </Link>
             ))}
@@ -319,7 +319,7 @@ function FilterRow({
 }) {
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted">{label}</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">{label}</p>
       <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {options.map((opt) => {
           const isSelected = selected === opt;

@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# hana-nav
 
-## Getting Started
+全国の花畑スポット検索 MVP。Next.js 16 (App Router) + Supabase + Vercel。
 
-First, run the development server:
+## セットアップ
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # 必要なキーを埋める
+npm install
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+その他のスクリプト：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build          # プロダクションビルド
+npm run lint           # ESLint
+npm run format         # Prettier --write
+npm run format:check   # Prettier 確認のみ
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 必須環境変数
 
-## Learn More
+`.env.example` に列挙。Supabase / Gemini / Google Maps の API キーと、サイト基準 URL（`NEXT_PUBLIC_BASE_URL`）。`SUPABASE_SERVICE_ROLE_KEY` と `GEMINI_API_KEY` はサーバー側専用（Client Component から参照禁止）。
 
-To learn more about Next.js, take a look at the following resources:
+## 技術スタック
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js 16.2.4 (App Router) + React 19.2.4 + TypeScript
+- Tailwind CSS v4（`@tailwindcss/postcss`、`@theme` トークン定義）
+- shadcn/ui（`components/ui/`）+ lucide-react
+- Supabase（PostgreSQL + Auth + Storage）
+- Vercel ホスティング
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ディレクトリ構成
 
-## Deploy on Vercel
+詳細は `docs/specs/tech-stack.md`。要点だけ：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `app/` — App Router のルート定義。サンプル UI は `app/demo/`
+- `components/ui/` — shadcn プリミティブ
+- `lib/` — Supabase クライアント・共通ユーティリティ
+- `docs/` — チケット（`NN_*.md`）と仕様（`specs/*.md`）
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ドキュメント
+
+- `CLAUDE.md` — 全コミット必須の規約（App Router / Supabase Auth / 論理削除等）
+- `docs/00_overview.md` — チケット INDEX
+- `docs/specs/` — プロダクト・API・DB・デザイン規約
