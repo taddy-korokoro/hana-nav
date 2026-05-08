@@ -67,6 +67,7 @@ gh api graphql -f query='
               }
             }
           }
+          pageInfo { hasNextPage endCursor }
         }
         reviews(first:50) {
           nodes {
@@ -76,6 +77,7 @@ gh api graphql -f query='
             author { login }
             submittedAt
           }
+          pageInfo { hasNextPage endCursor }
         }
         comments(first:50) {
           nodes {
@@ -84,6 +86,7 @@ gh api graphql -f query='
             author { login }
             createdAt
           }
+          pageInfo { hasNextPage endCursor }
         }
       }
     }
@@ -91,6 +94,8 @@ gh api graphql -f query='
 ```
 
 加えて **PR 全体に紐付いたサマリレビュー** (`reviews.nodes[].body`) と **Issue コメント** (`comments.nodes[].body`) も拾う。`/ultrareview` などはサマリで観点をまとめている場合があるため。
+
+**ページネーション上限の取り扱い**：`reviewThreads` / `reviews` / `comments` はいずれも `first:100` または `first:50` で取得しているため、件数が上限を超えると **エラーなく超過分が切り捨てられる**（`/ultrareview` を繰り返した PR で起きやすい）。レスポンスの `pageInfo.hasNextPage == true` を確認し、true なら最低限「N 件以上の指摘があり、表示は最初の M 件のみ」と **必ず警告を出す**。さらに件数が多い場合は `endCursor` を `after:` に渡してカーソルページネーションを回し全件取得する。打ち切りのまま §3 以降に進まない。
 
 ### 3. 指摘の整理と一覧表示
 
