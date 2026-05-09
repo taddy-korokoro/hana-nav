@@ -143,7 +143,7 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-brand hover:text-brand-hover"
               >
-                {new URL(spot.officialUrl).hostname}
+                {safeHostname(spot.officialUrl)}
                 <ExternalLinkIcon className="size-3.5" />
               </Link>
             </p>
@@ -213,6 +213,18 @@ function MannerNotice() {
       </ul>
     </aside>
   );
+}
+
+/**
+ * `official_url` にスキームなし文字列等の不正値が紛れていても 500 にしないためのガード。
+ * URL がパースできなければ素の文字列を hostname の代わりに表示する。
+ */
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
 }
 
 function SpotJsonLd({ spot, coverImageUrl }: { spot: SpotDetail; coverImageUrl: string | null }) {
