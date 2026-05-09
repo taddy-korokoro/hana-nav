@@ -31,35 +31,37 @@
 
 ### ライブラリ・設定
 
-- [ ] `npm install @supabase/supabase-js @supabase/ssr`
-- [ ] Supabase Dashboard で Email Auth を有効化
-- [ ] Supabase Dashboard で Google OAuth Provider を設定（Client ID / Secret）
-- [ ] Site URL / Redirect URLs に `http://localhost:3000/auth/callback` と本番URLを登録
+- [x] `npm install @supabase/supabase-js @supabase/ssr`
+- [ ] Supabase Dashboard で Email Auth を有効化（手動）
+- [ ] Supabase Dashboard で Google OAuth Provider を設定（Client ID / Secret）（手動）
+- [ ] Site URL / Redirect URLs に `http://localhost:3000/auth/callback` と本番URLを登録（手動）
 
 ### Supabase クライアント
 
-- [ ] `lib/supabase/client.ts`（`createBrowserClient`）
-- [ ] `lib/supabase/server.ts`（`createServerClient` + `cookies()` の getAll/setAll）
-- [ ] `lib/supabase/middleware.ts`（`updateSession` ヘルパー、保護パスのリダイレクト + admin ロールチェック）
-- [ ] `middleware.ts`（`updateSession` 呼び出し + matcher 設定）
+- [x] `lib/supabase/client.ts`（`createBrowserClient`）
+- [x] `lib/supabase/server.ts`（`createServerClient` + `cookies()` の getAll/setAll）
+- [x] `lib/supabase/middleware.ts`（`updateSession` ヘルパー、保護パスのリダイレクト + admin ロールチェック）
+- [x] `middleware.ts`（`updateSession` 呼び出し + matcher 設定）
 
 ### 認証ページ
 
-- [ ] `/auth/login`（Email + Password + Google ログインボタン）
-- [ ] `/auth/login/actions.ts`（Server Action：`signInWithPassword`）
-- [ ] `/auth/signup`（Email + Password + パスワード確認）
-- [ ] `/auth/signup/actions.ts`（Server Action：`signUp`）
-- [ ] `/auth/reset-password`（リセットメール送信）
-- [ ] `/auth/update-password`（新パスワード設定）
-- [ ] `/auth/callback/route.ts`（`exchangeCodeForSession`）
-- [ ] `/auth/logout/route.ts`（POST、`signOut` → `/auth/login` リダイレクト）
+- [x] `/auth/login`（Email + Password + Google ログインボタン）
+- [x] `/auth/login/actions.ts`（Server Action：`signInWithPassword`）
+- [x] `/auth/signup`（Email + Password + パスワード確認）
+- [x] `/auth/signup/actions.ts`（Server Action：`signUp`）
+- [x] `/auth/reset-password`（リセットメール送信）
+- [x] `/auth/update-password`（新パスワード設定）
+- [x] `/auth/callback/route.ts`（`exchangeCodeForSession`）
+- [x] `/auth/logout/route.ts`（POST、`signOut` → `/auth/login` リダイレクト）
 
 ### 共通ユーティリティ
 
-- [ ] `lib/utils/requireAdmin.ts`（`getUser` → `profiles.role === 'admin'` チェック）
-- [ ] エラー時に `redirect('/auth/login')` する `requireUser()` ヘルパー
+- [x] `lib/utils/requireAdmin.ts`（`getUser` → `profiles.role === 'admin'` チェック）
+- [x] エラー時に `redirect('/auth/login')` する `requireUser()` ヘルパー
 
 ### 動作確認
+
+実機テストは Supabase Dashboard 設定（Email Auth 有効化 + Google OAuth + Redirect URLs）後に実施する。
 
 - [ ] Email でサインアップ → 確認メール → ログインできる
 - [ ] Google OAuth でログインできる
@@ -80,9 +82,9 @@
 
 ## 完了基準
 
-- [ ] ログイン/ログアウト/サインアップが動作する
-- [ ] Middleware で `/mypage`, `/admin` が保護されている
-- [ ] admin 権限チェックが効く
+- [ ] ログイン/ログアウト/サインアップが動作する（Dashboard 設定後の実機テスト待ち）
+- [x] Middleware で `/mypage`, `/admin` が保護されている（コード上は完成）
+- [x] admin 権限チェックが効く（middleware + requireAdmin の 2 箇所で実装）
 
 ## 参考
 
