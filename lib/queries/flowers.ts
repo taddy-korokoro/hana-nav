@@ -1,4 +1,26 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
+
+/**
+ * 単一花マスター行をリクエスト内でメモ化して返す。
+ * `getFlowerDetail` と `getFlowerMeta` が同一ページで同じ id を引くので、
+ * `React.cache()` で同一リクエスト内の重複ラウンドトリップを抑える
+ * （CLAUDE.md「同一リクエスト内で同じデータを複数コンポーネントから取りたい場合は
+ * React.cache() でメモ化する」）。
+ *
+ * 詳細・メタ両方の用途を満たすよう SELECT は両者の和集合（updated_at まで含む）。
+ */
+const fetchFlowerRow = cache(async (id: string) => {
+  const supabase = await createClient();
+  return supabase
+    .from('flowers')
+    .select(
+      'id, name, name_kana, description, default_season_start, default_season_end, updated_at',
+    )
+    .eq('id', id)
+    .is('deleted_at', null)
+    .maybeSingle();
+});
 
 export type FlowerListItem = {
   id: string;
@@ -103,16 +125,7 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
  * DB エラーは上位の error 境界に委ねるため `throw` する（404 化させない）。
  */
 export async function getFlowerDetail(id: string): Promise<FlowerDetailBundle | null> {
-  const supabase = await createClient();
-
-  const { data: row, error } = await supabase
-    .from('flowers')
-    .select(
-      'id, name, name_kana, description, default_season_start, default_season_end, updated_at',
-    )
-    .eq('id', id)
-    .is('deleted_at', null)
-    .maybeSingle();
+  const { data: row, error } = await fetchFlowerRow(id);
 
   if (error) {
     console.error('[getFlowerDetail] failed to fetch flower', error);
@@ -151,14 +164,7 @@ export async function getFlowerMeta(id: string): Promise<{
   coverImageUrl: string | null;
   spotCount: number;
 } | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from('flowers')
-    .select('id, name, name_kana, description, default_season_start, default_season_end')
-    .eq('id', id)
-    .is('deleted_at', null)
-    .maybeSingle();
+  const { data, error } = await fetchFlowerRow(id);
 
   // not-found（!data）と DB エラー（error）を分ける。エラーは上位に投げて metadata
   // 生成失敗が「メタなしで表示」に化けないようにする。
@@ -167,6 +173,8 @@ export async function getFlowerMeta(id: string): Promise<{
     throw error;
   }
   if (!data) return null;
+
+  const supabase = await createClient();
 
   const { data: imageRow } = await supabase
     .from('images')
