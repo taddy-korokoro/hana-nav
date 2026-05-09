@@ -285,6 +285,60 @@ export const COPY = {
   },
 
   // -----------------------------------------------------------------------------------
+  // エリア別一覧（/areas/[prefecture_id]）
+  // -----------------------------------------------------------------------------------
+  area: {
+    metaNotFound: 'エリアが見つかりません',
+    metaTitle: (prefectureName: string) => `${prefectureName}の花畑スポット`,
+    metaDescription: (params: { prefectureName: string; region: string; spotCount: number }) =>
+      params.spotCount > 0
+        ? `${params.region}・${params.prefectureName}の花畑スポット ${params.spotCount} 件。エリアごとの見頃カレンダーから今・これからの花を探せます。`
+        : `${params.region}・${params.prefectureName}の花畑スポットを準備中です。近隣のエリアやキーワードからもお探しいただけます。`,
+    eyebrow: 'By area',
+    breadcrumb: {
+      aria: 'パンくず',
+      areas: 'エリア',
+      home: 'トップ',
+    },
+    countSuffix: '件',
+    spots: {
+      heading: 'スポット',
+      eyebrow: 'Spots',
+      empty: {
+        title: 'このエリアのスポットは準備中です',
+        description: 'データを順次追加しています。スポット検索や近隣エリアからもお探しください。',
+        cta: 'スポット検索へ',
+      },
+    },
+    monthly: {
+      heading: '月別の見頃カレンダー',
+      eyebrow: 'Calendar',
+      description: 'このエリアで月ごとに見られる花。タップすると花の詳細ページへ移動します。',
+      empty: '見頃の登録はまだありません。',
+      monthLabel: (month: string) => `${month}に見頃`,
+      flowerCount: (count: number) => `${count} 種類`,
+      spotCount: (count: number) => `${count} 件`,
+    },
+    related: {
+      heading: '近隣エリア',
+      eyebrow: 'Nearby areas',
+      regionLabel: (region: string) => `${region}の他県`,
+      empty: '近隣エリアの登録はまだありません。',
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // エリア別一覧 not-found
+  // -----------------------------------------------------------------------------------
+  areaNotFound: {
+    code: '404',
+    title: 'エリアが見つかりませんでした',
+    description:
+      'URL が誤っているか、対象の都道府県が存在しません。エリア一覧から選び直してください。',
+    backToList: 'スポット一覧へ',
+  },
+
+  // -----------------------------------------------------------------------------------
   // 花の種類 一覧（/flowers）
   // -----------------------------------------------------------------------------------
   flowersList: {
