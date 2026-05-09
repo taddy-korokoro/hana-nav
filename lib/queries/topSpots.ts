@@ -51,13 +51,14 @@ export async function getSeasonalSpots(limit = 24): Promise<SeasonalSpot[]> {
   if (inSeason.length === 0) return [];
 
   const ids = inSeason.map((s) => s.id);
-  const { data: images } = await supabase
+  const { data: images, error: imgError } = await supabase
     .from('images')
     .select('owner_id, url, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', ids)
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
+  if (imgError) console.error('[getSeasonalSpots] failed to fetch spot images', imgError);
 
   const coverByOwner = new Map<string, string>();
   for (const img of images ?? []) {
@@ -118,13 +119,14 @@ export async function getFeaturedFlowers(limit = 12): Promise<FeaturedFlower[]> 
   if (error || !flowers || flowers.length === 0) return [];
 
   const ids = flowers.map((f) => f.id);
-  const { data: images } = await supabase
+  const { data: images, error: imgError } = await supabase
     .from('images')
     .select('owner_id, url, display_order')
     .eq('owner_type', 'flower')
     .in('owner_id', ids)
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
+  if (imgError) console.error('[getFeaturedFlowers] failed to fetch flower images', imgError);
 
   const coverByOwner = new Map<string, string>();
   for (const img of images ?? []) {
