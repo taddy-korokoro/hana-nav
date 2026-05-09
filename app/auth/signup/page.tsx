@@ -10,7 +10,7 @@ import { GoogleSignInButton } from '@/app/auth/_components/google-sign-in-button
 import { signup } from './actions';
 
 export const metadata: Metadata = {
-  title: '新規登録 | hana nav',
+  title: '新規登録',
 };
 
 const errorMessages: Record<string, string> = {
