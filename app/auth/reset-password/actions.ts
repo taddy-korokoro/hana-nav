@@ -12,9 +12,12 @@ export async function requestReset(formData: FormData) {
   }
 
   const supabase = await createClient();
+  // NEXT_PUBLIC_BASE_URL が未設定の場合、x-forwarded-proto から実際のスキームを
+  // 拾うことで dev（HTTP）/ 本番（HTTPS）を自動で切り分ける。
   const headersList = await headers();
-  const origin =
-    process.env.NEXT_PUBLIC_BASE_URL ?? `https://${headersList.get('host') ?? 'localhost:3000'}`;
+  const proto = headersList.get('x-forwarded-proto') ?? 'http';
+  const host = headersList.get('host') ?? 'localhost:3000';
+  const origin = process.env.NEXT_PUBLIC_BASE_URL ?? `${proto}://${host}`;
 
   // resetPasswordForEmail のメール内リンクは /auth/callback に戻り、
   // /auth/update-password にリダイレクトされる構成にしておく。
