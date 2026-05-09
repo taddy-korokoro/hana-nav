@@ -1,0 +1,259 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
+import { RelatedSpots } from '@/components/spots/RelatedSpots';
+import { SpotFlowersList } from '@/components/spots/SpotFlowersList';
+import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
+import { SpotMapPin } from '@/components/spots/SpotMapPin';
+import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
+import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
+import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
+
+export const dynamic = 'force-dynamic';
+
+type Params = Promise<{ id: string }>;
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { id } = await params;
+  const meta = await getSpotMeta(id);
+  if (!meta) return { title: 'スポットが見つかりません' };
+
+  const seasonText = formatSeasonRange(meta.bestSeasonStart, meta.bestSeasonEnd);
+  const description =
+    `${meta.prefectureName}の${meta.name}は${seasonText}が見頃。` +
+    `${meta.description ? meta.description + ' ' : ''}アクセス、見どころ情報を hana nav がお届けします。`;
+
+  return {
+    title: `${meta.name}の見頃情報`,
+    description,
+    openGraph: {
+      title: `${meta.name}の見頃情報`,
+      description: meta.description ?? description,
+      type: 'article',
+      images: meta.coverImageUrl ? [{ url: meta.coverImageUrl }] : undefined,
+    },
+  };
+}
+
+export default async function SpotDetailPage({ params }: { params: Params }) {
+  const { id } = await params;
+  const bundle = await getSpotDetail(id);
+  if (!bundle) notFound();
+
+  const { spot, images, flowers, reviews, reviewSummary, relatedSpots } = bundle;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  const currentMonth = new Date().getMonth() + 1;
+  const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
+
+  return (
+    <article className="mx-auto max-w-5xl px-6 pb-24 pt-8 md:pt-12">
+      <SpotJsonLd spot={spot} coverImageUrl={images[0]?.url ?? null} />
+
+      <header className="mb-8">
+        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
+          {spot.prefectureRegion} ・ {spot.prefectureName}
+        </p>
+        <h1 className="mt-2 font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+          {spot.name}
+        </h1>
+        {spot.nameKana && <p className="mt-2 text-sm text-ink-muted">{spot.nameKana}</p>}
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-xs font-medium ${
+              inSeason ? 'bg-brand/10 text-brand' : 'bg-surface-2 text-ink-muted'
+            }`}
+          >
+            見頃 {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
+            {inSeason && '・今が見頃'}
+          </span>
+          {flowers.slice(0, 3).map((flower) => (
+            <Link
+              key={flower.flowerId}
+              href={`/flowers/${flower.flowerId}`}
+              className="inline-flex items-center rounded-pill bg-surface-2 px-3 py-1 text-xs text-ink-muted transition hover:bg-line"
+            >
+              {flower.flowerName}
+            </Link>
+          ))}
+        </div>
+      </header>
+
+      <SpotImageGallery images={images} spotName={spot.name} />
+
+      {spot.description && (
+        <section className="mt-10">
+          <p className="whitespace-pre-line text-base leading-7 text-ink">{spot.description}</p>
+        </section>
+      )}
+
+      <section className="mt-10 grid gap-4 sm:grid-cols-2">
+        <InfoCard label="住所" icon={<MapPinIcon className="size-4" />}>
+          {spot.location}
+        </InfoCard>
+        {spot.accessInfo && (
+          <InfoCard label="アクセス">
+            <p className="whitespace-pre-line">{spot.accessInfo}</p>
+          </InfoCard>
+        )}
+        {spot.parkingInfo && (
+          <InfoCard label="駐車場">
+            <p className="whitespace-pre-line">{spot.parkingInfo}</p>
+          </InfoCard>
+        )}
+        {spot.entranceFee && (
+          <InfoCard label="入場料">
+            <p className="whitespace-pre-line">{spot.entranceFee}</p>
+          </InfoCard>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <SectionHeader title="地図" />
+        <div className="mt-4">
+          <SpotMapPin
+            apiKey={apiKey}
+            latitude={spot.latitude}
+            longitude={spot.longitude}
+            spotName={spot.name}
+            location={spot.location}
+          />
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <SectionHeader title="見られる花" eyebrow="Flowers" />
+        <div className="mt-4">
+          <SpotFlowersList flowers={flowers} />
+        </div>
+      </section>
+
+      <MannerNotice />
+
+      {(spot.officialUrl || spot.source) && (
+        <section className="mt-10 rounded-card border border-line bg-white p-5 text-sm">
+          {spot.officialUrl && (
+            <p className="flex items-center gap-2">
+              <span className="font-medium">公式サイト</span>
+              <Link
+                href={spot.officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-brand hover:text-brand-hover"
+              >
+                {safeHostname(spot.officialUrl)}
+                <ExternalLinkIcon className="size-3.5" />
+              </Link>
+            </p>
+          )}
+          {spot.source && <p className="mt-2 text-xs text-ink-muted">出典: {spot.source}</p>}
+        </section>
+      )}
+
+      <section className="mt-12">
+        <SectionHeader title="レビュー" eyebrow="Reviews" />
+        <div className="mt-4">
+          <SpotReviewSection reviews={reviews} summary={reviewSummary} />
+        </div>
+      </section>
+
+      {relatedSpots.length > 0 && (
+        <div className="mt-16">
+          <RelatedSpots spots={relatedSpots} />
+        </div>
+      )}
+    </article>
+  );
+}
+
+function SectionHeader({ title, eyebrow }: { title: string; eyebrow?: string }) {
+  return (
+    <div>
+      {eyebrow && (
+        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{eyebrow}</p>
+      )}
+      <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight">{title}</h2>
+    </div>
+  );
+}
+
+function InfoCard({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-card border border-line bg-white p-4">
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-ink-faint">
+        {icon}
+        {label}
+      </p>
+      <div className="mt-2 text-sm leading-6 text-ink">{children}</div>
+    </div>
+  );
+}
+
+function MannerNotice() {
+  return (
+    <aside className="mt-10 rounded-card border border-line-strong bg-brand-soft/40 p-5">
+      <p className="flex items-center gap-2 font-serif text-base font-semibold text-ink">
+        <InfoIcon className="size-5 text-brand" />
+        訪れる前に
+      </p>
+      <ul className="mt-2 space-y-1 text-sm leading-6 text-ink-muted">
+        <li>・ ゴミは必ず持ち帰り、自然を大切に楽しみましょう。</li>
+        <li>・ 花を摘んだり、私有地に立ち入ったりしないでください。</li>
+        <li>・ 混雑する時期は平日の訪問もご検討ください。</li>
+      </ul>
+    </aside>
+  );
+}
+
+/**
+ * `official_url` にスキームなし文字列等の不正値が紛れていても 500 にしないためのガード。
+ * URL がパースできなければ素の文字列を hostname の代わりに表示する。
+ */
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
+
+function SpotJsonLd({ spot, coverImageUrl }: { spot: SpotDetail; coverImageUrl: string | null }) {
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: spot.name,
+    description: spot.description ?? undefined,
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'JP',
+      addressRegion: spot.prefectureName,
+      streetAddress: spot.location,
+    },
+  };
+  if (spot.latitude != null && spot.longitude != null) {
+    jsonLd.geo = {
+      '@type': 'GeoCoordinates',
+      latitude: spot.latitude,
+      longitude: spot.longitude,
+    };
+  }
+  if (coverImageUrl) jsonLd.image = coverImageUrl;
+  if (spot.officialUrl) jsonLd.url = spot.officialUrl;
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
