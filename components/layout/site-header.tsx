@@ -53,6 +53,31 @@ export async function SiteHeader() {
           ))}
         </nav>
 
+        <form
+          action="/spots"
+          method="get"
+          role="search"
+          className="hidden items-center gap-2 rounded-pill border border-line bg-white pl-3 pr-1 py-1 transition focus-within:border-line-strong md:flex"
+        >
+          <SearchIcon className="size-4 text-ink-muted" aria-hidden />
+          <label className="sr-only" htmlFor="header-search">
+            スポットを検索
+          </label>
+          <input
+            id="header-search"
+            type="search"
+            name="q"
+            placeholder="キーワード検索"
+            className="w-44 bg-transparent py-1 text-sm outline-none placeholder:text-ink-faint"
+          />
+          <button
+            type="submit"
+            className="rounded-pill bg-ink px-3 py-1 text-xs font-semibold text-white transition hover:bg-ink/90"
+          >
+            検索
+          </button>
+        </form>
+
         <div className="flex items-center gap-2">
           <Link
             href="/spots"
