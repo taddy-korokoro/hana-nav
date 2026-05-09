@@ -95,3 +95,30 @@ export const CameraIcon = (p: Props) => (
     <circle cx="12" cy="13" r="3.5" />
   </StrokeIcon>
 );
+
+export const StarIcon = (p: Props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
+    <path d="m12 3 2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.4l6-.9L12 3Z" />
+  </svg>
+);
+
+export const ExternalLinkIcon = (p: Props) => (
+  <StrokeIcon {...p}>
+    <path d="M14 4h6v6" />
+    <path d="m20 4-9 9" />
+    <path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4" />
+  </StrokeIcon>
+);
+
+export const InfoIcon = (p: Props) => (
+  <StrokeIcon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8h.01M11 12h1v5h1" />
+  </StrokeIcon>
+);
+
+export const NavigationIcon = (p: Props) => (
+  <StrokeIcon {...p}>
+    <path d="m3 11 18-8-8 18-2-8-8-2Z" />
+  </StrokeIcon>
+);
