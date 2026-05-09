@@ -186,16 +186,40 @@ CREATE POLICY "Published spots are viewable by everyone"
 ```
 
 > **`location` vs `coordinates` の使い分け**
+>
 > - `location` (TEXT): 人間が読む住所。詳細ページ表示・住所コピー・経路アプリ起動に使う
 > - `coordinates` (GEOGRAPHY): 地図上のピン表示・距離計算（PostGIS）に使う
 
 > **月またぎ見頃判定クエリ（例：12〜2月の梅）**
+>
 > ```sql
 > WHERE (best_season_start <= best_season_end
 >        AND :current_month BETWEEN best_season_start AND best_season_end)
 >    OR (best_season_start > best_season_end
 >        AND (:current_month >= best_season_start OR :current_month <= best_season_end))
 > ```
+
+`coordinates` は GEOGRAPHY 型のため PostgREST の標準 JSON では扱いづらい。地図表示で lat/lng が必要な場合は **PostgREST computed column** として用意した `spots_latitude(spots) / spots_longitude(spots)` を `select` する：
+
+```typescript
+const { data } = await supabase
+  .from('spots')
+  .select('id, name, latitude:spots_latitude, longitude:spots_longitude')
+  .eq('is_published', true)
+  .is('deleted_at', null);
+```
+
+```sql
+CREATE OR REPLACE FUNCTION public.spots_latitude(s public.spots)
+RETURNS double precision LANGUAGE sql STABLE PARALLEL SAFE AS $$
+  SELECT ST_Y(s.coordinates::geometry)::double precision
+$$;
+
+CREATE OR REPLACE FUNCTION public.spots_longitude(s public.spots)
+RETURNS double precision LANGUAGE sql STABLE PARALLEL SAFE AS $$
+  SELECT ST_X(s.coordinates::geometry)::double precision
+$$;
+```
 
 ### `flowers`
 
@@ -250,6 +274,7 @@ CREATE POLICY "Flower aliases are viewable by everyone"
 ```
 
 データ例：
+
 ```
 flowers:   id=A, name='桜'  /  id=B, name='チューリップ'
 aliases:   flower_id=A, alias='ソメイヨシノ'
@@ -297,7 +322,7 @@ A層（アプリ）：Route Handler内で `validateImageOwner()` ヘルパーを
 // lib/utils/imageValidator.ts
 export async function validateImageOwner(
   ownerType: 'spot' | 'flower',
-  ownerId: string
+  ownerId: string,
 ): Promise<boolean> {
   const table = ownerType === 'spot' ? 'spots' : 'flowers';
   const { data } = await supabaseAdmin
@@ -313,7 +338,7 @@ export async function insertImage(
   ownerType: 'spot' | 'flower',
   ownerId: string,
   url: string,
-  displayOrder: number
+  displayOrder: number,
 ) {
   if (!(await validateImageOwner(ownerType, ownerId))) {
     throw new Error(`Invalid owner reference: ${ownerType} ${ownerId}`);
@@ -443,11 +468,11 @@ CREATE POLICY "Spot-flowers are viewable by everyone"
 
 **見頃情報の3層構造**
 
-| カラム | 粒度 | 用途 |
-|---|---|---|
-| `flowers.default_season_*` | 花全体の一般的な開花時期 | フォールバック（NULLの場合に表示） |
-| `spot_flowers.bloom_*_month` | スポット固有のその花の開花時期（最も正確） | スポット詳細・絞り込み |
-| `spots.best_season_*` | スポット全体の見頃ピーク | 一覧検索の主フィルタ |
+| カラム                       | 粒度                                       | 用途                               |
+| ---------------------------- | ------------------------------------------ | ---------------------------------- |
+| `flowers.default_season_*`   | 花全体の一般的な開花時期                   | フォールバック（NULLの場合に表示） |
+| `spot_flowers.bloom_*_month` | スポット固有のその花の開花時期（最も正確） | スポット詳細・絞り込み             |
+| `spots.best_season_*`        | スポット全体の見頃ピーク                   | 一覧検索の主フィルタ               |
 
 `spot_flowers.bloom_*_month` が NULL の場合は `flowers.default_season_*` をフォールバック表示する。
 
