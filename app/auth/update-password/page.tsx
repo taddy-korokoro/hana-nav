@@ -4,7 +4,7 @@ import { FormError, FormField, PrimaryButton } from '@/app/auth/_components/form
 import { updatePassword } from './actions';
 
 export const metadata: Metadata = {
-  title: 'パスワード更新 | hana nav',
+  title: 'パスワード更新',
 };
 
 const errorMessages: Record<string, string> = {
