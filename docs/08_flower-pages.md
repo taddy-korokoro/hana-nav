@@ -24,6 +24,17 @@
 
 ## TODO
 
+### 画像ホスティング方針の決定（早期にやる）
+
+花マスターの代表画像（`images.owner_type='flower'`）の置き場所を決める。MVP 中は `flowers` 32 種すべてが揃っていなくても CLAUDE.md のグラデーションプレースホルダーで動くが、この方針だけは curate 作業に入る前（チケット 11／16）までに固める。
+
+- [ ] ホスティング方針を決める（以下から 1 つ選定して理由を `docs/specs/tech-stack.md` に追記）
+  - Supabase Storage（バケット `flower-images` を作成、CDN 経由で配信）
+  - 外部 URL 直リンク（Wikimedia Commons 等、ライセンス確認の上で `images.url` に直書き）
+  - ハイブリッド（一部は Storage、出典明示が必要なものだけ直リンク）
+- [ ] 選定方針に応じて Supabase Storage バケット作成 / `next.config.ts` の `images.remotePatterns` 候補を整理
+- [ ] 画像が無い場合のグラデーションプレースホルダーが想定通り出ることを確認（`FlowerCard` / `/flowers/[id]` 双方）
+
 ### `/flowers` 一覧
 
 - [ ] Server Component で全花を取得（`deleted_at IS NULL`）
