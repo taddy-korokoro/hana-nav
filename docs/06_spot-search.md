@@ -15,13 +15,14 @@
 
 ## 関連ファイル
 
-- `app/spots/page.tsx`
-- `app/spots/loading.tsx`
-- `app/api/spots/route.ts`
-- `components/spots/SpotFilterPanel.tsx`（Client Component）
+- `app/(site)/spots/page.tsx`
+- `app/(site)/spots/loading.tsx`
 - `components/spots/SpotCard.tsx`
-- `components/spots/SpotMapView.tsx`
-- `components/spots/SortSelect.tsx`
+- `components/spots/SpotFilterPanel.tsx`（Server Component。チップ Link 方式）
+- `components/spots/SpotMapView.tsx`（Client Component）
+- `components/spots/Pagination.tsx`
+- `components/layout/site-header.tsx`（PC ヘッダー検索を追加）
+- `lib/queries/spotSearch.ts`
 - `lib/utils/seasonUtils.ts`
 
 ## 関連 DB
@@ -32,54 +33,55 @@
 
 ### Server Component（一覧本体）
 
-- [ ] `/spots/page.tsx` を Server Component で実装
-- [ ] `searchParams: Promise<{...}>` を `await` して読む（Next.js 15+ 仕様）
-- [ ] パラメータ：`prefecture`, `flower`, `month`, `region`, `q`, `sort`, `page`
-- [ ] Supabase クエリで絞り込み（`is_published=true AND deleted_at IS NULL` 必須）
-- [ ] 月またぎ見頃判定 SQL を `seasonUtils` 経由で組み立て
-- [ ] ページネーション（24件/ページ）
+- [x] `/spots/page.tsx` を Server Component で実装
+- [x] `searchParams: Promise<{...}>` を `await` して読む（Next.js 15+ 仕様）
+- [x] パラメータ：`prefecture`, `flower`, `month`, `region`, `q`, `sort`, `page`, `view`
+- [x] Supabase クエリで絞り込み（`is_published=true AND deleted_at IS NULL` 必須）
+- [x] 月またぎ見頃判定は `isInBestSeason` ヘルパーで JS フィルタ（PostgREST が列同士比較に未対応のため。MVP スケールでの妥当性は `topSpots.ts` のレビュー議論と同じ）
+- [x] ページネーション（24件/ページ）
 
-### フィルタ UI（Client Component）
+### フィルタ UI（チップ Link 方式 = Server Component）
 
-- [ ] 都道府県セレクタ（地方区分でグループ化）
-- [ ] 花種類セレクタ
-- [ ] 見頃月セレクタ（今月/来月/任意月）
-- [ ] フリーワード入力
-- [ ] 並び順（新着順 / 名前順 / 都道府県順）
-- [ ] フィルタ変更時に `router.replace` で URL 更新
+- [x] 都道府県セレクタ（チケット 02 のマスター順）
+- [x] 地方セレクタ（北海道〜九州・沖縄）
+- [x] 花種類セレクタ（マスター 50 音順）
+- [x] 見頃月セレクタ（1〜12 月）
+- [x] フリーワード入力（`<form action="/spots" method="get">` で送信、他フィルタは hidden input で維持）
+- [x] 並び順（新着順 / 名前順 / 都道府県順）
+- [x] チップ Link 遷移で URL を更新（`router.replace` ではなく `<Link>` ナビゲーション。CLAUDE.md「Client 境界を末端に」「searchParams をサーバーで読む」方針に沿う）
 
 ### 表示
 
-- [ ] リストビュー / マップビューの切り替え
-- [ ] スポットカード（カバー画像、名称、都道府県、見頃、関連花タグ）
-- [ ] 件数 0 のときの空状態
-- [ ] `loading.tsx` でスケルトン表示
+- [x] リストビュー / マップビューの切り替え（`?view=map`）
+- [x] スポットカード（カバー画像、名称、都道府県、見頃、関連花タグ）
+- [x] 件数 0 のときの空状態（フィルタクリアへの復帰アクション付き）
+- [x] `loading.tsx` でスケルトン表示
 
 ### ヘッダー連携（チケット 04 から繰り越し）
 
-- [ ] PC ヘッダー内に圧縮版の検索バー or 検索入口を配置（`components/layout/site-header.tsx` を更新）。チケット 04 では URL/パラメータが未確定だったため、本チケットで `/spots` の検索 URL 設計と合わせて実装する。トップページのヒーロー検索バー（`docs/specs/design.md` パターン 6）に集約する選択肢も含めて方針を決めること
+- [x] PC ヘッダーに圧縮版検索フォームを配置（`/spots?q=...` へ submit）。モバイルは既存の検索アイコン（`/spots` リンク）を維持
 
 ### API（任意）
 
-- [ ] `GET /api/spots`（クエリで絞り込み）— SPA 的な読み込みが必要な場合
+- [ ] `GET /api/spots`（クエリで絞り込み）— SPA 的な読み込みが必要になったら追加。MVP では Server Component の SSR で十分なため未実装
 
 ### ヘルパー
 
-- [ ] `lib/utils/seasonUtils.ts`：`isInBestSeason(start, end, currentMonth)`
-- [ ] 月またぎ判定の SQL ビルダー
+- [x] `lib/utils/seasonUtils.ts`（チケット 05 で実装済）
+- [x] 月またぎ判定の JS フィルタ（`isInBestSeason`）— SQL ビルダーは PostgREST の列同士比較制約で見送り
 
 ### 動作確認
 
-- [ ] 絞り込みを変えると URL とリストが同期する
-- [ ] 戻るボタンで前のフィルタ状態に戻る
-- [ ] SEO のため検索結果ページに `noindex` を設定（クエリパラメータ重複対策）
-- [ ] モバイルでフィルタが操作しやすい（モーダル or Drawer）
+- [x] 絞り込みを変えると URL とリストが同期する（チップ Link 遷移で確認）
+- [x] 戻るボタンで前のフィルタ状態に戻る（`<Link>` の通常ナビゲーションなので OK）
+- [x] SEO のため検索結果ページに `noindex` を設定（`metadata.robots = { index: false, follow: true }`）
+- [ ] モバイルでフィルタが操作しやすい — チップ群を横スクロール対応にしたが、Drawer/モーダル化は将来課題
 
 ## 完了基準
 
-- [ ] 都道府県・花種類・見頃月で絞り込める
-- [ ] URL を共有すると同じ結果が再現される
-- [ ] マップビューで絞り込み結果がピン表示される
+- [x] 都道府県・花種類・見頃月で絞り込める
+- [x] URL を共有すると同じ結果が再現される
+- [x] マップビューで絞り込み結果がピン表示される（実装済。データ 0 件のため実際のピン表示はチケット 18 投入後に再確認）
 
 ## 参考
 
