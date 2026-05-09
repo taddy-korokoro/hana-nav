@@ -28,10 +28,13 @@ export async function signup(formData: FormData) {
   const supabase = await createClient();
 
   // Email Auth は確認メール内のリンクで /auth/callback に戻ってくる必要がある。
-  // emailRedirectTo を環境別に組み立てる（開発: localhost、本番: BASE_URL）。
+  // emailRedirectTo を環境別に組み立てる（開発: localhost HTTP、本番: BASE_URL）。
+  // NEXT_PUBLIC_BASE_URL が未設定の場合、x-forwarded-proto から実際のスキームを
+  // 拾うことで「dev は HTTP / Vercel など本番は HTTPS」を自動で切り分ける。
   const headersList = await headers();
-  const origin =
-    process.env.NEXT_PUBLIC_BASE_URL ?? `https://${headersList.get('host') ?? 'localhost:3000'}`;
+  const proto = headersList.get('x-forwarded-proto') ?? 'http';
+  const host = headersList.get('host') ?? 'localhost:3000';
+  const origin = process.env.NEXT_PUBLIC_BASE_URL ?? `${proto}://${host}`;
 
   const { error } = await supabase.auth.signUp({
     email,
