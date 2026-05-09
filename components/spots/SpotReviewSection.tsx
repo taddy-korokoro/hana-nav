@@ -1,4 +1,5 @@
 import { StarIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { SpotReview } from '@/lib/queries/spotDetail';
 
 type Props = {
@@ -21,18 +22,18 @@ export function SpotReviewSection({ reviews, summary }: Props) {
               <span className="font-serif text-lg font-semibold text-ink">
                 {summary.average.toFixed(1)}
               </span>
-              <span className="ml-1.5">／ 5.0</span>
-              <span className="ml-3">{summary.count}件のレビュー</span>
+              <span className="ml-1.5">{COPY.spotDetail.reviews.ratingDenominator}</span>
+              <span className="ml-3">{COPY.spotDetail.reviews.countSuffix(summary.count)}</span>
             </>
           ) : (
-            <span>まだレビューはありません</span>
+            <span>{COPY.spotDetail.reviews.empty}</span>
           )}
         </p>
       </div>
 
       {reviews.length === 0 ? (
         <p className="mt-6 rounded-card border border-line bg-white p-6 text-center text-sm text-ink-muted">
-          訪れた感想をぜひ最初に投稿してみてください。
+          {COPY.spotDetail.reviews.promptFirst}
         </p>
       ) : (
         <ul className="mt-6 space-y-4">
@@ -41,14 +42,14 @@ export function SpotReviewSection({ reviews, summary }: Props) {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {review.reviewer?.username ?? '退会済ユーザー'}
+                    {review.reviewer?.username ?? COPY.spotDetail.reviews.withdrawnUser}
                   </p>
                   <div className="mt-1 flex items-center gap-2 text-xs text-ink-muted">
                     <StarRating rating={review.rating} size="sm" />
                     <span>
                       {review.visitedAt
-                        ? `${formatDate(review.visitedAt)} 訪問`
-                        : `${formatDate(review.createdAt)} 投稿`}
+                        ? COPY.spotDetail.reviews.visitedAt(formatDate(review.visitedAt))
+                        : COPY.spotDetail.reviews.postedAt(formatDate(review.createdAt))}
                     </span>
                   </div>
                 </div>
@@ -70,7 +71,10 @@ function StarRating({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md
   const filled = Math.round(rating);
   const sizeClass = size === 'sm' ? 'size-3.5' : 'size-5';
   return (
-    <div className="flex items-center gap-0.5" aria-label={`評価 ${rating} / 5`}>
+    <div
+      className="flex items-center gap-0.5"
+      aria-label={COPY.spotDetail.reviews.ratingAria(rating)}
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <StarIcon
           key={i}

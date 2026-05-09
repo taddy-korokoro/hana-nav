@@ -1,8 +1,8 @@
 import Link from 'next/link';
+import { COPY } from '@/lib/constants/copy';
 import { createClient } from '@/lib/supabase/server';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
-import { NAV_ITEMS } from './nav-items';
 import { SearchIcon } from './icons';
 import { UserMenu } from './user-menu';
 
@@ -38,11 +38,11 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-30 bg-surface/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link href="/" className="font-serif text-xl font-bold tracking-wider">
-          hana nav
+          {COPY.site.name}
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
-          {NAV_ITEMS.map((item) => (
+          {COPY.nav.items.map((item) => (
             <NavLink
               key={item.href}
               href={item.href}
@@ -61,27 +61,27 @@ export async function SiteHeader() {
         >
           <SearchIcon className="size-4 text-ink-muted" aria-hidden />
           <label className="sr-only" htmlFor="header-search">
-            スポットを検索
+            {COPY.nav.quickSearch}
           </label>
           <input
             id="header-search"
             type="search"
             name="q"
-            placeholder="キーワード検索"
+            placeholder={COPY.nav.headerSearchPlaceholder}
             className="w-44 bg-transparent py-1 text-sm outline-none placeholder:text-ink-faint"
           />
           <button
             type="submit"
             className="rounded-pill bg-ink px-3 py-1 text-xs font-semibold text-white transition hover:bg-ink/90"
           >
-            検索
+            {COPY.common.search}
           </button>
         </form>
 
         <div className="flex items-center gap-2">
           <Link
             href="/spots"
-            aria-label="スポットを検索"
+            aria-label={COPY.nav.quickSearch}
             className="grid size-10 place-items-center rounded-pill border border-line bg-white text-ink-muted transition hover:border-line-strong hover:text-ink md:hidden"
           >
             <SearchIcon className="size-5" />
@@ -102,13 +102,13 @@ export async function SiteHeader() {
                 href="/auth/login"
                 className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong"
               >
-                ログイン
+                {COPY.nav.login}
               </Link>
               <Link
                 href="/auth/signup"
                 className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
               >
-                会員登録
+                {COPY.nav.signup}
               </Link>
             </div>
           )}

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { SpotSearchResult } from '@/lib/queries/spotSearch';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
@@ -20,7 +21,7 @@ export function SpotCard({ spot, index }: { spot: SpotSearchResult; index: numbe
         {spot.coverImageUrl ? (
           <Image
             src={spot.coverImageUrl}
-            alt={`${spot.name}の写真`}
+            alt={COPY.common.photoAlt(spot.name)}
             fill
             className="object-cover transition group-hover:scale-105"
             sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
@@ -47,7 +48,7 @@ export function SpotCard({ spot, index }: { spot: SpotSearchResult; index: numbe
             {spot.flowerNames.length > 0 && ` ・ ${spot.flowerNames.slice(0, 2).join('・')}`}
           </p>
           <p className="mt-0.5 text-xs text-ink-faint">
-            見頃 {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
+            {COPY.common.seasonPrefix} {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
           </p>
         </div>
         <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />

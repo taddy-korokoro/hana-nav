@@ -7,6 +7,7 @@ import { SpotFlowersList } from '@/components/spots/SpotFlowersList';
 import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
 import { SpotMapPin } from '@/components/spots/SpotMapPin';
 import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
+import { COPY } from '@/lib/constants/copy';
 import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
@@ -17,18 +18,22 @@ type Params = Promise<{ id: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const meta = await getSpotMeta(id);
-  if (!meta) return { title: 'スポットが見つかりません' };
+  if (!meta) return { title: COPY.spotDetail.metaNotFound };
 
   const seasonText = formatSeasonRange(meta.bestSeasonStart, meta.bestSeasonEnd);
-  const description =
-    `${meta.prefectureName}の${meta.name}は${seasonText}が見頃。` +
-    `${meta.description ? meta.description + ' ' : ''}アクセス、見どころ情報を hana nav がお届けします。`;
+  const description = COPY.spotDetail.metaDescription({
+    name: meta.name,
+    prefectureName: meta.prefectureName,
+    seasonText,
+    description: meta.description,
+  });
+  const title = COPY.spotDetail.metaTitle(meta.name);
 
   return {
-    title: `${meta.name}の見頃情報`,
+    title,
     description,
     openGraph: {
-      title: `${meta.name}の見頃情報`,
+      title,
       description: meta.description ?? description,
       type: 'article',
       images: meta.coverImageUrl ? [{ url: meta.coverImageUrl }] : undefined,
@@ -66,8 +71,10 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
               inSeason ? 'bg-brand/10 text-brand' : 'bg-surface-2 text-ink-muted'
             }`}
           >
-            見頃 {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
-            {inSeason && '・今が見頃'}
+            {COPY.spotDetail.bestSeasonBadge(
+              formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd),
+            )}
+            {inSeason && COPY.spotDetail.inSeasonSuffix}
           </span>
           {flowers.slice(0, 3).map((flower) => (
             <Link
@@ -90,28 +97,28 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
       )}
 
       <section className="mt-10 grid gap-4 sm:grid-cols-2">
-        <InfoCard label="住所" icon={<MapPinIcon className="size-4" />}>
+        <InfoCard label={COPY.spotDetail.info.address} icon={<MapPinIcon className="size-4" />}>
           {spot.location}
         </InfoCard>
         {spot.accessInfo && (
-          <InfoCard label="アクセス">
+          <InfoCard label={COPY.spotDetail.info.access}>
             <p className="whitespace-pre-line">{spot.accessInfo}</p>
           </InfoCard>
         )}
         {spot.parkingInfo && (
-          <InfoCard label="駐車場">
+          <InfoCard label={COPY.spotDetail.info.parking}>
             <p className="whitespace-pre-line">{spot.parkingInfo}</p>
           </InfoCard>
         )}
         {spot.entranceFee && (
-          <InfoCard label="入場料">
+          <InfoCard label={COPY.spotDetail.info.entranceFee}>
             <p className="whitespace-pre-line">{spot.entranceFee}</p>
           </InfoCard>
         )}
       </section>
 
       <section className="mt-10">
-        <SectionHeader title="地図" />
+        <SectionHeader title={COPY.spotDetail.sections.mapTitle} />
         <div className="mt-4">
           <SpotMapPin
             apiKey={apiKey}
@@ -124,7 +131,10 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
       </section>
 
       <section className="mt-10">
-        <SectionHeader title="見られる花" eyebrow="Flowers" />
+        <SectionHeader
+          title={COPY.spotDetail.sections.flowersTitle}
+          eyebrow={COPY.spotDetail.sections.flowersEyebrow}
+        />
         <div className="mt-4">
           <SpotFlowersList flowers={flowers} />
         </div>
@@ -136,7 +146,7 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
         <section className="mt-10 rounded-card border border-line bg-white p-5 text-sm">
           {spot.officialUrl && (
             <p className="flex items-center gap-2">
-              <span className="font-medium">公式サイト</span>
+              <span className="font-medium">{COPY.spotDetail.references.officialSite}</span>
               <Link
                 href={spot.officialUrl}
                 target="_blank"
@@ -148,12 +158,19 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
               </Link>
             </p>
           )}
-          {spot.source && <p className="mt-2 text-xs text-ink-muted">出典: {spot.source}</p>}
+          {spot.source && (
+            <p className="mt-2 text-xs text-ink-muted">
+              {COPY.spotDetail.references.sourceLabel(spot.source)}
+            </p>
+          )}
         </section>
       )}
 
       <section className="mt-12">
-        <SectionHeader title="レビュー" eyebrow="Reviews" />
+        <SectionHeader
+          title={COPY.spotDetail.sections.reviewsTitle}
+          eyebrow={COPY.spotDetail.sections.reviewsEyebrow}
+        />
         <div className="mt-4">
           <SpotReviewSection reviews={reviews} summary={reviewSummary} />
         </div>
@@ -204,12 +221,12 @@ function MannerNotice() {
     <aside className="mt-10 rounded-card border border-line-strong bg-brand-soft/40 p-5">
       <p className="flex items-center gap-2 font-serif text-base font-semibold text-ink">
         <InfoIcon className="size-5 text-brand" />
-        訪れる前に
+        {COPY.spotDetail.manner.title}
       </p>
       <ul className="mt-2 space-y-1 text-sm leading-6 text-ink-muted">
-        <li>・ ゴミは必ず持ち帰り、自然を大切に楽しみましょう。</li>
-        <li>・ 花を摘んだり、私有地に立ち入ったりしないでください。</li>
-        <li>・ 混雑する時期は平日の訪問もご検討ください。</li>
+        {COPY.spotDetail.manner.items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
       </ul>
     </aside>
   );
