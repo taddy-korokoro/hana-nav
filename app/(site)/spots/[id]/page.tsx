@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
 import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
 import { RelatedSpots } from '@/components/spots/RelatedSpots';
 import { SpotFlowersList } from '@/components/spots/SpotFlowersList';
@@ -8,7 +9,9 @@ import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
 import { SpotMapPin } from '@/components/spots/SpotMapPin';
 import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
 import { COPY } from '@/lib/constants/copy';
+import { isBookmarked } from '@/lib/queries/bookmarks';
 import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
+import { createClient } from '@/lib/supabase/server';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +52,12 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
   const { spot, images, flowers, reviews, reviewSummary, relatedSpots } = bundle;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const bookmarked = user ? await isBookmarked(user.id, spot.id) : false;
+
   const currentMonth = new Date().getMonth() + 1;
   const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
 
@@ -60,9 +69,18 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {spot.prefectureRegion} ・ {spot.prefectureName}
         </p>
-        <h1 className="mt-2 font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">
-          {spot.name}
-        </h1>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
+          <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+            {spot.name}
+          </h1>
+          <BookmarkButton
+            spotId={spot.id}
+            spotName={spot.name}
+            isAuthenticated={!!user}
+            initialBookmarked={bookmarked}
+            redirectAfterLogin={`/spots/${spot.id}`}
+          />
+        </div>
         {spot.nameKana && <p className="mt-2 text-sm text-ink-muted">{spot.nameKana}</p>}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
