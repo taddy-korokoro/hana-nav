@@ -6,7 +6,7 @@ import { GoogleSignInButton } from '@/app/auth/_components/google-sign-in-button
 import { login } from './actions';
 
 export const metadata: Metadata = {
-  title: 'ログイン | hana nav',
+  title: 'ログイン',
 };
 
 const errorMessages: Record<string, string> = {
