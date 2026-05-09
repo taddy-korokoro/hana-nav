@@ -9,7 +9,7 @@ import {
 import { requestReset } from './actions';
 
 export const metadata: Metadata = {
-  title: 'パスワードリセット | hana nav',
+  title: 'パスワードリセット',
 };
 
 const errorMessages: Record<string, string> = {
