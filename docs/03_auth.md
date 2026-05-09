@@ -31,44 +31,44 @@
 
 ### ライブラリ・設定
 
-- [ ] `npm install @supabase/supabase-js @supabase/ssr`
-- [ ] Supabase Dashboard で Email Auth を有効化
-- [ ] Supabase Dashboard で Google OAuth Provider を設定（Client ID / Secret）
-- [ ] Site URL / Redirect URLs に `http://localhost:3000/auth/callback` と本番URLを登録
+- [x] `npm install @supabase/supabase-js @supabase/ssr`
+- [x] Supabase Dashboard で Email Auth を有効化（手動）
+- [x] Supabase Dashboard で Google OAuth Provider を設定（Client ID / Secret）（手動）
+- [x] Site URL / Redirect URLs に `http://localhost:3000/auth/callback` と本番URLを登録（手動）
 
 ### Supabase クライアント
 
-- [ ] `lib/supabase/client.ts`（`createBrowserClient`）
-- [ ] `lib/supabase/server.ts`（`createServerClient` + `cookies()` の getAll/setAll）
-- [ ] `lib/supabase/middleware.ts`（`updateSession` ヘルパー、保護パスのリダイレクト + admin ロールチェック）
-- [ ] `middleware.ts`（`updateSession` 呼び出し + matcher 設定）
+- [x] `lib/supabase/client.ts`（`createBrowserClient`）
+- [x] `lib/supabase/server.ts`（`createServerClient` + `cookies()` の getAll/setAll）
+- [x] `lib/supabase/middleware.ts`（`updateSession` ヘルパー、保護パスのリダイレクト + admin ロールチェック）
+- [x] `middleware.ts`（`updateSession` 呼び出し + matcher 設定）
 
 ### 認証ページ
 
-- [ ] `/auth/login`（Email + Password + Google ログインボタン）
-- [ ] `/auth/login/actions.ts`（Server Action：`signInWithPassword`）
-- [ ] `/auth/signup`（Email + Password + パスワード確認）
-- [ ] `/auth/signup/actions.ts`（Server Action：`signUp`）
-- [ ] `/auth/reset-password`（リセットメール送信）
-- [ ] `/auth/update-password`（新パスワード設定）
-- [ ] `/auth/callback/route.ts`（`exchangeCodeForSession`）
-- [ ] `/auth/logout/route.ts`（POST、`signOut` → `/auth/login` リダイレクト）
+- [x] `/auth/login`（Email + Password + Google ログインボタン）
+- [x] `/auth/login/actions.ts`（Server Action：`signInWithPassword`）
+- [x] `/auth/signup`（Email + Password + パスワード確認）
+- [x] `/auth/signup/actions.ts`（Server Action：`signUp`）
+- [x] `/auth/reset-password`（リセットメール送信）
+- [x] `/auth/update-password`（新パスワード設定）
+- [x] `/auth/callback/route.ts`（`exchangeCodeForSession`）
+- [x] `/auth/logout/route.ts`（POST、`signOut` → `/auth/login` リダイレクト）
 
 ### 共通ユーティリティ
 
-- [ ] `lib/utils/requireAdmin.ts`（`getUser` → `profiles.role === 'admin'` チェック）
-- [ ] エラー時に `redirect('/auth/login')` する `requireUser()` ヘルパー
+- [x] `lib/utils/requireAdmin.ts`（`getUser` → `profiles.role === 'admin'` チェック）
+- [x] エラー時に `redirect('/auth/login')` する `requireUser()` ヘルパー
 
 ### 動作確認
 
-- [ ] Email でサインアップ → 確認メール → ログインできる
-- [ ] Google OAuth でログインできる
-- [ ] `profiles` レコードが自動作成される（`handle_new_user` トリガー）
-- [ ] ログアウトできる
-- [ ] パスワードリセットメールが届く
-- [ ] 未ログインで `/mypage` にアクセスすると `/auth/login` にリダイレクトされる
-- [ ] user ロールで `/admin` にアクセスすると `/` にリダイレクトされる
-- [ ] admin ロール（手動付与）で `/admin` にアクセスできる
+- [x] Email でサインアップ → 確認メール → ログインできる
+- [x] Google OAuth でログインできる
+- [x] `profiles` レコードが自動作成される（`handle_new_user` トリガー）
+- [x] ログアウトできる（チケット 04 で UI 実装するまで POST フォーム生成で確認）
+- [x] パスワードリセットメールが届く
+- [x] 未ログインで `/mypage` にアクセスすると `/auth/login` にリダイレクトされる
+- [x] user ロールで `/admin` にアクセスすると `/` にリダイレクトされる
+- [x] admin ロール（手動付与）で `/admin` にアクセスできる
 
 ## DO / DON'T（再確認）
 
@@ -80,9 +80,9 @@
 
 ## 完了基準
 
-- [ ] ログイン/ログアウト/サインアップが動作する
-- [ ] Middleware で `/mypage`, `/admin` が保護されている
-- [ ] admin 権限チェックが効く
+- [x] ログイン/ログアウト/サインアップが動作する（実機検証済み）
+- [x] Middleware で `/mypage`, `/admin` が保護されている
+- [x] admin 権限チェックが効く（middleware + requireAdmin の 2 箇所で実装）
 
 ## 参考
 
