@@ -3,6 +3,7 @@
 import { AdvancedMarker, APIProvider, Map, Pin } from '@vis.gl/react-google-maps';
 import Link from 'next/link';
 import { NavigationIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 
 type Props = {
   apiKey: string | undefined;
@@ -47,7 +48,7 @@ export function SpotMapPin({ apiKey, latitude, longitude, spotName, location }: 
         </APIProvider>
       ) : (
         <div className="grid h-[200px] place-items-center bg-surface-2 text-sm text-ink-muted md:h-[260px]">
-          <span>地図を準備中です</span>
+          <span>{COPY.spotMap.locationPending}</span>
         </div>
       )}
 
@@ -63,7 +64,7 @@ export function SpotMapPin({ apiKey, latitude, longitude, spotName, location }: 
           className="inline-flex items-center gap-1.5 rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
         >
           <NavigationIcon className="size-4" />
-          経路を調べる
+          {COPY.spotMap.directions}
         </Link>
       </div>
     </div>

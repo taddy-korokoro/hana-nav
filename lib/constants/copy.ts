@@ -1,0 +1,368 @@
+/**
+ * 画面に表示する文言（ラベル / タイトル / エラー / プレースホルダー / aria-label 等）の集約。
+ *
+ * - 全ファイルから参照する Single Source of Truth。
+ * - 動的文言はテンプレート関数として同居する（`(name) => '${name}の写真'` 形式）。
+ * - スタイル・ロジックは含めない。純粋な文字列とテンプレ関数のみ。
+ *
+ * 増えてきて見通しが落ちたら画面別に分割する。判断基準は CLAUDE.md（プロジェクト規約）と相談。
+ */
+
+// =====================================================================================
+// ナビゲーション項目（ヘッダー / モバイル / フッターの 3 箇所で共有）
+// =====================================================================================
+export const NAV_ITEMS = [
+  { label: 'スポット検索', href: '/spots' },
+  { label: '花の種類', href: '/flowers' },
+  { label: 'AI花判定', href: '/identify' },
+] as const;
+
+export type NavItem = (typeof NAV_ITEMS)[number];
+
+const POLICY_LINKS = [
+  { label: '利用規約', href: '/terms' },
+  { label: 'プライバシーポリシー', href: '/privacy' },
+  { label: '特定商取引法に基づく表記', href: '/legal' },
+] as const;
+
+const MONTHS_EN = [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+] as const;
+
+const MONTHS_JA = [
+  '',
+  '1月',
+  '2月',
+  '3月',
+  '4月',
+  '5月',
+  '6月',
+  '7月',
+  '8月',
+  '9月',
+  '10月',
+  '11月',
+  '12月',
+] as const;
+
+export const COPY = {
+  // -----------------------------------------------------------------------------------
+  // サイト共通（メタデータ / フッターのコピーライト等）
+  // -----------------------------------------------------------------------------------
+  site: {
+    name: 'hana nav',
+    titleSuffix: '花畑スポット検索',
+    description:
+      '全国の花畑スポットを、エリア・季節・花の種類から探せる検索サービス。AI花判定で目の前の花も識別できます。',
+    descriptionShort: '全国の花畑スポットを、エリア・季節・花の種類から探せる検索サービス。',
+    contactEmail: 'support@hana-nav.example',
+    titleDefault: 'hana nav | 花畑スポット検索',
+    copyright: (year: number) => `© ${year} hana nav`,
+  },
+
+  // -----------------------------------------------------------------------------------
+  // 共通文言（複数画面で再利用するもの）
+  // -----------------------------------------------------------------------------------
+  common: {
+    search: '検索',
+    seeAll: 'すべて見る',
+    showDetail: '詳細を見る',
+    backToTop: 'トップに戻る',
+    photoAlt: (name: string) => `${name}の写真`,
+    seasonPrefix: '見頃',
+    months: { en: MONTHS_EN, ja: MONTHS_JA },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // ヘッダー / モバイルナビ / ユーザーメニュー
+  // -----------------------------------------------------------------------------------
+  nav: {
+    items: NAV_ITEMS,
+    quickSearch: 'スポットを検索',
+    headerSearchPlaceholder: 'キーワード検索',
+    openMenu: 'メニューを開く',
+    siteMenu: 'サイト全体のメニュー',
+    userMenu: 'ユーザーメニュー',
+    login: 'ログイン',
+    signup: '会員登録',
+    mypage: 'マイページ',
+    bookmarks: 'ブックマーク',
+    admin: '管理画面',
+    logout: 'ログアウト',
+  },
+
+  // -----------------------------------------------------------------------------------
+  // フッター
+  // -----------------------------------------------------------------------------------
+  footer: {
+    explore: 'Explore',
+    about: 'About',
+    contact: 'お問い合わせ',
+    policyLinks: POLICY_LINKS,
+  },
+
+  // -----------------------------------------------------------------------------------
+  // トップページ
+  // -----------------------------------------------------------------------------------
+  home: {
+    hero: {
+      eyebrow: 'Find your bloom',
+      title: '満開を、見逃さない。',
+      description:
+        '全国の花畑スポットを、エリア・季節・花の種類から探せます。今が見頃の場所も、来月の予習も。',
+      monthLine: (monthEn: string, year: number) => `${monthEn} ${year} ・ Find your bloom`,
+    },
+    searchBar: {
+      area: 'エリア',
+      areaPlaceholder: 'どこで見たい？',
+      season: '時期',
+      flower: '花',
+      flowerPlaceholder: '何を見たい？',
+      identifyCta: '目の前の花を AI で判定する',
+    },
+    map: {
+      eyebrow: 'Map view',
+      title: '今月見頃のマップ',
+    },
+    featured: {
+      eyebrow: 'In bloom now',
+      title: '今月の見頃スポット',
+      empty: {
+        title: '今月見頃のスポットは準備中です',
+        description: 'データを順次追加しています。先に花の種類から探してみてください。',
+        cta: '花の一覧を見る',
+        seeAll: '一覧から探す',
+      },
+    },
+    flowerTypes: {
+      eyebrow: 'By flower',
+      title: '花から探す',
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // スポット検索ページ
+  // -----------------------------------------------------------------------------------
+  spotsList: {
+    metaTitle: 'スポットを探す',
+    metaDescription: '全国の花畑スポットをエリア・花の種類・見頃の時期で絞り込んで探せます。',
+    eyebrow: 'Browse spots',
+    title: 'スポットを探す',
+    description:
+      'エリア・時期・花の種類でフィルター。複数組み合わせ可能。URL を共有すると同じ結果が再現できます。',
+    countSuffix: '件',
+    pageProgress: (page: number, total: number) => ` / ${page} / ${total} ページ`,
+    clearFilter: 'フィルターをクリア',
+    empty: {
+      title: '該当するスポットがありません',
+      description:
+        'フィルターを絞りすぎている可能性があります。条件を変えてもう一度お試しください。',
+    },
+    mapApiMissing:
+      '地図 API キーが未設定のためマップを表示できません。リスト表示に切り替えてください。',
+    mapPinNotice: 'ピンが立たないスポットは座標未登録です。リストには全件表示されます。',
+    filter: {
+      keywordPlaceholder: 'スポット名・キーワードで検索',
+      area: 'エリア',
+      region: '地方',
+      season: '時期',
+      flower: '花',
+      sortHeading: '並び順',
+      viewHeading: '表示',
+      sort: {
+        newest: '新着順',
+        name: '名前順',
+        prefecture: '都道府県順',
+      },
+      view: {
+        list: 'リスト',
+        map: 'マップ',
+      },
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // ページネーション
+  // -----------------------------------------------------------------------------------
+  pagination: {
+    aria: 'ページネーション',
+    prev: '前へ',
+    next: '次へ',
+  },
+
+  // -----------------------------------------------------------------------------------
+  // スポット詳細の地図ピン（SpotMapPin）
+  // -----------------------------------------------------------------------------------
+  spotMap: {
+    locationPending: '地図を準備中です',
+    directions: '経路を調べる',
+  },
+
+  // -----------------------------------------------------------------------------------
+  // スポット詳細ページ
+  // -----------------------------------------------------------------------------------
+  spotDetail: {
+    metaNotFound: 'スポットが見つかりません',
+    metaTitle: (name: string) => `${name}の見頃情報`,
+    metaDescription: (params: {
+      name: string;
+      prefectureName: string;
+      seasonText: string;
+      description: string | null;
+    }) =>
+      `${params.prefectureName}の${params.name}は${params.seasonText}が見頃。` +
+      `${params.description ? params.description + ' ' : ''}アクセス、見どころ情報を hana nav がお届けします。`,
+    bestSeasonBadge: (range: string) => `見頃 ${range}`,
+    inSeasonSuffix: '・今が見頃',
+    info: {
+      address: '住所',
+      access: 'アクセス',
+      parking: '駐車場',
+      entranceFee: '入場料',
+    },
+    sections: {
+      mapTitle: '地図',
+      flowersTitle: '見られる花',
+      flowersEyebrow: 'Flowers',
+      reviewsTitle: 'レビュー',
+      reviewsEyebrow: 'Reviews',
+      relatedTitle: '関連スポット',
+      relatedEyebrow: 'Nearby',
+    },
+    references: {
+      officialSite: '公式サイト',
+      sourceLabel: (source: string) => `出典: ${source}`,
+    },
+    manner: {
+      title: '訪れる前に',
+      items: [
+        '・ ゴミは必ず持ち帰り、自然を大切に楽しみましょう。',
+        '・ 花を摘んだり、私有地に立ち入ったりしないでください。',
+        '・ 混雑する時期は平日の訪問もご検討ください。',
+      ],
+    },
+    gallery: {
+      preparing: '写真を準備中です',
+      thumbnailAlt: (name: string, index: number) => `${name}のサムネイル ${index}`,
+      showThumbnail: (index: number) => `${index}枚目を表示`,
+    },
+    flowers: {
+      empty: 'この場所で見られる花はまだ登録されていません。',
+    },
+    reviews: {
+      empty: 'まだレビューはありません',
+      promptFirst: '訪れた感想をぜひ最初に投稿してみてください。',
+      withdrawnUser: '退会済ユーザー',
+      ratingDenominator: '／ 5.0',
+      countSuffix: (count: number) => `${count}件のレビュー`,
+      visitedAt: (date: string) => `${date} 訪問`,
+      postedAt: (date: string) => `${date} 投稿`,
+      ratingAria: (rating: number) => `評価 ${rating} / 5`,
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // スポット詳細 not-found
+  // -----------------------------------------------------------------------------------
+  spotDetailNotFound: {
+    code: '404',
+    title: 'スポットが見つかりませんでした',
+    description:
+      'リンクが古くなっているか、公開が停止された可能性があります。最新のスポット一覧から探してみてください。',
+    backToList: 'スポット一覧へ',
+  },
+
+  // -----------------------------------------------------------------------------------
+  // 認証画面
+  // -----------------------------------------------------------------------------------
+  auth: {
+    common: {
+      emailLabel: 'メールアドレス',
+      passwordLabel: 'パスワード',
+      passwordWithHintLabel: 'パスワード（8 文字以上）',
+      passwordConfirmLabel: 'パスワード（確認）',
+      orDivider: 'または',
+    },
+    login: {
+      metaTitle: 'ログイン',
+      eyebrow: 'Login',
+      title: 'ログイン',
+      description: 'メールアドレスでログイン、または Google アカウントを利用してください。',
+      footerLabel: 'アカウントをお持ちでない方は',
+      footerCta: '新規登録',
+      submit: 'ログイン',
+      forgotPassword: 'パスワードを忘れた方',
+      errors: {
+        invalid_credentials: 'メールアドレスまたはパスワードが正しくありません。',
+        invalid_input: '入力内容に誤りがあります。',
+        auth_callback_failed: 'ログイン処理に失敗しました。もう一度お試しください。',
+      } as Record<string, string>,
+    },
+    signup: {
+      metaTitle: '新規登録',
+      eyebrow: 'Sign Up',
+      title: '新規登録',
+      description: 'hana nav でブックマーク・レビュー・しおり生成をお楽しみください。',
+      footerLabel: 'すでにアカウントをお持ちの方は',
+      footerCta: 'ログイン',
+      submit: '登録する',
+      errors: {
+        invalid_input: '入力内容に誤りがあります。',
+        password_mismatch: 'パスワードが一致しません。',
+        password_too_short: 'パスワードは 8 文字以上で入力してください。',
+        signup_failed: '登録に失敗しました。メールアドレスを確認してください。',
+      } as Record<string, string>,
+      statuses: {
+        email_sent:
+          '入力されたメールアドレスに確認メールを送信しました。メール内のリンクからログインを完了してください。',
+      } as Record<string, string>,
+    },
+    resetPassword: {
+      metaTitle: 'パスワードリセット',
+      eyebrow: 'Reset',
+      title: 'パスワードリセット',
+      description: '登録済みのメールアドレス宛にリセット用リンクを送ります。',
+      footerLabel: 'ログイン画面に戻る場合は',
+      footerCta: 'ログイン',
+      submit: 'リセットメールを送る',
+      errors: {
+        invalid_input: 'メールアドレスを入力してください。',
+      } as Record<string, string>,
+      statuses: {
+        email_sent:
+          '入力されたメールアドレスにリセット用リンクを送信しました（登録済みの場合のみ）。',
+      } as Record<string, string>,
+    },
+    updatePassword: {
+      metaTitle: 'パスワード更新',
+      eyebrow: 'Update',
+      title: '新しいパスワードを設定',
+      description: 'リセットメールから遷移したセッションで新しいパスワードを設定します。',
+      submit: 'パスワードを更新する',
+      newPasswordLabel: '新しいパスワード（8 文字以上）',
+      newPasswordConfirmLabel: '新しいパスワード（確認）',
+      errors: {
+        invalid_input: '入力内容に誤りがあります。',
+        password_mismatch: 'パスワードが一致しません。',
+        password_too_short: 'パスワードは 8 文字以上で入力してください。',
+        update_failed: 'パスワードの更新に失敗しました。もう一度お試しください。',
+      } as Record<string, string>,
+    },
+    google: {
+      signIn: 'Google でログイン',
+      redirecting: 'リダイレクト中…',
+    },
+  },
+} as const;

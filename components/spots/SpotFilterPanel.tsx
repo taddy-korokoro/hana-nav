@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SearchIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import {
   type PrefectureGroup,
   type SortKey,
@@ -41,7 +42,7 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
             type="search"
             name="q"
             defaultValue={current.q ?? ''}
-            placeholder="スポット名・キーワードで検索"
+            placeholder={COPY.spotsList.filter.keywordPlaceholder}
             className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-ink-faint"
           />
         </label>
@@ -49,7 +50,7 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
       </form>
 
       <FilterRow
-        label="エリア"
+        label={COPY.spotsList.filter.area}
         items={[
           ...prefectureGroups.flatMap((g) =>
             g.prefectures.map((p) => ({
@@ -66,7 +67,7 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
       />
 
       <FilterRow
-        label="地方"
+        label={COPY.spotsList.filter.region}
         items={UNIQUE_REGIONS(prefectureGroups).map((r) => ({
           key: `region-${r}`,
           label: r,
@@ -79,17 +80,17 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
       />
 
       <FilterRow
-        label="時期"
+        label={COPY.spotsList.filter.season}
         items={MONTHS.map((m) => ({
           key: `month-${m}`,
-          label: `${m}月`,
+          label: COPY.common.months.ja[m],
           selected: current.month === m,
           href: buildHref({ month: current.month === m ? undefined : m }),
         }))}
       />
 
       <FilterRow
-        label="花"
+        label={COPY.spotsList.filter.flower}
         items={flowers.map((f) => ({
           key: `flower-${f.id}`,
           label: f.name,
@@ -100,19 +101,44 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="mr-1 text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
-          並び順
+          {COPY.spotsList.filter.sortHeading}
         </span>
-        <SortChip current={current} value="newest" label="新着順" buildHref={buildHref} />
-        <SortChip current={current} value="name" label="名前順" buildHref={buildHref} />
-        <SortChip current={current} value="prefecture" label="都道府県順" buildHref={buildHref} />
+        <SortChip
+          current={current}
+          value="newest"
+          label={COPY.spotsList.filter.sort.newest}
+          buildHref={buildHref}
+        />
+        <SortChip
+          current={current}
+          value="name"
+          label={COPY.spotsList.filter.sort.name}
+          buildHref={buildHref}
+        />
+        <SortChip
+          current={current}
+          value="prefecture"
+          label={COPY.spotsList.filter.sort.prefecture}
+          buildHref={buildHref}
+        />
 
         <span className="mx-2 hidden h-5 w-px bg-line sm:inline-block" aria-hidden />
 
         <span className="mr-1 text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
-          表示
+          {COPY.spotsList.filter.viewHeading}
         </span>
-        <ViewChip current={current} value="list" label="リスト" buildHref={buildHref} />
-        <ViewChip current={current} value="map" label="マップ" buildHref={buildHref} />
+        <ViewChip
+          current={current}
+          value="list"
+          label={COPY.spotsList.filter.view.list}
+          buildHref={buildHref}
+        />
+        <ViewChip
+          current={current}
+          value="map"
+          label={COPY.spotsList.filter.view.map}
+          buildHref={buildHref}
+        />
       </div>
     </section>
   );
@@ -225,7 +251,7 @@ function SubmitWithHidden({ current }: { current: SpotSearchParams }) {
         className="flex items-center gap-2 rounded-card bg-brand px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
       >
         <SearchIcon className="size-4" />
-        検索
+        {COPY.common.search}
       </button>
     </>
   );

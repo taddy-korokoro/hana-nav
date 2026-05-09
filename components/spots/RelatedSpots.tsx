@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { RelatedSpot } from '@/lib/queries/spotDetail';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
@@ -18,8 +19,12 @@ export function RelatedSpots({ spots }: { spots: RelatedSpot[] }) {
     <section>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">Nearby</p>
-          <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight">関連スポット</h2>
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
+            {COPY.spotDetail.sections.relatedEyebrow}
+          </p>
+          <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight">
+            {COPY.spotDetail.sections.relatedTitle}
+          </h2>
         </div>
       </div>
 
@@ -30,7 +35,7 @@ export function RelatedSpots({ spots }: { spots: RelatedSpot[] }) {
               {spot.coverImageUrl ? (
                 <Image
                   src={spot.coverImageUrl}
-                  alt={`${spot.name}の写真`}
+                  alt={COPY.common.photoAlt(spot.name)}
                   fill
                   className="object-cover transition group-hover:scale-105"
                   sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
@@ -49,7 +54,8 @@ export function RelatedSpots({ spots }: { spots: RelatedSpot[] }) {
                 <p className="truncate font-serif text-base font-semibold">{spot.name}</p>
                 <p className="truncate text-xs text-ink-muted">{spot.prefectureName}</p>
                 <p className="mt-0.5 text-xs text-ink-faint">
-                  見頃 {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
+                  {COPY.common.seasonPrefix}{' '}
+                  {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
                 </p>
               </div>
               <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />

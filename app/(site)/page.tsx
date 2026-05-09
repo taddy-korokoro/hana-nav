@@ -4,6 +4,7 @@ import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { SearchBar } from '@/components/home/SearchBar';
 import { SeasonMap } from '@/components/home/SeasonMap';
+import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 
 export const dynamic = 'force-dynamic';
@@ -24,9 +25,11 @@ export default async function HomePage() {
         <section className="pt-16">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">Map view</p>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
+                {COPY.home.map.eyebrow}
+              </p>
               <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight md:text-3xl">
-                今月見頃のマップ
+                {COPY.home.map.title}
               </h2>
             </div>
           </div>

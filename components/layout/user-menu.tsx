@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { logout } from '@/app/auth/logout/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { COPY } from '@/lib/constants/copy';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +28,7 @@ export function UserMenu({ email, username, avatarUrl, isAdmin }: UserMenuProps)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="ユーザーメニュー"
+        aria-label={COPY.nav.userMenu}
         className="grid size-10 place-items-center rounded-pill outline-none focus-visible:ring-2 focus-visible:ring-brand"
       >
         <Avatar size="default">
@@ -44,13 +45,13 @@ export function UserMenu({ email, username, avatarUrl, isAdmin }: UserMenuProps)
         <DropdownMenuItem asChild>
           <Link href="/mypage">
             <UserIcon className="size-4" />
-            マイページ
+            {COPY.nav.mypage}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/mypage/bookmarks">
             <BookmarkIcon className="size-4" />
-            ブックマーク
+            {COPY.nav.bookmarks}
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
@@ -59,7 +60,7 @@ export function UserMenu({ email, username, avatarUrl, isAdmin }: UserMenuProps)
             <DropdownMenuItem asChild>
               <Link href="/admin">
                 <ShieldIcon className="size-4" />
-                管理画面
+                {COPY.nav.admin}
               </Link>
             </DropdownMenuItem>
           </>
@@ -69,7 +70,7 @@ export function UserMenu({ email, username, avatarUrl, isAdmin }: UserMenuProps)
           <form action={logout} className="contents">
             <button type="submit" className="flex w-full items-center gap-1.5 text-left">
               <LogoutIcon className="size-4" />
-              ログアウト
+              {COPY.nav.logout}
             </button>
           </form>
         </DropdownMenuItem>

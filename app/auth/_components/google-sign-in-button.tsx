@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { COPY } from '@/lib/constants/copy';
 import { createClient } from '@/lib/supabase/client';
 
 /**
@@ -40,7 +41,7 @@ export function GoogleSignInButton() {
       className="inline-flex w-full items-center justify-center gap-2 rounded-card border border-line bg-white px-4 py-2.5 text-sm font-medium text-ink transition hover:border-line-strong hover:bg-surface-2 disabled:opacity-60"
     >
       <GoogleIcon />
-      {pending ? 'リダイレクト中…' : 'Google でログイン'}
+      {pending ? COPY.auth.google.redirecting : COPY.auth.google.signIn}
     </button>
   );
 }
