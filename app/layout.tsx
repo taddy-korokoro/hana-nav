@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Noto_Serif_JP } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
+import { COPY } from '@/lib/constants/copy';
 import './globals.css';
 
 const geistSans = Geist({
@@ -21,29 +22,26 @@ const notoSerifJp = Noto_Serif_JP({
 });
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-const SITE_NAME = 'hana nav';
-const SITE_DESCRIPTION =
-  '全国の花畑スポットを、エリア・季節・花の種類から探せる検索サービス。AI花判定で目の前の花も識別できます。';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: `${SITE_NAME} | 花畑スポット検索`,
-    template: `%s | ${SITE_NAME}`,
+    default: COPY.site.titleDefault,
+    template: `%s | ${COPY.site.name}`,
   },
-  description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
+  description: COPY.site.description,
+  applicationName: COPY.site.name,
   openGraph: {
     type: 'website',
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} | 花畑スポット検索`,
-    description: SITE_DESCRIPTION,
+    siteName: COPY.site.name,
+    title: COPY.site.titleDefault,
+    description: COPY.site.description,
     locale: 'ja_JP',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} | 花畑スポット検索`,
-    description: SITE_DESCRIPTION,
+    title: COPY.site.titleDefault,
+    description: COPY.site.description,
   },
 };
 

@@ -5,6 +5,7 @@ import { Pagination } from '@/components/spots/Pagination';
 import { SpotCard } from '@/components/spots/SpotCard';
 import { SpotFilterPanel } from '@/components/spots/SpotFilterPanel';
 import { SpotMapView } from '@/components/spots/SpotMapView';
+import { COPY } from '@/lib/constants/copy';
 import {
   getFlowerOptions,
   getPrefectureGroups,
@@ -17,8 +18,8 @@ export const dynamic = 'force-dynamic';
 
 // SEO: クエリパラメータ重複の問題を避けるため検索結果ページは noindex
 export const metadata: Metadata = {
-  title: 'スポットを探す',
-  description: '全国の花畑スポットをエリア・花の種類・見頃の時期で絞り込んで探せます。',
+  title: COPY.spotsList.metaTitle,
+  description: COPY.spotsList.metaDescription,
   robots: { index: false, follow: true },
 };
 
@@ -50,13 +51,14 @@ export default async function SpotsPage({
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24">
       <section className="pb-6 pt-12 md:pt-16">
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">Browse spots</p>
+        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
+          {COPY.spotsList.eyebrow}
+        </p>
         <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-5xl">
-          スポットを探す
+          {COPY.spotsList.title}
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-7 text-ink-muted">
-          エリア・時期・花の種類でフィルター。複数組み合わせ可能。URL
-          を共有すると同じ結果が再現できます。
+          {COPY.spotsList.description}
         </p>
       </section>
 
@@ -66,27 +68,26 @@ export default async function SpotsPage({
         <p className="text-sm text-ink-muted">
           <span className="font-serif text-2xl font-bold text-ink">{result.totalCount}</span>
           <span className="ml-2">
-            件{result.totalCount > 0 && ` / ${result.page} / ${result.totalPages} ページ`}
+            {COPY.spotsList.countSuffix}
+            {result.totalCount > 0 && COPY.spotsList.pageProgress(result.page, result.totalPages)}
           </span>
         </p>
         {hasFilter && (
           <Link href="/spots" className="text-xs font-medium text-ink-muted hover:text-ink">
-            フィルターをクリア
+            {COPY.spotsList.clearFilter}
           </Link>
         )}
       </section>
 
       {result.items.length === 0 ? (
         <div className="mt-8 rounded-card border border-line bg-white p-10 text-center">
-          <p className="font-serif text-lg font-bold">該当するスポットがありません</p>
-          <p className="mt-2 text-sm text-ink-muted">
-            フィルターを絞りすぎている可能性があります。条件を変えてもう一度お試しください。
-          </p>
+          <p className="font-serif text-lg font-bold">{COPY.spotsList.empty.title}</p>
+          <p className="mt-2 text-sm text-ink-muted">{COPY.spotsList.empty.description}</p>
           <Link
             href="/spots"
             className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-hover"
           >
-            フィルターをクリア
+            {COPY.spotsList.clearFilter}
             <ArrowRightIcon className="size-4" />
           </Link>
         </div>
@@ -99,12 +100,10 @@ export default async function SpotsPage({
             />
           ) : (
             <div className="rounded-card border border-line bg-white p-6 text-center text-sm text-ink-muted">
-              地図 API キーが未設定のためマップを表示できません。リスト表示に切り替えてください。
+              {COPY.spotsList.mapApiMissing}
             </div>
           )}
-          <p className="text-xs text-ink-faint">
-            ピンが立たないスポットは座標未登録です。リストには全件表示されます。
-          </p>
+          <p className="text-xs text-ink-faint">{COPY.spotsList.mapPinNotice}</p>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {result.items.map((spot, i) => (
               <SpotCard key={spot.id} spot={spot} index={i} />

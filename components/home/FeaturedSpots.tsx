@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { SeasonalSpot } from '@/lib/queries/topSpots';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
@@ -24,21 +25,19 @@ export function FeaturedSpots({
     return (
       <section className="pt-16">
         <SectionHeader
-          eyebrow="In bloom now"
-          title="今月の見頃スポット"
-          linkLabel="一覧から探す"
+          eyebrow={COPY.home.featured.eyebrow}
+          title={COPY.home.featured.title}
+          linkLabel={COPY.home.featured.empty.seeAll}
           linkHref={`/spots?month=${currentMonth}`}
         />
         <div className="mt-8 rounded-card border border-line bg-white p-10 text-center">
-          <p className="font-serif text-lg font-bold">今月見頃のスポットは準備中です</p>
-          <p className="mt-2 text-sm text-ink-muted">
-            データを順次追加しています。先に花の種類から探してみてください。
-          </p>
+          <p className="font-serif text-lg font-bold">{COPY.home.featured.empty.title}</p>
+          <p className="mt-2 text-sm text-ink-muted">{COPY.home.featured.empty.description}</p>
           <Link
             href="/flowers"
             className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-hover"
           >
-            花の一覧を見る
+            {COPY.home.featured.empty.cta}
             <ArrowRightIcon className="size-4" />
           </Link>
         </div>
@@ -49,9 +48,9 @@ export function FeaturedSpots({
   return (
     <section className="pt-16">
       <SectionHeader
-        eyebrow="In bloom now"
-        title="今月の見頃スポット"
-        linkLabel="すべて見る"
+        eyebrow={COPY.home.featured.eyebrow}
+        title={COPY.home.featured.title}
+        linkLabel={COPY.common.seeAll}
         linkHref={`/spots?month=${currentMonth}`}
       />
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -61,7 +60,7 @@ export function FeaturedSpots({
               {spot.coverImageUrl ? (
                 <Image
                   src={spot.coverImageUrl}
-                  alt={`${spot.name}の写真`}
+                  alt={COPY.common.photoAlt(spot.name)}
                   fill
                   className="object-cover transition group-hover:scale-105"
                   sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
@@ -83,7 +82,8 @@ export function FeaturedSpots({
                   {spot.flowerNames.length > 0 && ` ・ ${spot.flowerNames.slice(0, 2).join('・')}`}
                 </p>
                 <p className="mt-0.5 text-xs text-ink-faint">
-                  見頃 {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
+                  {COPY.common.seasonPrefix}{' '}
+                  {formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd)}
                 </p>
               </div>
               <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />

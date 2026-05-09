@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { FeaturedFlower } from '@/lib/queries/topSpots';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
@@ -26,16 +27,18 @@ export function FlowerTypeGrid({ flowers }: { flowers: FeaturedFlower[] }) {
     <section className="pt-16">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">By flower</p>
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
+            {COPY.home.flowerTypes.eyebrow}
+          </p>
           <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight md:text-3xl">
-            花から探す
+            {COPY.home.flowerTypes.title}
           </h2>
         </div>
         <Link
           href="/flowers"
           className="flex shrink-0 items-center gap-1 text-sm font-medium text-ink hover:text-brand"
         >
-          すべて見る
+          {COPY.common.seeAll}
           <ArrowRightIcon className="size-4" />
         </Link>
       </div>
@@ -51,7 +54,7 @@ export function FlowerTypeGrid({ flowers }: { flowers: FeaturedFlower[] }) {
               {flower.coverImageUrl ? (
                 <Image
                   src={flower.coverImageUrl}
-                  alt={`${flower.name}の写真`}
+                  alt={COPY.common.photoAlt(flower.name)}
                   fill
                   className="object-cover transition group-hover:scale-105"
                   sizes="(min-width: 1024px) 240px, (min-width: 640px) 33vw, 50vw"

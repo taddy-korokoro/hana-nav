@@ -12,9 +12,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { COPY } from '@/lib/constants/copy';
 import { cn } from '@/lib/utils';
 import { BookmarkIcon, LogoutIcon, MenuIcon, SearchIcon, ShieldIcon, UserIcon } from './icons';
-import { NAV_ITEMS } from './nav-items';
 
 type MobileNavProps = {
   isLoggedIn: boolean;
@@ -27,19 +27,21 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
   return (
     <Sheet>
       <SheetTrigger
-        aria-label="メニューを開く"
+        aria-label={COPY.nav.openMenu}
         className="grid size-10 place-items-center rounded-pill border border-line bg-white md:hidden"
       >
         <MenuIcon className="size-5" />
       </SheetTrigger>
       <SheetContent side="right" className="w-80 max-w-[85vw] bg-surface">
         <SheetHeader>
-          <SheetTitle className="font-serif text-xl font-bold tracking-wider">hana nav</SheetTitle>
-          <SheetDescription className="sr-only">サイト全体のメニュー</SheetDescription>
+          <SheetTitle className="font-serif text-xl font-bold tracking-wider">
+            {COPY.site.name}
+          </SheetTitle>
+          <SheetDescription className="sr-only">{COPY.nav.siteMenu}</SheetDescription>
         </SheetHeader>
 
         <nav className="flex flex-col gap-1 px-4 pb-4">
-          {NAV_ITEMS.map((item) => {
+          {COPY.nav.items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <SheetClose key={item.href} asChild>
@@ -61,7 +63,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
               className="mt-2 flex items-center gap-3 rounded-card border border-line bg-white px-3 py-3 text-base hover:border-line-strong"
             >
               <SearchIcon className="size-5 text-ink-muted" />
-              スポットを検索
+              {COPY.nav.quickSearch}
             </Link>
           </SheetClose>
         </nav>
@@ -75,7 +77,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                   className="flex items-center gap-3 rounded-card px-3 py-3 text-base hover:bg-surface-2"
                 >
                   <UserIcon className="size-5 text-ink-muted" />
-                  マイページ
+                  {COPY.nav.mypage}
                 </Link>
               </SheetClose>
               <SheetClose asChild>
@@ -84,7 +86,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                   className="flex items-center gap-3 rounded-card px-3 py-3 text-base hover:bg-surface-2"
                 >
                   <BookmarkIcon className="size-5 text-ink-muted" />
-                  ブックマーク
+                  {COPY.nav.bookmarks}
                 </Link>
               </SheetClose>
               {isAdmin && (
@@ -94,7 +96,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                     className="flex items-center gap-3 rounded-card px-3 py-3 text-base hover:bg-surface-2"
                   >
                     <ShieldIcon className="size-5 text-ink-muted" />
-                    管理画面
+                    {COPY.nav.admin}
                   </Link>
                 </SheetClose>
               )}
@@ -104,7 +106,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                   className="flex w-full items-center gap-3 rounded-card px-3 py-3 text-base text-destructive hover:bg-destructive/10"
                 >
                   <LogoutIcon className="size-5" />
-                  ログアウト
+                  {COPY.nav.logout}
                 </button>
               </form>
             </div>
@@ -115,7 +117,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                   href="/auth/login"
                   className="rounded-card border border-line bg-white px-4 py-3 text-center text-sm font-medium hover:border-line-strong"
                 >
-                  ログイン
+                  {COPY.nav.login}
                 </Link>
               </SheetClose>
               <SheetClose asChild>
@@ -123,7 +125,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                   href="/auth/signup"
                   className="rounded-card bg-brand px-4 py-3 text-center text-sm font-semibold text-white hover:bg-brand-hover"
                 >
-                  会員登録
+                  {COPY.nav.signup}
                 </Link>
               </SheetClose>
             </div>

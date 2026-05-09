@@ -6,18 +6,11 @@ import {
   FormSuccess,
   PrimaryButton,
 } from '@/app/auth/_components/form-fields';
+import { COPY } from '@/lib/constants/copy';
 import { requestReset } from './actions';
 
 export const metadata: Metadata = {
-  title: 'パスワードリセット',
-};
-
-const errorMessages: Record<string, string> = {
-  invalid_input: 'メールアドレスを入力してください。',
-};
-
-const statusMessages: Record<string, string> = {
-  email_sent: '入力されたメールアドレスにリセット用リンクを送信しました（登録済みの場合のみ）。',
+  title: COPY.auth.resetPassword.metaTitle,
 };
 
 export default async function ResetPasswordPage({
@@ -28,19 +21,25 @@ export default async function ResetPasswordPage({
   const { error, status } = await searchParams;
   return (
     <AuthCard
-      eyebrow="Reset"
-      title="パスワードリセット"
-      description="登録済みのメールアドレス宛にリセット用リンクを送ります。"
-      footerLabel="ログイン画面に戻る場合は"
+      eyebrow={COPY.auth.resetPassword.eyebrow}
+      title={COPY.auth.resetPassword.title}
+      description={COPY.auth.resetPassword.description}
+      footerLabel={COPY.auth.resetPassword.footerLabel}
       footerHref="/auth/login"
-      footerCta="ログイン"
+      footerCta={COPY.auth.resetPassword.footerCta}
     >
-      <FormError message={error ? errorMessages[error] : null} />
-      <FormSuccess message={status ? statusMessages[status] : null} />
+      <FormError message={error ? COPY.auth.resetPassword.errors[error] : null} />
+      <FormSuccess message={status ? COPY.auth.resetPassword.statuses[status] : null} />
 
       <form action={requestReset} className="mt-4 space-y-4">
-        <FormField label="メールアドレス" name="email" type="email" required autoComplete="email" />
-        <PrimaryButton type="submit">リセットメールを送る</PrimaryButton>
+        <FormField
+          label={COPY.auth.common.emailLabel}
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+        />
+        <PrimaryButton type="submit">{COPY.auth.resetPassword.submit}</PrimaryButton>
       </form>
     </AuthCard>
   );

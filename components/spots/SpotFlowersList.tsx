@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRightIcon, FlowerIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { SpotFlowerEntry } from '@/lib/queries/spotDetail';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
@@ -20,7 +21,7 @@ export function SpotFlowersList({ flowers }: { flowers: SpotFlowerEntry[] }) {
   if (flowers.length === 0) {
     return (
       <p className="rounded-card border border-line bg-white p-6 text-sm text-ink-muted">
-        この場所で見られる花はまだ登録されていません。
+        {COPY.spotDetail.flowers.empty}
       </p>
     );
   }
@@ -46,7 +47,11 @@ export function SpotFlowersList({ flowers }: { flowers: SpotFlowerEntry[] }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-serif text-base font-semibold">{flower.flowerName}</p>
-                {seasonText && <p className="mt-0.5 text-xs text-ink-muted">見頃 {seasonText}</p>}
+                {seasonText && (
+                  <p className="mt-0.5 text-xs text-ink-muted">
+                    {COPY.common.seasonPrefix} {seasonText}
+                  </p>
+                )}
               </div>
               <ArrowRightIcon className="size-4 shrink-0 text-ink-faint transition group-hover:translate-x-1 group-hover:text-ink" />
             </Link>

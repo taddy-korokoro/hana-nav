@@ -12,8 +12,9 @@ import {
 } from '@vis.gl/react-google-maps';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import type { SeasonalSpot } from '@/lib/queries/topSpots';
 import { ArrowRightIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
+import type { SeasonalSpot } from '@/lib/queries/topSpots';
 
 const JAPAN_CENTER = { lat: 36.5, lng: 138.5 };
 const DEFAULT_ZOOM = 5;
@@ -113,7 +114,7 @@ function ClusteredMarkers({ spots }: { spots: SeasonalSpot[] }) {
               href={`/spots/${active.id}`}
               className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand hover:text-brand-hover"
             >
-              詳細を見る
+              {COPY.common.showDetail}
               <ArrowRightIcon className="size-3" />
             </Link>
           </div>
