@@ -39,6 +39,45 @@ NEXT_PUBLIC_BASE_URL=
 TZ=Asia/Tokyo
 ```
 
+## 画像ホスティング
+
+画像（`images.url`）は **Supabase Storage の公開バケット 1 本** に統一する。スポット・花マスターどちらも `images` バケットに保管し、CDN 経由（`*.supabase.co/storage/v1/object/public/**`）で配信する。
+
+**バケット構成**
+
+| バケット | 公開   | パス規約                                             | 備考                                                                         |
+| -------- | ------ | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `images` | public | `{owner_type}/{owner_id}/{display_order}-{slug}.jpg` | `images` テーブルと同名。`owner_type` ('spot' / 'flower') で物理的に分かれる |
+
+**バケットを 1 本に統一した理由**
+
+- `images` テーブルと命名が揃って迷わない
+- `owner_type/{owner_id}/...` の path から spot / flower が自明（バケットを分けても結局 owner で分けるため重複した区別になる）
+- RLS・`file_size_limit`・`allowed_mime_types` を 1 箇所で管理できる
+- MVP では「spot 画像だけライフサイクルを変える」「flower 画像だけ署名 URL に切り替える」等の個別要件が無い（将来必要になったら prefix で分けて対応 or バケット分割を検討する）
+
+**運用ルール**
+
+- 元画像はクライアント側で 1024px / JPEG 0.8 / 2MB 以下にリサイズしてからアップロード（CLAUDE.md「コスト・セキュリティ境界」）
+- ファイル名は `{owner_type}/{owner_id}/{display_order}-{slug}.jpg` の規約で衝突を避ける（詳細はチケット 16）
+- 商用利用可能なライセンス（Wikimedia Commons / Pixabay / 自前撮影）の画像のみ採用。出典は `images.caption` または `flowers.description` 末尾に明記
+- アップロードは管理画面（チケット 15/16）の Route Handler から `SUPABASE_SERVICE_ROLE_KEY` を使って書き込む。RLS で SELECT のみ public、INSERT / UPDATE / DELETE は service role に限定する
+
+**外部 URL 直リンクを採用しない理由**
+
+- 画像 URL の失効リスク（hotlink 禁止・ファイル名変更）
+- パフォーマンス（Supabase CDN 経由が安定）
+- 管理画面（チケット 16）で「アップロード」フローを 1 本化したい（spots と挙動を揃える）
+- 出典・ライセンス管理は `caption` / `description` への明記で十分代替できる
+
+**Next.js 画像ホスト設定**
+
+`next.config.ts` の `images.remotePatterns` は既に `*.supabase.co/storage/v1/object/public/**` を許可済みなので追加作業は不要。
+
+**Free tier 容量の見積もり**
+
+Supabase Free は Storage 1GB。flower 32 種 × 平均 2 枚 + spot 数百件 × 平均 2 枚 を合計しても 200KB/枚換算で数百 MB に収まる見込み（Pro 移行時の閾値判断はチケット 16 で確認）。
+
 ## タイムゾーン
 
 本サービスは日本国内向けのため **JST（Asia/Tokyo）を基準とする**。
