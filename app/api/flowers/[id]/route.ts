@@ -14,11 +14,18 @@ const FLOWER_DETAIL_CACHE_CONTROL = 'public, s-maxage=60, stale-while-revalidate
 
 export async function GET(_request: Request, { params }: { params: Params }) {
   const { id } = await params;
-  const bundle = await getFlowerDetail(id);
-  if (!bundle) {
-    return NextResponse.json({ error: 'flower_not_found' }, { status: 404 });
+  // getFlowerDetail は not-found のみ null、DB エラーは throw するようになった。
+  // API 経由では JSON で 500 を返す必要があるので try/catch でラップする。
+  try {
+    const bundle = await getFlowerDetail(id);
+    if (!bundle) {
+      return NextResponse.json({ error: 'flower_not_found' }, { status: 404 });
+    }
+    return NextResponse.json(bundle, {
+      headers: { 'Cache-Control': FLOWER_DETAIL_CACHE_CONTROL },
+    });
+  } catch (error) {
+    console.error('[GET /api/flowers/[id]] failed', error);
+    return NextResponse.json({ error: 'internal_server_error' }, { status: 500 });
   }
-  return NextResponse.json(bundle, {
-    headers: { 'Cache-Control': FLOWER_DETAIL_CACHE_CONTROL },
-  });
 }
