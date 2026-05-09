@@ -285,6 +285,94 @@ export const COPY = {
   },
 
   // -----------------------------------------------------------------------------------
+  // 花の種類 一覧（/flowers）
+  // -----------------------------------------------------------------------------------
+  flowersList: {
+    metaTitle: '花の種類一覧',
+    metaDescription:
+      '春夏秋冬の花を 50 音順で一覧。気になる花から見頃時期や、見られるスポットを探せます。',
+    eyebrow: 'By flower',
+    title: '花の種類から探す',
+    description: '気になる花から、見頃の時期と見られるスポットを探せます。',
+    countSuffix: '種類',
+    indexAria: '50 音インデックス',
+    sectionAria: (label: string) => `${label}行の花一覧`,
+    empty: {
+      title: '花のデータが見つかりません',
+      description: 'マスター投入が完了していない可能性があります。',
+    },
+    aliasMiss: {
+      // AI 判定や外部リンクから来たユーザーに、何が当たらなかったか・どうすれば良いかを伝える
+      title: (alias: string) => `「${alias}」に一致する花は見つかりませんでした`,
+      description:
+        '別名や品種名はマスターに登録されているもののみ対応しています。一覧から探してみてください。',
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // 花の詳細（/flowers/[id]）
+  // -----------------------------------------------------------------------------------
+  flowerDetail: {
+    metaNotFound: '花が見つかりません',
+    metaTitle: (name: string) => `${name}の見頃時期と花畑スポット`,
+    metaDescription: (params: {
+      name: string;
+      seasonText: string;
+      spotCount: number;
+      description: string | null;
+    }) => {
+      const seasonPart = params.seasonText ? `${params.seasonText}が見頃。` : '';
+      const descPart = params.description ? `${params.description} ` : '';
+      const spotPart =
+        params.spotCount > 0
+          ? `全国 ${params.spotCount} か所のスポットから探せます。`
+          : '見頃時期や特徴を hana nav がまとめます。';
+      return `${params.name}は${seasonPart}${descPart}${spotPart}`;
+    },
+    seasonBadge: (range: string) => `見頃 ${range}`,
+    seasonUnknown: '見頃情報は準備中です',
+    inSeasonSuffix: '・今が見頃',
+    sections: {
+      aboutTitle: '花の特徴',
+      seasonTitle: '見頃カレンダー',
+      seasonEyebrow: 'Season',
+      aliasesTitle: '別名・品種',
+      aliasesEyebrow: 'Aliases',
+      spotsTitle: 'この花が見られるスポット',
+      spotsEyebrow: 'Spots',
+    },
+    aliases: {
+      empty: '別名・品種は登録されていません。',
+      summary: (count: number) => `登録されている別名・品種 ${count} 件`,
+    },
+    spots: {
+      empty: 'この花を登録しているスポットはまだありません。',
+      countSummary: (count: number) => `${count} 件のスポットで見られます`,
+    },
+    seasonChart: {
+      caption: '12 か月の中での見頃の月（濃い色 = 見頃ピーク）',
+      monthAria: (month: string, peak: boolean) => (peak ? `${month}・見頃` : month),
+    },
+    description: {
+      empty: '紹介文はまだ登録されていません。',
+    },
+    gallery: {
+      preparing: '写真を準備中です',
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // 花詳細 not-found
+  // -----------------------------------------------------------------------------------
+  flowerDetailNotFound: {
+    code: '404',
+    title: '花のページが見つかりませんでした',
+    description:
+      'リンクが古くなっているか、削除された可能性があります。花の一覧から探し直してください。',
+    backToList: '花の一覧へ',
+  },
+
+  // -----------------------------------------------------------------------------------
   // 認証画面
   // -----------------------------------------------------------------------------------
   auth: {
