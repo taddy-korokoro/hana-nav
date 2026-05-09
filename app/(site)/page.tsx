@@ -1,41 +1,49 @@
-import Link from 'next/link';
-import { ArrowRightIcon } from '@/components/layout/icons';
+import { Suspense } from 'react';
+import { FeaturedSpots } from '@/components/home/FeaturedSpots';
+import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
+import { HeroSection } from '@/components/home/HeroSection';
+import { SearchBar } from '@/components/home/SearchBar';
+import { SeasonMap } from '@/components/home/SeasonMap';
+import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 
-/**
- * トップページのスケルトン。
- * 本実装はチケット 05（トップページ）で行う。ここでは共通レイアウトの動作確認を兼ねた
- * 最小ヒーロー + 主要導線のみ置く。
- */
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const currentMonth = new Date().getMonth() + 1;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  const [spots, flowers] = await Promise.all([getSeasonalSpots(24), getFeaturedFlowers(12)]);
+  const spotsWithCoords = spots.filter((s) => s.latitude != null && s.longitude != null);
+
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24">
-      <section className="pb-10 pt-12 md:pb-16 md:pt-20">
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
-          Find your bloom
-        </p>
-        <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-6xl">
-          満開を、見逃さない。
-        </h1>
-        <p className="mt-4 max-w-xl text-base leading-7 text-ink-muted">
-          全国の花畑スポットを、エリア・季節・花の種類から探せます。今が見頃の場所も、来月の予習も。
-        </p>
+      <HeroSection currentMonth={currentMonth} />
+      <SearchBar currentMonth={currentMonth} />
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/spots"
-            className="inline-flex items-center gap-1 rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
-          >
-            スポットを探す
-            <ArrowRightIcon className="size-4" />
-          </Link>
-          <Link
-            href="/identify"
-            className="inline-flex items-center gap-1 rounded-pill border border-line bg-white px-5 py-2.5 text-sm font-medium transition hover:border-line-strong"
-          >
-            AI花判定を試す
-          </Link>
-        </div>
-      </section>
+      {apiKey && spotsWithCoords.length > 0 && (
+        <section className="pt-16">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">Map view</p>
+              <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight md:text-3xl">
+                今月見頃のマップ
+              </h2>
+            </div>
+          </div>
+          <div className="mt-6">
+            <Suspense
+              fallback={
+                <div className="h-[420px] w-full rounded-card-lg bg-surface-2 md:h-[520px]" />
+              }
+            >
+              <SeasonMap spots={spotsWithCoords} apiKey={apiKey} />
+            </Suspense>
+          </div>
+        </section>
+      )}
+
+      <FeaturedSpots spots={spots} currentMonth={currentMonth} />
+      <FlowerTypeGrid flowers={flowers} />
     </div>
   );
 }
