@@ -63,9 +63,12 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
     .order('name_kana', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true });
 
+  // CLAUDE.md「データ取得エラーは error.tsx で境界を作る。try/catch で握りつぶして
+  // 空配列を返す実装はしない」に従い、DB エラーは上位に投げて error 境界に委ねる。
+  // ここで `[]` にすると DB 障害が「花マスター 0 件」の正常表示に化けてしまう。
   if (error) {
     console.error('[getFlowerList] failed to fetch flowers', error);
-    return [];
+    throw error;
   }
   if (!flowers || flowers.length === 0) return [];
 
@@ -96,7 +99,8 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
 
 /**
  * 花詳細ページ。本体取得後に aliases / images / 該当スポットを `Promise.all` で並列取得。
- * 未存在 / 論理削除の場合は `null` を返し呼び出し側で `notFound()` させる。
+ * 未存在 / 論理削除の場合のみ `null` を返し呼び出し側で `notFound()` させる。
+ * DB エラーは上位の error 境界に委ねるため `throw` する（404 化させない）。
  */
 export async function getFlowerDetail(id: string): Promise<FlowerDetailBundle | null> {
   const supabase = await createClient();
@@ -112,7 +116,7 @@ export async function getFlowerDetail(id: string): Promise<FlowerDetailBundle | 
 
   if (error) {
     console.error('[getFlowerDetail] failed to fetch flower', error);
-    return null;
+    throw error;
   }
   if (!row) return null;
 
@@ -156,7 +160,13 @@ export async function getFlowerMeta(id: string): Promise<{
     .is('deleted_at', null)
     .maybeSingle();
 
-  if (error || !data) return null;
+  // not-found（!data）と DB エラー（error）を分ける。エラーは上位に投げて metadata
+  // 生成失敗が「メタなしで表示」に化けないようにする。
+  if (error) {
+    console.error('[getFlowerMeta] failed to fetch flower', error);
+    throw error;
+  }
+  if (!data) return null;
 
   const { data: imageRow } = await supabase
     .from('images')
@@ -202,7 +212,7 @@ async function fetchAliases(flowerId: string): Promise<FlowerAlias[]> {
 
   if (error) {
     console.error('[getFlowerDetail] failed to fetch aliases', error);
-    return [];
+    throw error;
   }
   return (data ?? []).map((a) => ({ id: a.id, alias: a.alias }));
 }
@@ -219,7 +229,7 @@ async function fetchImages(flowerId: string): Promise<FlowerImage[]> {
 
   if (error) {
     console.error('[getFlowerDetail] failed to fetch images', error);
-    return [];
+    throw error;
   }
   return (data ?? []).map((img) => ({
     id: img.id,
@@ -251,7 +261,7 @@ async function fetchSpotsByFlower(flowerId: string): Promise<FlowerSpot[]> {
 
   if (error) {
     console.error('[getFlowerDetail] failed to fetch spots', error);
-    return [];
+    throw error;
   }
 
   type Row = {
@@ -337,9 +347,11 @@ export async function findFlowerIdByAlias(alias: string): Promise<string | null>
     .is('flower.deleted_at', null)
     .maybeSingle();
 
+  // alias / flower 名どちらの lookup もエラー時は throw（DB 障害を「該当なし」表示に
+  // 化けさせない）。null を返すのは「実際に該当が見つからなかった」場合のみ。
   if (aliasError) {
     console.error('[findFlowerIdByAlias] failed to resolve alias', aliasError);
-    return null;
+    throw aliasError;
   }
   if (aliasRow?.flower_id) return aliasRow.flower_id;
 
@@ -352,7 +364,7 @@ export async function findFlowerIdByAlias(alias: string): Promise<string | null>
 
   if (flowerError) {
     console.error('[findFlowerIdByAlias] failed to resolve flower name', flowerError);
-    return null;
+    throw flowerError;
   }
   return flowerRow?.id ?? null;
 }
