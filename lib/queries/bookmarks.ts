@@ -27,8 +27,7 @@ export async function isBookmarked(userId: string, spotId: string): Promise<bool
     .maybeSingle();
 
   if (error) {
-    console.error('[isBookmarked] failed', error);
-    return false;
+    throw new Error(`[isBookmarked] ${error.message}`);
   }
   return !!data;
 }
@@ -68,8 +67,7 @@ export async function getMyBookmarks(userId: string): Promise<BookmarkListItem[]
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('[getMyBookmarks] failed', error);
-    return [];
+    throw new Error(`[getMyBookmarks] ${error.message}`);
   }
 
   type Row = {
