@@ -32,9 +32,9 @@
 ### ライブラリ・設定
 
 - [x] `npm install @supabase/supabase-js @supabase/ssr`
-- [ ] Supabase Dashboard で Email Auth を有効化（手動）
-- [ ] Supabase Dashboard で Google OAuth Provider を設定（Client ID / Secret）（手動）
-- [ ] Site URL / Redirect URLs に `http://localhost:3000/auth/callback` と本番URLを登録（手動）
+- [x] Supabase Dashboard で Email Auth を有効化（手動）
+- [x] Supabase Dashboard で Google OAuth Provider を設定（Client ID / Secret）（手動）
+- [x] Site URL / Redirect URLs に `http://localhost:3000/auth/callback` と本番URLを登録（手動）
 
 ### Supabase クライアント
 
@@ -61,16 +61,14 @@
 
 ### 動作確認
 
-実機テストは Supabase Dashboard 設定（Email Auth 有効化 + Google OAuth + Redirect URLs）後に実施する。
-
-- [ ] Email でサインアップ → 確認メール → ログインできる
-- [ ] Google OAuth でログインできる
-- [ ] `profiles` レコードが自動作成される（`handle_new_user` トリガー）
-- [ ] ログアウトできる
-- [ ] パスワードリセットメールが届く
-- [ ] 未ログインで `/mypage` にアクセスすると `/auth/login` にリダイレクトされる
-- [ ] user ロールで `/admin` にアクセスすると `/` にリダイレクトされる
-- [ ] admin ロール（手動付与）で `/admin` にアクセスできる
+- [x] Email でサインアップ → 確認メール → ログインできる
+- [x] Google OAuth でログインできる
+- [x] `profiles` レコードが自動作成される（`handle_new_user` トリガー）
+- [x] ログアウトできる（チケット 04 で UI 実装するまで POST フォーム生成で確認）
+- [x] パスワードリセットメールが届く
+- [x] 未ログインで `/mypage` にアクセスすると `/auth/login` にリダイレクトされる
+- [x] user ロールで `/admin` にアクセスすると `/` にリダイレクトされる
+- [x] admin ロール（手動付与）で `/admin` にアクセスできる
 
 ## DO / DON'T（再確認）
 
@@ -82,8 +80,8 @@
 
 ## 完了基準
 
-- [ ] ログイン/ログアウト/サインアップが動作する（Dashboard 設定後の実機テスト待ち）
-- [x] Middleware で `/mypage`, `/admin` が保護されている（コード上は完成）
+- [x] ログイン/ログアウト/サインアップが動作する（実機検証済み）
+- [x] Middleware で `/mypage`, `/admin` が保護されている
 - [x] admin 権限チェックが効く（middleware + requireAdmin の 2 箇所で実装）
 
 ## 参考
