@@ -145,7 +145,10 @@ export async function searchSpots(params: SpotSearchParams): Promise<SpotSearchP
     `,
     )
     .eq('is_published', true)
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    // embedded resource にも deleted_at フィルタ。spot_flowers / flowers の RLS でも防げるが
+    // CLAUDE.md「全クエリで deleted_at IS NULL 必須」に揃える
+    .filter('spot_flowers.deleted_at', 'is', null);
 
   if (params.prefecture) {
     query = query.eq('prefecture_id', params.prefecture);
@@ -177,7 +180,8 @@ export async function searchSpots(params: SpotSearchParams): Promise<SpotSearchP
       )
       .eq('is_published', true)
       .is('deleted_at', null)
-      .eq('spot_flowers.flower_id', flowerId);
+      .eq('spot_flowers.flower_id', flowerId)
+      .filter('spot_flowers.deleted_at', 'is', null);
 
     if (params.prefecture) query = query.eq('prefecture_id', params.prefecture);
     else if (params.region) query = query.eq('prefectures.region', params.region);
