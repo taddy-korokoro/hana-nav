@@ -25,7 +25,7 @@
 - `app/auth/reset-password/page.tsx`
 - `app/auth/update-password/page.tsx`
 - `app/auth/callback/route.ts`
-- `app/auth/logout/route.ts`
+- `app/auth/logout/actions.ts`
 
 ## TODO
 
@@ -52,7 +52,7 @@
 - [x] `/auth/reset-password`（リセットメール送信）
 - [x] `/auth/update-password`（新パスワード設定）
 - [x] `/auth/callback/route.ts`（`exchangeCodeForSession`）
-- [x] `/auth/logout/route.ts`（POST、`signOut` → `/auth/login` リダイレクト）
+- [x] `/auth/logout/actions.ts`（Server Action：`signOut` → `revalidatePath('/', 'layout')` → `/auth/login` リダイレクト）
 
 ### 共通ユーティリティ
 

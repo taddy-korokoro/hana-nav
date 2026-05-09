@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { logout } from '@/app/auth/logout/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -65,7 +66,7 @@ export function UserMenu({ email, username, avatarUrl, isAdmin }: UserMenuProps)
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild variant="destructive">
-          <form action="/auth/logout" method="post" className="contents">
+          <form action={logout} className="contents">
             <button type="submit" className="flex w-full items-center gap-1.5 text-left">
               <LogoutIcon className="size-4" />
               ログアウト

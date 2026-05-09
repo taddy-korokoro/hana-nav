@@ -16,7 +16,7 @@
 - `components/layout/site-header.tsx` — Server Component。`getUser()` + `profiles.role` を引いてログイン状態と admin リンクを出し分け
 - `components/layout/site-footer.tsx`
 - `components/layout/mobile-nav.tsx` — Client Component。shadcn `Sheet` で右からスライドイン
-- `components/layout/user-menu.tsx` — Client Component。shadcn `DropdownMenu` + ログアウト用 `<form action="/auth/logout" method="post">`
+- `components/layout/user-menu.tsx` — Client Component。shadcn `DropdownMenu` + ログアウト用 `<form action={logout}>`（Server Action）
 - `components/layout/nav-link.tsx` — `usePathname` でアクティブ判定する小さな Client Component
 - `components/layout/nav-items.ts` — Header / MobileNav 共通のナビ定義
 - `components/layout/icons.tsx` — レイアウト用 SVG アイコン
