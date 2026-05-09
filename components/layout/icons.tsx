@@ -81,3 +81,17 @@ export const ShieldIcon = (p: Props) => (
     <path d="M12 3 4 6v6c0 4.5 3.4 8.5 8 9 4.6-.5 8-4.5 8-9V6l-8-3Z" />
   </StrokeIcon>
 );
+
+export const CalendarIcon = (p: Props) => (
+  <StrokeIcon {...p}>
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </StrokeIcon>
+);
+
+export const CameraIcon = (p: Props) => (
+  <StrokeIcon {...p}>
+    <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7H7l1.6-2.2A1 1 0 0 1 9.4 4.4h5.2a1 1 0 0 1 .8.4L17 7h2.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-9Z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </StrokeIcon>
+);
