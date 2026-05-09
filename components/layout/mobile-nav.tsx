@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { logout } from '@/app/auth/logout/actions';
 import {
   Sheet,
   SheetClose,
@@ -97,7 +98,7 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                   </Link>
                 </SheetClose>
               )}
-              <form action="/auth/logout" method="post">
+              <form action={logout}>
                 <button
                   type="submit"
                   className="flex w-full items-center gap-3 rounded-card px-3 py-3 text-base text-destructive hover:bg-destructive/10"
