@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { CameraIcon } from '@/components/layout/icons';
+import { COPY } from '@/lib/constants/copy';
 import type { SpotImage } from '@/lib/queries/spotDetail';
 
 type Props = {
@@ -22,7 +23,7 @@ export function SpotImageGallery({ images, spotName }: Props) {
       <div className="grid aspect-[16/9] w-full place-items-center overflow-hidden rounded-card-lg bg-gradient-to-br from-pink-300 via-rose-200 to-orange-100">
         <div className="text-center text-white/85">
           <CameraIcon className="mx-auto size-10" />
-          <p className="mt-2 text-sm font-medium">写真を準備中です</p>
+          <p className="mt-2 text-sm font-medium">{COPY.spotDetail.gallery.preparing}</p>
         </div>
       </div>
     );
@@ -35,7 +36,7 @@ export function SpotImageGallery({ images, spotName }: Props) {
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-card-lg bg-surface-2">
         <Image
           src={active.url}
-          alt={active.caption ?? `${spotName}の写真`}
+          alt={active.caption ?? COPY.common.photoAlt(spotName)}
           fill
           priority
           className="object-cover"
@@ -57,7 +58,7 @@ export function SpotImageGallery({ images, spotName }: Props) {
                 key={img.id}
                 type="button"
                 onClick={() => setActiveIndex(i)}
-                aria-label={`${i + 1}枚目を表示`}
+                aria-label={COPY.spotDetail.gallery.showThumbnail(i + 1)}
                 aria-pressed={isActive}
                 className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-card transition ${
                   isActive
@@ -67,7 +68,7 @@ export function SpotImageGallery({ images, spotName }: Props) {
               >
                 <Image
                   src={img.url}
-                  alt={img.caption ?? `${spotName}のサムネイル ${i + 1}`}
+                  alt={img.caption ?? COPY.spotDetail.gallery.thumbnailAlt(spotName, i + 1)}
                   fill
                   className="object-cover"
                   sizes="112px"

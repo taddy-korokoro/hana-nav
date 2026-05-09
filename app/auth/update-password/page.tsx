@@ -1,17 +1,11 @@
 import type { Metadata } from 'next';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import { FormError, FormField, PrimaryButton } from '@/app/auth/_components/form-fields';
+import { COPY } from '@/lib/constants/copy';
 import { updatePassword } from './actions';
 
 export const metadata: Metadata = {
-  title: 'パスワード更新',
-};
-
-const errorMessages: Record<string, string> = {
-  invalid_input: '入力内容に誤りがあります。',
-  password_mismatch: 'パスワードが一致しません。',
-  password_too_short: 'パスワードは 8 文字以上で入力してください。',
-  update_failed: 'パスワードの更新に失敗しました。もう一度お試しください。',
+  title: COPY.auth.updatePassword.metaTitle,
 };
 
 export default async function UpdatePasswordPage({
@@ -22,15 +16,15 @@ export default async function UpdatePasswordPage({
   const { error } = await searchParams;
   return (
     <AuthCard
-      eyebrow="Update"
-      title="新しいパスワードを設定"
-      description="リセットメールから遷移したセッションで新しいパスワードを設定します。"
+      eyebrow={COPY.auth.updatePassword.eyebrow}
+      title={COPY.auth.updatePassword.title}
+      description={COPY.auth.updatePassword.description}
     >
-      <FormError message={error ? errorMessages[error] : null} />
+      <FormError message={error ? COPY.auth.updatePassword.errors[error] : null} />
 
       <form action={updatePassword} className="mt-4 space-y-4">
         <FormField
-          label="新しいパスワード（8 文字以上）"
+          label={COPY.auth.updatePassword.newPasswordLabel}
           name="password"
           type="password"
           minLength={8}
@@ -38,14 +32,14 @@ export default async function UpdatePasswordPage({
           autoComplete="new-password"
         />
         <FormField
-          label="新しいパスワード（確認）"
+          label={COPY.auth.updatePassword.newPasswordConfirmLabel}
           name="password_confirm"
           type="password"
           minLength={8}
           required
           autoComplete="new-password"
         />
-        <PrimaryButton type="submit">パスワードを更新する</PrimaryButton>
+        <PrimaryButton type="submit">{COPY.auth.updatePassword.submit}</PrimaryButton>
       </form>
     </AuthCard>
   );

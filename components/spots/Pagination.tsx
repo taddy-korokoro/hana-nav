@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { COPY } from '@/lib/constants/copy';
 
 type Props = {
   page: number;
@@ -28,14 +29,14 @@ export function Pagination({ page, totalPages, buildHref }: Props) {
   }
 
   return (
-    <nav className="mt-10 flex items-center justify-center gap-2" aria-label="ページネーション">
+    <nav className="mt-10 flex items-center justify-center gap-2" aria-label={COPY.pagination.aria}>
       {page > 1 && (
         <Link
           href={buildHref(page - 1)}
           rel="prev"
           className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-ink hover:bg-ink hover:text-white"
         >
-          前へ
+          {COPY.pagination.prev}
         </Link>
       )}
 
@@ -69,7 +70,7 @@ export function Pagination({ page, totalPages, buildHref }: Props) {
           rel="next"
           className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-ink hover:bg-ink hover:text-white"
         >
-          次へ
+          {COPY.pagination.next}
         </Link>
       )}
     </nav>
