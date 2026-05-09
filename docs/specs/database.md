@@ -5,6 +5,9 @@
 - **論理削除**：物理削除は行わない。`deleted_at TIMESTAMPTZ DEFAULT NULL` で管理。有効データは `deleted_at IS NULL` のみ。
 - **全クエリで `WHERE deleted_at IS NULL` を必須とする**。
 - `updated_at` は共通トリガーで自動更新。
+- **RLS の SELECT ポリシーには `deleted_at IS NULL` を入れない**。論理削除（`UPDATE ... SET deleted_at = NOW()`）時に PostgREST の RETURNING が更新後の行を SELECT で取り戻そうとし、SELECT ポリシー条件を満たさず「new row violates row-level security policy」になるため。フィルタは必ずアプリ側 (`.is('deleted_at', null)`) で行う。
+- **UPDATE ポリシーには `USING` と同じ式を `WITH CHECK` にも明示する**。省略時の挙動は実環境で揺れがあるため、明示するのを既定ルールとする。
+- **本人が直接 UPDATE するテーブルのみ上記 RLS 修正が必要**。具体的には `profiles`（退会・プロフィール編集）、`reviews`（投稿・編集・本人削除）、`bookmarks`（解除）の 3 つだけ。それ以外（`flowers` / `flower_aliases` / `spots` / `spot_flowers` / `images` / `ai_usage_logs`）は admin 画面 / サーバー処理が **Service Role キーで操作する前提**であり、Service Role は RLS をバイパスするので SELECT ポリシーに `deleted_at IS NULL` が残っていても論理削除 UPDATE は成功する。admin 系チケット（15〜17）の実装時には「Service Role を使うこと」を確認すること。authenticated ロールで UPDATE する設計に変えた場合は同じ修正（SELECT から `deleted_at IS NULL` を外す＋UPDATE WITH CHECK 明示）が必須になる。
 
 ```sql
 -- 共通関数
@@ -509,15 +512,18 @@ CREATE TRIGGER set_updated_at_bookmarks
 
 ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
 
+-- SELECT ポリシーに deleted_at IS NULL を入れない（共通ルール参照）。
 CREATE POLICY "Users can view own bookmarks"
   ON bookmarks FOR SELECT
-  USING (auth.uid() = user_id AND deleted_at IS NULL);
+  USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert own bookmarks"
   ON bookmarks FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own bookmarks"
-  ON bookmarks FOR UPDATE USING (auth.uid() = user_id);
+  ON bookmarks FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 ```
 
 ### `reviews`
