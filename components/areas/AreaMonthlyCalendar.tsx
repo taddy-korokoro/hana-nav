@@ -1,8 +1,18 @@
+'use client';
+
 import Link from 'next/link';
+import { useSyncExternalStore } from 'react';
 import { COPY } from '@/lib/constants/copy';
 import type { AreaMonthlyCalendar as AreaMonthlyCalendarData } from '@/lib/queries/areas';
 
 const TOP_FLOWERS_PER_MONTH = 6;
+
+// セッション中に月が変わるシナリオは無視するので subscribe は no-op で十分。
+// useSyncExternalStore のサーバ snapshot を null にすることで SSR とハイドレーション時には
+// 「ハイライトなし」を返し、クライアントマウント後に閲覧時刻ベースの月で再レンダリングされる。
+const subscribe = () => () => {};
+const getCurrentMonth = () => new Date().getMonth() + 1;
+const getServerCurrentMonth = () => null;
 
 export function AreaMonthlyCalendar({
   prefectureId,
@@ -11,7 +21,12 @@ export function AreaMonthlyCalendar({
   prefectureId: number;
   monthly: AreaMonthlyCalendarData[];
 }) {
-  const currentMonth = new Date().getMonth() + 1;
+  // 親 page.tsx に `revalidate = 604800`（7 日）が設定されているため、Server 側で `new Date()` を
+  // 呼ぶと ISR キャッシュ生成時の月で固定され、月またぎ後最大 7 日間「前月」が今月として
+  // ハイライトされ続ける。当月判定は閲覧時刻に依存するロジックなので、useSyncExternalStore で
+  // クライアント時刻に切り替える（hydration mismatch も回避できる React 18+ の作法）。
+  const currentMonth = useSyncExternalStore(subscribe, getCurrentMonth, getServerCurrentMonth);
+
   const hasAny = monthly.some((m) => m.flowers.length > 0);
 
   if (!hasAny) {
