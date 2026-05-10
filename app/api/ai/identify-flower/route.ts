@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { createClient as createServiceClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
@@ -21,12 +21,19 @@ const RATE_LIMIT_ANON = 1;
 const RATE_LIMIT_AUTH = 3;
 const RATE_LIMIT_REWARD_BONUS = 5;
 
-const supabaseAdmin = createServiceClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
+// CLAUDE.md「Supabase クライアントはリクエストごとに新規生成する（モジュール
+// スコープでキャッシュしない）」に揃えるため、Service Role / Gemini いずれも
+// リクエスト時に初期化する。Service Role はクッキー非依存だが規約整合性を優先。
+function getSupabaseAdmin() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
+function getGenAI() {
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
+}
 
 type RateLimitInfo = {
   allowed: boolean;
@@ -36,6 +43,7 @@ type RateLimitInfo = {
 };
 
 async function checkRateLimit(
+  supabaseAdmin: SupabaseClient,
   userId: string | null,
   anonId: string | null,
 ): Promise<RateLimitInfo> {
@@ -117,7 +125,8 @@ export async function GET(request: NextRequest) {
   const userId = user?.id ?? null;
 
   try {
-    const limit = await checkRateLimit(userId, anonId);
+    const supabaseAdmin = getSupabaseAdmin();
+    const limit = await checkRateLimit(supabaseAdmin, userId, anonId);
     return NextResponse.json(
       {
         authenticated: !!userId,
@@ -168,7 +177,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limit = await checkRateLimit(userId, anonId);
+    const supabaseAdmin = getSupabaseAdmin();
+    const limit = await checkRateLimit(supabaseAdmin, userId, anonId);
     if (!limit.allowed) {
       return NextResponse.json(
         {
@@ -185,7 +195,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await imageFile.arrayBuffer());
     const base64Image = buffer.toString('base64');
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent([
       PROMPT,
       { inlineData: { mimeType: imageFile.type || 'image/jpeg', data: base64Image } },
@@ -223,11 +233,11 @@ export async function POST(request: NextRequest) {
 
     if (!flowerMatch && flowerNameForMatch) {
       // 2. flower_aliases.alias に完全一致
-      flowerMatch = await matchByAlias(flowerNameForMatch);
+      flowerMatch = await matchByAlias(supabaseAdmin, flowerNameForMatch);
     }
     if (!flowerMatch && flowerVarietyForMatch) {
       // 3. flower_variety で alias 検索
-      flowerMatch = await matchByAlias(flowerVarietyForMatch);
+      flowerMatch = await matchByAlias(supabaseAdmin, flowerVarietyForMatch);
     }
 
     let flowerImages: { id: string; url: string; caption: string | null; display_order: number }[] =
@@ -246,7 +256,7 @@ export async function POST(request: NextRequest) {
 
     let recommendedSpots: RecommendedSpot[] = [];
     if (flowerMatch) {
-      recommendedSpots = await fetchRecommendedSpots(flowerMatch.id);
+      recommendedSpots = await fetchRecommendedSpots(supabaseAdmin, flowerMatch.id);
     }
 
     const { error: logError } = await supabaseAdmin.from('ai_usage_logs').insert({
@@ -303,7 +313,10 @@ type RecommendedSpot = {
   cover_image_url: string | null;
 };
 
-async function matchByAlias(alias: string): Promise<FlowerRow | null> {
+async function matchByAlias(
+  supabaseAdmin: SupabaseClient,
+  alias: string,
+): Promise<FlowerRow | null> {
   const { data, error } = await supabaseAdmin
     .from('flower_aliases')
     .select(
@@ -333,7 +346,10 @@ async function matchByAlias(alias: string): Promise<FlowerRow | null> {
   };
 }
 
-async function fetchRecommendedSpots(flowerId: string): Promise<RecommendedSpot[]> {
+async function fetchRecommendedSpots(
+  supabaseAdmin: SupabaseClient,
+  flowerId: string,
+): Promise<RecommendedSpot[]> {
   const { data, error } = await supabaseAdmin
     .from('spots')
     .select(
