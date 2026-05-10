@@ -45,9 +45,10 @@ TZ=Asia/Tokyo
 
 **バケット構成**
 
-| バケット | 公開   | パス規約                                             | 備考                                                                         |
-| -------- | ------ | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `images` | public | `{owner_type}/{owner_id}/{display_order}-{slug}.jpg` | `images` テーブルと同名。`owner_type` ('spot' / 'flower') で物理的に分かれる |
+| バケット  | 公開   | パス規約                                             | 備考                                                                                             |
+| --------- | ------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `images`  | public | `{owner_type}/{owner_id}/{display_order}-{slug}.jpg` | `images` テーブルと同名。`owner_type` ('spot' / 'flower') で物理的に分かれる                     |
+| `avatars` | public | `{user_id}/avatar-{timestamp}.jpg`                   | プロフィール画像。RLS で `auth.uid()::text = (storage.foldername(name))[1]` のフォルダのみ書込可 |
 
 **バケットを 1 本に統一した理由**
 
@@ -77,6 +78,50 @@ TZ=Asia/Tokyo
 **Free tier 容量の見積もり**
 
 Supabase Free は Storage 1GB。flower 32 種 × 平均 2 枚 + spot 数百件 × 平均 2 枚 を合計しても 200KB/枚換算で数百 MB に収まる見込み（Pro 移行時の閾値判断はチケット 16 で確認）。
+
+### `avatars` バケット初期化（チケット 13 で必要）
+
+プロフィールアバター用の `avatars` バケットは MVP の `/mypage/profile` で使う。Dashboard → Storage → New bucket、または以下の SQL を Supabase SQL Editor で実行：
+
+```sql
+-- バケット作成（public read）
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('avatars', 'avatars', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp'])
+ON CONFLICT (id) DO NOTHING;
+
+-- 公開読み取り
+CREATE POLICY "Avatars are publicly readable"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'avatars');
+
+-- 自分のフォルダ配下のみ INSERT / UPDATE / DELETE 可
+CREATE POLICY "Users can upload to own avatar folder"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can update own avatars"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  )
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can delete own avatars"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+```
+
+クライアントは `createBrowserClient` で直接 `avatars/{user.id}/avatar-{ts}.jpg` にアップロードし、`getPublicUrl()` で得た URL を Server Action `setAvatarUrl` に渡して `profiles.avatar_url` を更新する。古いファイルの物理削除は MVP では行わない（Storage 容量が問題になったら lifecycle policy を追加）。
 
 ## タイムゾーン
 
