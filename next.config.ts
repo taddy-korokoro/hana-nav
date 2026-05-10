@@ -5,15 +5,24 @@ const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : undefined
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseHostname
-      ? [
-          {
-            protocol: 'https',
-            hostname: supabaseHostname,
-            pathname: '/storage/v1/object/public/**',
-          },
-        ]
-      : [],
+    remotePatterns: [
+      ...(supabaseHostname
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: supabaseHostname,
+              pathname: '/storage/v1/object/public/**',
+            },
+          ]
+        : []),
+      // チケット 11：花マスターの代表画像（暫定的に外部ホットリンク）。
+      // 本来は Supabase Storage に再アップして上の supabase 設定で済ませたい。
+      {
+        protocol: 'https' as const,
+        hostname: 'hanamap.com',
+        pathname: '/media/**',
+      },
+    ],
   },
 };
 
