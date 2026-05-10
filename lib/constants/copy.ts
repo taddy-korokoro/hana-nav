@@ -596,6 +596,80 @@ export const COPY = {
   },
 
   // -----------------------------------------------------------------------------------
+  // マイページ（/mypage, /mypage/profile）
+  // -----------------------------------------------------------------------------------
+  mypage: {
+    top: {
+      metaTitle: 'マイページ',
+      eyebrow: 'My page',
+      title: 'マイページ',
+      description: 'ブックマーク・レビュー・プロフィールをここから管理できます。',
+      roleLabels: {
+        admin: '管理者',
+        user: '一般ユーザー',
+      } as Record<string, string>,
+      anonymousName: '名前未設定',
+      summary: {
+        bookmarks: 'ブックマーク',
+        reviews: 'レビュー',
+        countSuffix: '件',
+      },
+      menu: {
+        bookmarksTitle: 'ブックマーク',
+        bookmarksDescription: '保存したスポットの一覧。見頃の時期を逃さずチェック。',
+        reviewsTitle: '自分のレビュー',
+        reviewsDescription: '訪れたスポットの感想を見直したり、追記できます。',
+        profileTitle: 'プロフィール編集',
+        profileDescription: 'ユーザー名・アバター画像を変更できます。',
+        adminTitle: '管理画面',
+        adminDescription: 'スポット・花マスター・ユーザーを管理する管理者専用画面。',
+      },
+      withdraw: {
+        title: '退会する',
+        description:
+          '退会するとブックマークが見られなくなります。投稿したレビューは「退会済ユーザー」として残ります。',
+        confirmCheck: '上記に同意して退会します',
+        confirmType: (phrase: string) => `下記の確認テキストに「${phrase}」と入力してください`,
+        phrase: 'taikai',
+        submit: '退会する',
+        cancel: 'キャンセル',
+        errors: {
+          invalid_input: '確認テキストが一致しません。',
+          withdraw_failed: '退会処理に失敗しました。時間を置いて再度お試しください。',
+        } as Record<string, string>,
+      },
+    },
+    profile: {
+      metaTitle: 'プロフィール編集',
+      eyebrow: 'Profile',
+      title: 'プロフィール編集',
+      description: 'ユーザー名とアバター画像を編集できます。',
+      backToMypage: 'マイページへ戻る',
+      usernameLabel: 'ユーザー名',
+      usernameHint: '3〜30 文字。半角英数・日本語・ハイフン・アンダースコアが使えます。',
+      avatarLabel: 'アバター画像',
+      avatarHint: '5MB 以下の JPEG / PNG / WebP。アップロードと同時に保存されます。',
+      avatarChange: '画像を選ぶ',
+      avatarClear: 'アバターを削除',
+      avatarUploading: 'アップロード中…',
+      avatarRemoving: '削除中…',
+      submit: '保存する',
+      submitting: '保存中…',
+      success: 'プロフィールを更新しました',
+      errors: {
+        invalid_username: 'ユーザー名は 3〜30 文字で入力してください。',
+        username_taken: 'そのユーザー名は既に使われています。',
+        invalid_input: '入力内容に誤りがあります。',
+        update_failed: 'プロフィールの更新に失敗しました。',
+        avatar_invalid_type: 'アップロードできる画像は JPEG / PNG / WebP のみです。',
+        avatar_too_large: '画像サイズが大きすぎます（5MB 以下にしてください）。',
+        avatar_upload_failed: '画像のアップロードに失敗しました。',
+        avatar_remove_failed: 'アバター画像の削除に失敗しました。',
+      } as Record<string, string>,
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
   // 認証画面
   // -----------------------------------------------------------------------------------
   auth: {
