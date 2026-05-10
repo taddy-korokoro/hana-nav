@@ -477,6 +477,86 @@ export const COPY = {
   },
 
   // -----------------------------------------------------------------------------------
+  // AI 花判定（/identify, /identify/result）
+  // -----------------------------------------------------------------------------------
+  identify: {
+    metaTitle: 'AI 花判定',
+    metaDescription:
+      '目の前の花を撮影 / アップロードすると、AI が花の名前・見頃・特徴を判定します。',
+    eyebrow: 'AI Identify',
+    title: '目の前の花を AI で判定',
+    description:
+      '撮影した花の写真をアップロードすると、花の名前・特徴・関連する花畑スポットを AI がご案内します。',
+    privacy:
+      '画像はサーバーで AI 判定の処理にのみ利用し、保存しません。判定結果の精度は撮影条件により異なります。',
+    upload: {
+      camera: 'カメラで撮る',
+      pickFile: 'ファイルから選ぶ',
+      dropHere: 'ここにドラッグ &amp; ドロップでも OK',
+      preview: 'プレビュー',
+      retake: '撮り直す',
+      submit: '判定する',
+      submitting: '判定中…（最大 30 秒）',
+      tips: 'コツ：花のアップを 1 種類だけフレームに収めると精度が上がります。',
+    },
+    rateLimit: {
+      anonHeading: '今日の利用状況（匿名）',
+      authHeading: '今日の利用状況',
+      remaining: (remaining: number, limit: number) => `残り ${remaining} / ${limit} 回`,
+      reachedTitle: '本日の上限に達しました',
+      reachedDescriptionAnon:
+        'ログインすると 1 日 3 回まで利用できます。明日 0 時にリセットされます。',
+      reachedDescriptionAuth: '明日 0 時にリセットされます。',
+      loginCta: 'ログインして回数を増やす',
+      anonHint: 'ログインすると 1 日 3 回まで判定できます。',
+    },
+    error: {
+      genericTitle: '判定に失敗しました',
+      generic: 'しばらく時間を置いてから再度お試しください。',
+      parse: 'AI の応答を読み取れませんでした。別の画像でお試しください。',
+      tooLarge: '画像サイズが大きすぎます。別の画像でお試しください。',
+      missingKey: 'AI 判定の準備中です。しばらくお待ちください。',
+      anonRequired: '識別子の取得に失敗しました。ブラウザのストレージを許可してください。',
+      retry: 'もう一度試す',
+    },
+    result: {
+      metaTitle: 'AI 花判定の結果',
+      eyebrow: 'AI Result',
+      title: '判定結果',
+      noData: {
+        title: '判定結果がありません',
+        description: '判定ページに戻り、画像をアップロードしてください。',
+        cta: '判定ページへ戻る',
+      },
+      confidence: {
+        label: '信頼度',
+        formatted: (confidence: number) => `${Math.round(confidence * 100)}%`,
+        lowNotice: '信頼度が低い結果です。撮り直しや別アングルもお試しください。',
+      },
+      bloomStatus: '開花状況',
+      sections: {
+        description: '特徴',
+        flowerLanguage: '花言葉',
+        funFact: '豆知識',
+        viewingMonths: '一般的な見頃',
+        recommendedSpots: 'この花が見られるスポット',
+      },
+      notFlower: {
+        title: '花として認識できませんでした',
+        description: '別の角度や明るい場所で撮り直してみてください。',
+      },
+      unmatched: {
+        title: 'マスターに未登録の花です',
+        description: '特徴のみ表示しています。今後マスターに追加していきます。',
+      },
+      noSpots: '関連スポットの登録はまだありません。',
+      flowerLink: '花の詳細を見る',
+      storyCardCta: '旅のしおりを作る',
+      backToIdentify: 'もう一度判定する',
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
   // 認証画面
   // -----------------------------------------------------------------------------------
   auth: {

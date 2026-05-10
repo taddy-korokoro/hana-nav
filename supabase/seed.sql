@@ -209,3 +209,17 @@ ON CONFLICT (alias) DO NOTHING;
 --     FROM public.flowers f
 --    WHERE f.name = '桜' AND f.deleted_at IS NULL;
 -- ----------------------------------------------------------------------------
+
+-- 桜の代表画像（チケット 11：AI 判定結果 UI の検証用）
+-- 外部サイトからのホットリンク。本来は Supabase Storage に再アップする想定。
+INSERT INTO public.images (owner_type, owner_id, url, caption, display_order)
+SELECT 'flower', f.id,
+       'https://hanamap.com/media/002/202203/%E4%B8%80%E5%BF%83%E8%A1%8C%E3%81%AE%E5%A4%A7%E6%A1%9C.jpg?v=20220319110505',
+       '一心行の大桜',
+       0
+  FROM public.flowers f
+ WHERE f.name = '桜' AND f.deleted_at IS NULL
+   AND NOT EXISTS (
+     SELECT 1 FROM public.images i
+      WHERE i.owner_type = 'flower' AND i.owner_id = f.id AND i.deleted_at IS NULL
+   );
