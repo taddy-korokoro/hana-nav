@@ -64,22 +64,31 @@ export function IdentifyUploader() {
     };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
+  // プレビューは data URL（FileReader）で保持する。`URL.createObjectURL` は
+  // iOS Safari + LAN IP HTTP や HEIC 入力で挙動が安定しないため、互換性の
+  // 高い data URL に統一している。
   const handleFile = (file: File | null) => {
     if (!file) return;
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
     setErrorKey(null);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setPreviewUrl(reader.result);
+      } else {
+        console.error('[IdentifyUploader] FileReader returned non-string', reader.result);
+        setErrorKey('generic');
+      }
+    };
+    reader.onerror = () => {
+      console.error('[IdentifyUploader] FileReader failed', reader.error);
+      setErrorKey('generic');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleReset = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setSelectedFile(null);
     setErrorKey(null);
@@ -170,12 +179,24 @@ export function IdentifyUploader() {
         {previewUrl ? (
           <div className="space-y-4">
             <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-card bg-surface-2">
-              {/* next/image だと object URL をうまく扱えないため img で表示 */}
+              {/* next/image は data URL / object URL を扱えないため img で表示 */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt={COPY.identify.upload.preview}
                 className="size-full object-cover"
+                onError={(e) => {
+                  console.error('[IdentifyUploader] preview img failed to load', {
+                    srcPrefix: previewUrl?.slice(0, 64),
+                    selectedFile: selectedFile && {
+                      name: selectedFile.name,
+                      size: selectedFile.size,
+                      type: selectedFile.type,
+                    },
+                    event: e.type,
+                  });
+                  setErrorKey('generic');
+                }}
               />
             </div>
             <div className="flex flex-wrap gap-3">
