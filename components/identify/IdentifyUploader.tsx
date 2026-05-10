@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
 import { getAnonymousId } from '@/lib/utils/anonymousId';
-import { hashImage } from '@/lib/utils/imageHash';
 import { resizeImage } from '@/lib/utils/imageResize';
 import { RateLimitBanner } from './RateLimitBanner';
 import { IDENTIFY_RESULT_STORAGE_KEY } from './storage';
@@ -84,12 +83,13 @@ export function IdentifyUploader() {
     try {
       const anonId = getAnonymousId();
       const resized = await resizeImage(selectedFile);
-      const imageHash = await hashImage(resized);
 
+      // 同一画像 24h キャッシュ（チケット 11 の optional 項目）を実装する際に
+      // FormData へ `imageHash = await hashImage(resized)` を追加する。
+      // 現状はサーバー側で読まれていないため計算コストだけが乗るので送らない。
       const formData = new FormData();
       formData.append('image', resized);
       formData.append('anonId', anonId);
-      formData.append('imageHash', imageHash);
 
       const res = await fetch('/api/ai/identify-flower', {
         method: 'POST',
