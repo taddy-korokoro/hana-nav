@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { setAvatarUrl } from '@/app/(site)/mypage/profile/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,6 +32,7 @@ type Props = {
  * 「アバターを削除」は profiles.avatar_url を NULL に戻すのみ。
  */
 export function AvatarUploader({ userId, initialUrl, initialFallback }: Props) {
+  const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialUrl);
   const [busy, setBusy] = useState<'idle' | 'uploading' | 'removing'>('idle');
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -95,9 +97,10 @@ export function AvatarUploader({ userId, initialUrl, initialFallback }: Props) {
       localObjectUrlRef.current = objUrl;
       setPreviewUrl(objUrl);
       setBusy('idle');
+      // ヘッダーのアバターなど Server Component を再取得（setAvatarUrl 内で revalidatePath 済）。
+      // window.location.reload() はフルページリロードで SPA ナビゲーションをバイパスするため使わない。
       startTransition(() => {
-        // ヘッダーのアバターを更新
-        window.location.reload();
+        router.refresh();
       });
     } catch (e) {
       console.error('[AvatarUploader] unexpected error', e);
@@ -122,7 +125,7 @@ export function AvatarUploader({ userId, initialUrl, initialFallback }: Props) {
     setPreviewUrl(null);
     setBusy('idle');
     startTransition(() => {
-      window.location.reload();
+      router.refresh();
     });
   }
 
