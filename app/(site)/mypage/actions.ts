@@ -17,9 +17,13 @@ import { createClient } from '@/lib/supabase/server';
  * ここでも明示的に user.id を where 句に入れる（防御的多層化）。
  */
 export async function withdraw(formData: FormData) {
+  // 同意チェックボックス（クライアントは disabled で送信を抑止しているが、JS 無効化や
+  // curl 等で直接 POST した場合に同意なしの退会が成立してしまうため、サーバー側でも検証）。
+  const agreed = formData.get('agreed');
   const confirmPhrase = formData.get('confirm');
 
   if (
+    agreed !== 'on' ||
     typeof confirmPhrase !== 'string' ||
     confirmPhrase.trim() !== COPY.mypage.top.withdraw.phrase
   ) {

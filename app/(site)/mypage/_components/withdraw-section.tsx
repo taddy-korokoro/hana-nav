@@ -58,6 +58,7 @@ export function WithdrawSection({ errorMessage }: { errorMessage?: string | null
         <label className="flex items-start gap-2 text-sm">
           <input
             type="checkbox"
+            name="agreed"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
             className="mt-0.5 size-4 accent-brand"
