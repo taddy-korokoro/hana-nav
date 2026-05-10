@@ -5,6 +5,12 @@
  */
 export const IDENTIFY_RESULT_STORAGE_KEY = 'hana-nav:identify-result';
 
+/**
+ * 旅のしおり生成（/identify/story）で Canvas に描画するためのユーザー写真。
+ * リサイズ済み JPEG を data URL（base64）として保持する。
+ */
+export const IDENTIFY_USER_IMAGE_STORAGE_KEY = 'hana-nav:identify-user-image';
+
 export type IdentifyApiResult = {
   success: true;
   ai_result: {

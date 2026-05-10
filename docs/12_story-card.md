@@ -14,56 +14,59 @@
 
 ## 関連ファイル
 
-- `app/identify/story/page.tsx`
-- `components/StoryCardGenerator.tsx`
+- `app/(site)/identify/story/page.tsx`
+- `app/(site)/identify/story/loading.tsx`
+- `components/identify/StoryCardGenerator.tsx`
+- `components/identify/storage.ts`（`IDENTIFY_USER_IMAGE_STORAGE_KEY` を追加）
+- `components/identify/IdentifyUploader.tsx`（リサイズ済み画像を sessionStorage に保存）
 - `lib/utils/canvasHelpers.ts`（loadImage / drawImageCover / wrapText）
 
 ## TODO
 
 ### Canvas 描画
 
-- [ ] 1080×1920 の Canvas を準備
-- [ ] ユーザー画像を `cover` でフィット描画
-- [ ] 下部にグラデーションオーバーレイ（透明 → 黒 70%）
-- [ ] 花名（96px bold, white）
-- [ ] 花言葉（42px italic, white95）
-- [ ] スポット名（48px, white90）
-- [ ] 訪問日（36px, white80）
-- [ ] コメント（40px、自動改行）
-- [ ] ロゴ「🌸 hana nav」（右下、bold 32px）
-- [ ] CORS：外部画像は `crossOrigin = 'anonymous'`
+- [x] 1080×1920 の Canvas を準備
+- [x] ユーザー画像を `cover` でフィット描画
+- [x] 下部にグラデーションオーバーレイ（透明 → 黒 70%）
+- [x] 花名（96px bold, white）
+- [x] 花言葉（42px italic, white95）
+- [x] スポット名（48px, white90）
+- [x] 訪問日（36px, white80）
+- [x] コメント（40px、自動改行）
+- [x] ロゴ「🌸 hana nav」（右下、bold 32px）
+- [x] CORS：外部画像は `crossOrigin = 'anonymous'`
 
 ### 入力 UI
 
-- [ ] 花名（AI 判定結果からプリフィル）
-- [ ] スポット名（任意）
-- [ ] 訪問日（デフォルトは今日）
-- [ ] コメント（任意、200文字まで）
+- [x] 花名（AI 判定結果からプリフィル）
+- [x] スポット名（任意）
+- [x] 訪問日（デフォルトは今日）
+- [x] コメント（任意、200文字まで）
 
 ### シェア
 
-- [ ] `navigator.share` + `canShare({ files: [...] })` で SNS 投稿
-- [ ] 非対応端末はダウンロードフォールバック
-- [ ] シェア時のテキスト：`{flower_name}を見つけました🌸 #花ナビ`
+- [x] `navigator.share` + `canShare({ files: [...] })` で SNS 投稿
+- [x] 非対応端末はダウンロードフォールバック
+- [x] シェア時のテキスト：`{flower_name}を見つけました🌸 #花ナビ`
 
 ### モバイル対応
 
-- [ ] 端末性能で重い場合は 1080→720 に解像度ダウン
-- [ ] 生成中ローディング表示
-- [ ] プレビュー画像表示
+- [x] 端末性能で重い場合は 1080→720 に解像度ダウン（`navigator.hardwareConcurrency < 4`）
+- [x] 生成中ローディング表示
+- [x] プレビュー画像表示
 
 ### 動作確認
 
-- [ ] iOS Safari でシェアできる
+- [x] iOS Safari でシェアできる
 - [ ] Android Chrome でシェアできる
-- [ ] PC ブラウザではダウンロード動作になる
-- [ ] 長いコメントが折り返される
-- [ ] 縦長/横長どちらの元画像でも `cover` で美しく収まる
+- [x] PC ブラウザではダウンロード動作になる
+- [x] 長いコメントが折り返される
+- [x] 縦長/横長どちらの元画像でも `cover` で美しく収まる
 
 ## 完了基準
 
-- [ ] しおり画像が生成・プレビュー・シェアできる
-- [ ] AI 判定結果ページから遷移できる
+- [x] しおり画像が生成・プレビュー・シェアできる
+- [x] AI 判定結果ページから遷移できる
 
 ## 参考
 

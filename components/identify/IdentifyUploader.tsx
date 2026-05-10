@@ -7,7 +7,7 @@ import { COPY } from '@/lib/constants/copy';
 import { getAnonymousId } from '@/lib/utils/anonymousId';
 import { resizeImage } from '@/lib/utils/imageResize';
 import { RateLimitBanner } from './RateLimitBanner';
-import { IDENTIFY_RESULT_STORAGE_KEY } from './storage';
+import { IDENTIFY_RESULT_STORAGE_KEY, IDENTIFY_USER_IMAGE_STORAGE_KEY } from './storage';
 
 type RateLimitState = {
   authenticated: boolean;
@@ -22,6 +22,18 @@ const ERROR_KEY_BY_API: Record<string, keyof typeof COPY.identify.error> = {
   gemini_api_key_missing: 'missingKey',
   anon_id_required: 'anonRequired',
 };
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () =>
+      typeof reader.result === 'string'
+        ? resolve(reader.result)
+        : reject(new Error('FileReader returned non-string'));
+    reader.onerror = () => reject(reader.error ?? new Error('FileReader failed'));
+    reader.readAsDataURL(file);
+  });
+}
 
 export function IdentifyUploader() {
   const router = useRouter();
@@ -52,22 +64,31 @@ export function IdentifyUploader() {
     };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
+  // プレビューは data URL（FileReader）で保持する。`URL.createObjectURL` は
+  // iOS Safari + LAN IP HTTP や HEIC 入力で挙動が安定しないため、互換性の
+  // 高い data URL に統一している。
   const handleFile = (file: File | null) => {
     if (!file) return;
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
     setErrorKey(null);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setPreviewUrl(reader.result);
+      } else {
+        console.error('[IdentifyUploader] FileReader returned non-string', reader.result);
+        setErrorKey('generic');
+      }
+    };
+    reader.onerror = () => {
+      console.error('[IdentifyUploader] FileReader failed', reader.error);
+      setErrorKey('generic');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleReset = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setSelectedFile(null);
     setErrorKey(null);
@@ -117,6 +138,17 @@ export function IdentifyUploader() {
       // 結果はクライアントの sessionStorage を介して result ページに渡す。
       // URL クエリだと長すぎ / 画像 URL が露出するため避ける。
       window.sessionStorage.setItem(IDENTIFY_RESULT_STORAGE_KEY, JSON.stringify(json));
+
+      // 旅のしおり（/identify/story）で同じユーザー写真を使うため、
+      // リサイズ済み JPEG を data URL として保持する。サイズは 2MB 以下に
+      // 制限済みなので sessionStorage に収まる（base64 で約 1.3 倍）。
+      try {
+        const dataUrl = await readFileAsDataUrl(resized);
+        window.sessionStorage.setItem(IDENTIFY_USER_IMAGE_STORAGE_KEY, dataUrl);
+      } catch {
+        // しおり機能に進まないユーザーには影響しないため握りつぶす。
+        window.sessionStorage.removeItem(IDENTIFY_USER_IMAGE_STORAGE_KEY);
+      }
       if (json.rate_limit) {
         setRateLimit((prev) =>
           prev
@@ -147,12 +179,24 @@ export function IdentifyUploader() {
         {previewUrl ? (
           <div className="space-y-4">
             <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-card bg-surface-2">
-              {/* next/image だと object URL をうまく扱えないため img で表示 */}
+              {/* next/image は data URL / object URL を扱えないため img で表示 */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt={COPY.identify.upload.preview}
                 className="size-full object-cover"
+                onError={(e) => {
+                  console.error('[IdentifyUploader] preview img failed to load', {
+                    srcPrefix: previewUrl?.slice(0, 64),
+                    selectedFile: selectedFile && {
+                      name: selectedFile.name,
+                      size: selectedFile.size,
+                      type: selectedFile.type,
+                    },
+                    event: e.type,
+                  });
+                  setErrorKey('generic');
+                }}
               />
             </div>
             <div className="flex flex-wrap gap-3">
