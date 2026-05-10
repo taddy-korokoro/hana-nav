@@ -235,7 +235,7 @@ export function IdentifyResult() {
 
       <div className="flex flex-wrap gap-3 border-t border-line pt-6">
         <Button asChild>
-          <Link href="/story-card">{COPY.identify.result.storyCardCta}</Link>
+          <Link href="/identify/story">{COPY.identify.result.storyCardCta}</Link>
         </Button>
         <Button asChild variant="outline">
           <Link href="/identify">{COPY.identify.result.backToIdentify}</Link>
