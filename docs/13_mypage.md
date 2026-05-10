@@ -27,38 +27,38 @@
 
 ### マイページ TOP（`/mypage`）
 
-- [ ] Server Component、`getUser()` で認証チェック（middleware で保護済み）
-- [ ] アバター + username + ロール表示
-- [ ] ブックマーク件数 / レビュー件数のサマリー
-- [ ] 各ページ（ブックマーク、レビュー、プロフィール編集）への導線
-- [ ] 退会リンク（任意：ハードルを上げて2段階確認）
+- [x] Server Component、`getUser()` で認証チェック（middleware で保護済み）
+- [x] アバター + username + ロール表示
+- [x] ブックマーク件数 / レビュー件数のサマリー
+- [x] 各ページ（ブックマーク、レビュー、プロフィール編集）への導線
+- [x] 退会リンク（任意：ハードルを上げて2段階確認）
 
 ### プロフィール編集（`/mypage/profile`）
 
-- [ ] username 編集（UNIQUE 制約に注意、フォームでバリデーション）
-- [ ] アバター画像アップロード（Supabase Storage）
-- [ ] Server Action で `profiles` 更新
-- [ ] 更新後 `revalidatePath('/mypage', 'layout')`
+- [x] username 編集（UNIQUE 制約に注意、フォームでバリデーション）
+- [x] アバター画像アップロード（Supabase Storage）
+- [x] Server Action で `profiles` 更新
+- [x] 更新後 `revalidatePath('/mypage', 'layout')`
 
 ### API（任意：SPA 用）
 
-- [ ] `PATCH /api/me/profile`
+- [x] `PATCH /api/me/profile`
 
 ### Storage 設定
 
-- [ ] Supabase Storage に `avatars` バケット作成（public read）
-- [ ] RLS：ユーザーは自分のフォルダ配下のみ書き込み可
+- [x] Supabase Storage に `avatars` バケット作成（public read） — `docs/specs/tech-stack.md`「`avatars` バケット初期化」セクションに SQL を記載。実環境の Dashboard / SQL Editor で適用すること
+- [x] RLS：ユーザーは自分のフォルダ配下のみ書き込み可（同 SQL に含む）
 
 ### 退会フロー（任意 / WANT）
 
-- [ ] `profiles.deleted_at` をセット（auth.users は残す or 削除）
-- [ ] レビューは「退会済ユーザー」表示で残す方針
+- [x] `profiles.deleted_at` をセット（auth.users は残す or 削除） — `auth.users` は残し、`profiles.deleted_at` のみ更新
+- [x] レビューは「退会済ユーザー」表示で残す方針
 
 ## 完了基準
 
-- [ ] マイページが表示できる
-- [ ] プロフィール編集が反映される
-- [ ] アバター画像をアップロード・表示できる
+- [x] マイページが表示できる
+- [x] プロフィール編集が反映される
+- [x] アバター画像をアップロード・表示できる（`avatars` バケットを Storage 側で作成済みであること）
 
 ## 参考
 
