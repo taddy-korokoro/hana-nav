@@ -8,8 +8,10 @@ import { SpotFlowersList } from '@/components/spots/SpotFlowersList';
 import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
 import { SpotMapPin } from '@/components/spots/SpotMapPin';
 import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
+import { SpotReviewInteraction } from '@/components/reviews/SpotReviewInteraction';
 import { COPY } from '@/lib/constants/copy';
 import { isBookmarked } from '@/lib/queries/bookmarks';
+import { getMyReviewForSpot } from '@/lib/queries/reviews';
 import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
 import { createClient } from '@/lib/supabase/server';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
@@ -17,6 +19,7 @@ import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 export const dynamic = 'force-dynamic';
 
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ edit?: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
@@ -44,8 +47,14 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function SpotDetailPage({ params }: { params: Params }) {
-  const { id } = await params;
+export default async function SpotDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
+  const [{ id }, { edit }] = await Promise.all([params, searchParams]);
   const bundle = await getSpotDetail(id);
   if (!bundle) notFound();
 
@@ -56,7 +65,18 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const bookmarked = user ? await isBookmarked(user.id, spot.id) : false;
+  const [bookmarked, myReview] = user
+    ? await Promise.all([isBookmarked(user.id, spot.id), getMyReviewForSpot(user.id, spot.id)])
+    : [false, null];
+
+  const myReviewInitial = myReview
+    ? {
+        reviewId: myReview.id,
+        rating: myReview.rating,
+        comment: myReview.comment ?? '',
+        visitedAt: myReview.visitedAt ?? '',
+      }
+    : null;
 
   const currentMonth = new Date().getMonth() + 1;
   const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
@@ -184,13 +204,23 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
         </section>
       )}
 
-      <section className="mt-12">
+      <section id="reviews" className="mt-12 scroll-mt-24">
         <SectionHeader
           title={COPY.spotDetail.sections.reviewsTitle}
           eyebrow={COPY.spotDetail.sections.reviewsEyebrow}
         />
-        <div className="mt-4">
-          <SpotReviewSection reviews={reviews} summary={reviewSummary} />
+        <div className="mt-4 space-y-6">
+          <SpotReviewInteraction
+            spotId={spot.id}
+            isAuthenticated={!!user}
+            myReview={myReviewInitial}
+            defaultOpen={edit === 'review' && !!myReviewInitial}
+          />
+          <SpotReviewSection
+            reviews={reviews}
+            summary={reviewSummary}
+            myReviewId={myReview?.id ?? null}
+          />
         </div>
       </section>
 
