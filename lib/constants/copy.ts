@@ -909,6 +909,8 @@ export const COPY = {
         title: '公開待ちスポット',
         description: '出典・公式 URL を確認してから公開してください。',
         empty: '公開待ちのスポットはありません。',
+        officialUrlLabel: '公式 URL',
+        sourceLabel: '出典 (source)',
         previewOfficial: '公式 URL を確認',
         previewSource: '出典を確認',
         publish: '公開する',
