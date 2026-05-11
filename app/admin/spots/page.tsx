@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { DeleteConfirmButton } from '@/app/admin/_components/delete-confirm-button';
+import { DeleteSpotDialog } from '@/app/admin/_components/delete-spot-dialog';
+import { PublishToggle } from '@/app/admin/_components/publish-toggle';
 import { COPY } from '@/lib/constants/copy';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 import { listAdminSpots, listPrefectures } from '@/lib/queries/admin';
-import { softDeleteSpotAction, togglePublishedAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,15 +155,12 @@ export default async function AdminSpotsPage({
                   {formatSeasonRange(s.bestSeasonStart, s.bestSeasonEnd)}
                 </td>
                 <td className="px-4 py-3 align-top">
-                  <span
-                    className={
-                      s.isPublished
-                        ? 'rounded-pill bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand'
-                        : 'rounded-pill bg-surface-2 px-2 py-0.5 text-xs text-ink-muted'
-                    }
-                  >
-                    {s.isPublished ? c.statusBadge.published : c.statusBadge.unpublished}
-                  </span>
+                  <PublishToggle
+                    spotId={s.id}
+                    isPublished={s.isPublished}
+                    publishedLabel={c.statusBadge.published}
+                    unpublishedLabel={c.statusBadge.unpublished}
+                  />
                 </td>
                 <td className="px-4 py-3 align-top text-xs text-ink-faint">
                   {formatDate(s.updatedAt)}
@@ -176,25 +173,15 @@ export default async function AdminSpotsPage({
                     >
                       {c.actions.edit}
                     </Link>
-                    <form action={togglePublishedAction}>
-                      <input type="hidden" name="spot_id" value={s.id} />
-                      <input type="hidden" name="next" value={s.isPublished ? 'false' : 'true'} />
-                      <button
-                        type="submit"
-                        className="rounded-pill border border-line bg-white px-3 py-1 text-xs hover:border-line-strong"
-                      >
-                        {s.isPublished ? c.actions.unpublish : c.actions.publish}
-                      </button>
-                    </form>
-                    <form action={softDeleteSpotAction}>
-                      <input type="hidden" name="spot_id" value={s.id} />
-                      <input type="hidden" name="redirect_to" value="/admin/spots" />
-                      <DeleteConfirmButton
-                        label={c.actions.delete}
-                        confirmText={c.actions.deleteConfirm}
-                        className="rounded-pill border border-destructive/40 bg-white px-3 py-1 text-xs text-destructive hover:bg-destructive/10"
-                      />
-                    </form>
+                    <DeleteSpotDialog
+                      spotId={s.id}
+                      spotName={s.name}
+                      triggerLabel={c.actions.delete}
+                      title={c.actions.deleteDialogTitle}
+                      description={c.actions.deleteDialogDescription}
+                      confirmLabel={c.actions.deleteDialogConfirm}
+                      cancelLabel={c.actions.deleteDialogCancel}
+                    />
                   </div>
                 </td>
               </tr>

@@ -2,6 +2,8 @@
 
 import { useActionState, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Switch } from '@/components/ui/switch';
+import { SpotImageUploadButton } from '@/components/admin/SpotImageUploadButton';
 import { COPY } from '@/lib/constants/copy';
 import type {
   SpotFlowerInput,
@@ -66,6 +68,7 @@ export function SpotEditor({
   const [isPublished, setIsPublished] = useState(initial.isPublished ?? false);
   const [images, setImages] = useState<SpotImageInput[]>(initial.images ?? []);
   const [spotFlowers, setSpotFlowers] = useState<SpotFlowerInput[]>(initial.flowers ?? []);
+  const [uploadErrorKey, setUploadErrorKey] = useState<string | null>(null);
 
   const [state, formAction, pending] = useActionState<FormActionState, FormData>(action, null);
 
@@ -268,41 +271,75 @@ export function SpotEditor({
             onChange={(e) => setEntranceFee(e.target.value)}
           />
         </Field>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            name="is_published"
+        <div className="flex items-center gap-3 text-sm">
+          <Switch
             checked={isPublished}
-            onChange={(e) => setIsPublished(e.target.checked)}
-            className="size-4 rounded border-line"
+            onCheckedChange={setIsPublished}
+            aria-label={COPY.admin.spots.edit.publishLabel}
           />
-          <span>
+          {/* Switch は radix の button なので、フォーム送信値は hidden で揃える */}
+          <input type="hidden" name="is_published" value={isPublished ? 'true' : 'false'} />
+          <span className={isPublished ? 'text-brand' : 'text-ink-muted'}>
             {isPublished
               ? COPY.admin.spots.edit.publishToggleOn
               : COPY.admin.spots.edit.publishToggleOff}
           </span>
-        </label>
+        </div>
       </fieldset>
 
       {/* Images */}
       <fieldset className="space-y-4">
         <legend className="font-serif text-lg font-semibold">{t.sectionImages}</legend>
+        <p className="text-xs text-ink-muted">{t.urlOrUploadHint}</p>
+        {uploadErrorKey && (
+          <p
+            role="alert"
+            className="rounded-card border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+          >
+            {errors[uploadErrorKey] ?? errors.upload_failed}
+          </p>
+        )}
         <div className="space-y-3">
           {images.map((img, idx) => (
-            <div key={`${idx}-${img.url}`} className="rounded-card border border-line bg-white p-4">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto]">
+            <div key={idx} className="rounded-card border border-line bg-white p-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-[auto_1fr_auto]">
+                {/* Preview thumbnail */}
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-card border border-line bg-surface-2">
+                  {img.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={img.url}
+                      alt={t.previewAlt(idx)}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-[10px] text-ink-faint">no image</span>
+                  )}
+                </div>
+
                 <div className="space-y-3">
                   <Field label={t.imageUrlLabel}>
-                    <input
-                      type="url"
-                      className={INPUT_CLASS}
-                      value={img.url}
-                      onChange={(e) =>
-                        setImages((cur) =>
-                          cur.map((it, i) => (i === idx ? { ...it, url: e.target.value } : it)),
-                        )
-                      }
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        className={INPUT_CLASS}
+                        value={img.url}
+                        onChange={(e) =>
+                          setImages((cur) =>
+                            cur.map((it, i) => (i === idx ? { ...it, url: e.target.value } : it)),
+                          )
+                        }
+                      />
+                      <SpotImageUploadButton
+                        label={t.uploadButton}
+                        uploadingLabel={t.uploading}
+                        onUploaded={(url) => {
+                          setUploadErrorKey(null);
+                          setImages((cur) => cur.map((it, i) => (i === idx ? { ...it, url } : it)));
+                        }}
+                        onError={(code) => setUploadErrorKey(code)}
+                      />
+                    </div>
                   </Field>
                   <Field label={t.imageCaptionLabel}>
                     <input
@@ -316,6 +353,7 @@ export function SpotEditor({
                     />
                   </Field>
                 </div>
+
                 <div className="flex shrink-0 flex-col gap-2">
                   <button
                     type="button"
@@ -363,15 +401,26 @@ export function SpotEditor({
             </div>
           ))}
         </div>
-        <button
-          type="button"
-          className="rounded-pill border border-line bg-white px-4 py-2 text-sm"
-          onClick={() =>
-            setImages((cur) => [...cur, { url: '', caption: '', displayOrder: cur.length }])
-          }
-        >
-          {t.addImage}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="rounded-pill border border-line bg-white px-4 py-2 text-sm"
+            onClick={() =>
+              setImages((cur) => [...cur, { url: '', caption: '', displayOrder: cur.length }])
+            }
+          >
+            {t.addImage}
+          </button>
+          <SpotImageUploadButton
+            label={t.uploadButton}
+            uploadingLabel={t.uploading}
+            onUploaded={(url) => {
+              setUploadErrorKey(null);
+              setImages((cur) => [...cur, { url, caption: '', displayOrder: cur.length }]);
+            }}
+            onError={(code) => setUploadErrorKey(code)}
+          />
+        </div>
       </fieldset>
 
       {/* Flowers */}
