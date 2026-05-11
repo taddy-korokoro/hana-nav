@@ -55,7 +55,7 @@ export default async function AdminPendingSpotsPage() {
 
             <dl className="mt-4 grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
               <div>
-                <dt className="font-medium text-ink-muted">公式 URL</dt>
+                <dt className="font-medium text-ink-muted">{c.officialUrlLabel}</dt>
                 <dd className="mt-0.5">
                   {s.officialUrl ? (
                     <Link
@@ -72,7 +72,7 @@ export default async function AdminPendingSpotsPage() {
                 </dd>
               </div>
               <div>
-                <dt className="font-medium text-ink-muted">出典 (source)</dt>
+                <dt className="font-medium text-ink-muted">{c.sourceLabel}</dt>
                 <dd className="mt-0.5 break-all">
                   {s.source ? (
                     /^https?:\/\//.test(s.source) ? (
