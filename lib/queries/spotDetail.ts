@@ -258,16 +258,14 @@ async function fetchReviews(
   spotId: string,
 ): Promise<{ reviews: SpotReview[]; summary: { count: number; average: number | null } }> {
   const supabase = await createClient();
-  // 退会ユーザーは profiles の RLS（deleted_at IS NULL のみ参照可）でフィルタされ join が null になる。
-  // null を「退会済ユーザー」表示に振り分ける。
+  // reviews.user_id は auth.users(id) を参照しており public.profiles への FK が無いので、
+  // PostgREST の埋め込み（`reviewer:profiles(...)`）は relation を解決できず失敗する。
+  // images と同じく別クエリで profiles を取得して手動でマージする。
+  // 退会ユーザーは profiles の `.is('deleted_at', null)` で除外され、reviewer = null として
+  // UI 側で「退会済ユーザー」表示に振り分ける。
   const { data, error } = await supabase
     .from('reviews')
-    .select(
-      `
-      id, rating, comment, visited_at, created_at,
-      reviewer:profiles(username, avatar_url)
-    `,
-    )
+    .select('id, user_id, rating, comment, visited_at, created_at')
     .eq('spot_id', spotId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -280,29 +278,41 @@ async function fetchReviews(
 
   type Row = {
     id: string;
+    user_id: string;
     rating: number;
     comment: string | null;
     visited_at: string | null;
     created_at: string;
-    reviewer:
-      | { username: string | null; avatar_url: string | null }
-      | { username: string | null; avatar_url: string | null }[]
-      | null;
   };
 
-  const reviews: SpotReview[] = (data as unknown as Row[]).map((r) => {
-    const reviewer = Array.isArray(r.reviewer) ? r.reviewer[0] : r.reviewer;
-    return {
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment,
-      visitedAt: r.visited_at,
-      createdAt: r.created_at,
-      reviewer: reviewer
-        ? { username: reviewer.username ?? null, avatarUrl: reviewer.avatar_url ?? null }
-        : null,
-    };
-  });
+  const rows = (data as unknown as Row[] | null) ?? [];
+
+  const profileMap = new Map<string, { username: string | null; avatarUrl: string | null }>();
+  if (rows.length > 0) {
+    const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .in('id', userIds)
+      .is('deleted_at', null);
+
+    if (profileError) {
+      console.error('[getSpotDetail] failed to fetch reviewer profiles', profileError);
+    } else {
+      for (const p of profiles ?? []) {
+        profileMap.set(p.id, { username: p.username, avatarUrl: p.avatar_url });
+      }
+    }
+  }
+
+  const reviews: SpotReview[] = rows.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment,
+    visitedAt: r.visited_at,
+    createdAt: r.created_at,
+    reviewer: profileMap.get(r.user_id) ?? null,
+  }));
 
   const count = reviews.length;
   const average =
