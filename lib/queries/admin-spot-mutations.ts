@@ -172,8 +172,12 @@ export async function createSpot(
 
 /**
  * スポットを全項目更新する。画像 / 関連花は **置き換え** 方式：
- * 既存の `images` / `spot_flowers` を一旦論理削除（spot_flowers は物理削除で OK）し、
- * 新しい配列で再挿入する。並び替えはこの方式で「display_order を順番に振り直し」で実現する。
+ * 既存の `images` / `spot_flowers` を一旦論理削除し、新しい配列で再挿入する。
+ * 並び替えは「display_order を順番に振り直し」で実現する。
+ *
+ * `spot_flowers` は中間テーブルかつ PK が (spot_id, flower_id) なので、再挿入時の
+ * 重複は `upsert(..., { onConflict: 'spot_id,flower_id' })` で吸収して論理削除を
+ * 復活させる。CLAUDE.md 「物理削除は禁止。全テーブルに deleted_at を持たせる」準拠。
  */
 export async function updateSpot(
   id: string,
@@ -241,10 +245,17 @@ export async function updateSpot(
     }
   }
 
-  // 関連花の置き換え：spot_flowers は中間テーブルかつ PK が (spot_id, flower_id) なので物理削除で扱う
-  const { error: sfDeleteError } = await admin.from('spot_flowers').delete().eq('spot_id', id);
+  // 関連花の置き換え：既存のアクティブ行を論理削除 → 入力された花を upsert
+  // で復活 / 挿入する。PK が (spot_id, flower_id) なので同一ペアの再登録は
+  // onConflict で deleted_at: null に戻す形で吸収する。
+  const now = new Date().toISOString();
+  const { error: sfDeleteError } = await admin
+    .from('spot_flowers')
+    .update({ deleted_at: now })
+    .eq('spot_id', id)
+    .is('deleted_at', null);
   if (sfDeleteError) {
-    console.error('[updateSpot] failed to delete existing spot_flowers', sfDeleteError);
+    console.error('[updateSpot] failed to soft-delete existing spot_flowers', sfDeleteError);
     return { ok: false, error: { code: 'save_failed', message: sfDeleteError.message } };
   }
 
@@ -254,10 +265,13 @@ export async function updateSpot(
       flower_id: f.flowerId,
       bloom_start_month: f.bloomStartMonth,
       bloom_end_month: f.bloomEndMonth,
+      deleted_at: null,
     }));
-    const { error: sfError } = await admin.from('spot_flowers').insert(sfRows);
+    const { error: sfError } = await admin
+      .from('spot_flowers')
+      .upsert(sfRows, { onConflict: 'spot_id,flower_id' });
     if (sfError) {
-      console.error('[updateSpot] failed to insert spot_flowers', sfError);
+      console.error('[updateSpot] failed to upsert spot_flowers', sfError);
       return { ok: false, error: { code: 'save_failed', message: sfError.message } };
     }
   }
