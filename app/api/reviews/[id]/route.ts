@@ -104,13 +104,15 @@ export async function DELETE(_request: Request, { params }: { params: Params }) 
     return NextResponse.json({ error: 'invalid_id' }, { status: 400 });
   }
 
-  // 削除前に spot_id を引いておく（revalidatePath 用）。論理削除済みでも引けるよう
-  // `deleted_at IS NULL` のフィルタはかけない。本人の行のみが返る（RLS による）。
+  // 削除前に spot_id を引いておく（revalidatePath 用）。アクティブな本人のレビューだけが対象。
+  // `reviews` の SELECT RLS は `deleted_at IS NULL` を含むので暗黙にも弾かれるが、
+  // RLS への依存を読まなくても意図が伝わるよう、アプリ側で明示的に `.is('deleted_at', null)` も付ける。
   const { data: existing } = await supabase
     .from('reviews')
     .select('spot_id')
     .eq('id', id)
     .eq('user_id', user.id)
+    .is('deleted_at', null)
     .maybeSingle();
 
   const { error } = await supabase
