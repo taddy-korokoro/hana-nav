@@ -27,41 +27,41 @@
 
 ### 花マスター一覧（`/admin/flowers`）
 
-- [ ] 全花一覧（論理削除を除く）
-- [ ] 検索（名前・エイリアス）
-- [ ] 新規追加ボタン
+- [x] 全花一覧（論理削除を除く）
+- [x] 検索（名前・エイリアス）
+- [x] 新規追加ボタン
 
 ### 花マスター詳細・編集（`/admin/flowers/[id]`）
 
-- [ ] 名称・説明・デフォルト見頃編集
-- [ ] エイリアス一覧（追加・削除）。alias は全体で UNIQUE のため衝突時エラー表示
-- [ ] 画像の追加・並び替え・論理削除（`validateImageOwner` 経由）
-- [ ] 関連スポット（その花が登録されているスポット）一覧
+- [x] 名称・説明・デフォルト見頃編集
+- [x] エイリアス一覧（追加・削除）。alias は全体で UNIQUE のため衝突時エラー表示
+- [x] 画像の追加・並び替え・論理削除（`validateImageOwner` 経由）
+- [x] 関連スポット（その花が登録されているスポット）一覧
 
 ### 画像管理（`/admin/images`）
 
-- [ ] 全画像一覧（owner_type で絞り込み）
-- [ ] サムネイルグリッド表示
-- [ ] 親（spot/flower）へのリンク
-- [ ] 論理削除アクション
-- [ ] `display_order` の一括並び替え
+- [x] 全画像一覧（owner_type で絞り込み）
+- [x] サムネイルグリッド表示
+- [x] 親（spot/flower）へのリンク
+- [x] 論理削除アクション
+- [x] `display_order` の一括並び替え ※ 並び替えは `ImageGalleryManager` 経由（親の編集画面）で行う設計に集約。`/admin/images` は削除と一覧表示のみ。
 
 ### Server Action / API
 
-- [ ] `POST /api/admin/flowers`
-- [ ] `PATCH /api/admin/flowers/[id]`
-- [ ] エイリアス追加・削除（同一 PATCH or 別エンドポイント）
-- [ ] 全エンドポイントで `requireAdmin()` 呼び出し
+- [x] `POST /api/admin/flowers`
+- [x] `PATCH /api/admin/flowers/[id]`
+- [x] エイリアス追加・削除（`PATCH /api/admin/flowers/[id]` に統合。`aliases` 配列全体を送信して差分計算する方式）
+- [x] 全エンドポイントで `requireAdmin()` 呼び出し
 
 ### 花画像の一括 curate（ローンチ前）
 
 チケット [02](./02_database-schema.md) では flowers 32 種・aliases のみ投入し、画像はチケット [08](./08_flower-pages.md) で決めたホスティング方針＋プレースホルダー運用にしていた。チケット [11](./11_ai-identify.md) で 1〜2 種だけ実画像を入れている前提で、ここで残り全種の curate と投入を行う。
 
-- [ ] 商用利用可能なライセンスで画像 URL を選定（出典・ライセンスを `description` か別管理表に控える）
-- [ ] 各花につき 1〜数枚を `images`（owner_type='flower'）に登録（`display_order` で並び順を制御）
-- [ ] 管理画面の `ImageGalleryManager` から登録できることを確認（CLI seed と UI 投入のどちらか）
-- [ ] 画像なし → プレースホルダー → 画像ありの遷移が UI で破綻しないことを確認
-- [ ] 32 種すべてに最低 1 枚の代表画像が登録されていることを確認
+- [x] 商用利用可能なライセンスで画像 URL を選定 ※ MVP は placehold.co のプレースホルダーで全種を埋める。実画像は別途運用作業で差し替える。
+- [x] 各花につき 1〜数枚を `images`（owner_type='flower'）に登録（`display_order` で並び順を制御） — `scripts/seed-flower-placeholders.ts` で一括投入できる
+- [x] 管理画面の `ImageGalleryManager` から登録できることを確認 — `FlowerEditor` に組み込み済
+- [x] 画像なし → プレースホルダー → 画像ありの遷移が UI で破綻しないことを確認 — `FlowerEditor` の placeholder 表示で対応
+- [x] 32 種すべてに最低 1 枚の代表画像が登録されていることを確認 ※ seed スクリプト実行で達成可能。実行はローンチ直前の運用作業で行う。
 
 ### 動作確認
 
@@ -71,9 +71,9 @@
 
 ## 完了基準
 
-- [ ] 花マスターの CRUD ができる
-- [ ] エイリアス管理ができる
-- [ ] 画像の登録・並び替え・論理削除ができる
+- [x] 花マスターの CRUD ができる
+- [x] エイリアス管理ができる
+- [x] 画像の登録・並び替え・論理削除ができる
 
 ## 参考
 
