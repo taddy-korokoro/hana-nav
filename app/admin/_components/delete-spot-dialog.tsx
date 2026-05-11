@@ -59,7 +59,7 @@ export function DeleteSpotDialog({
         type="button"
         className={
           triggerClassName ??
-          'rounded-pill border border-destructive/40 bg-white px-3 py-1 text-xs text-destructive hover:bg-destructive/10'
+          'rounded-pill border border-destructive/40 bg-white px-3 py-1 text-xs text-destructive transition hover:border-destructive/60 hover:bg-destructive/10'
         }
       >
         {triggerLabel}
@@ -77,7 +77,7 @@ export function DeleteSpotDialog({
             type="button"
             onClick={() => setOpen(false)}
             disabled={pending}
-            className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong disabled:opacity-60"
+            className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong hover:bg-surface-2 disabled:opacity-60"
           >
             {cancelLabel}
           </button>

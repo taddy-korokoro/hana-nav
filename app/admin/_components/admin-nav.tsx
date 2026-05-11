@@ -41,7 +41,7 @@ export function AdminNav() {
               'rounded-pill px-3 py-1.5 transition',
               active
                 ? 'bg-ink text-white'
-                : 'border border-line bg-white text-ink-muted hover:border-line-strong hover:text-ink',
+                : 'border border-line bg-white text-ink-muted hover:border-line-strong hover:bg-surface-2 hover:text-ink',
             )}
           >
             {item.label}

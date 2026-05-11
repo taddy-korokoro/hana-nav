@@ -357,7 +357,7 @@ export function SpotEditor({
                 <div className="flex shrink-0 flex-col gap-2">
                   <button
                     type="button"
-                    className="rounded-pill border border-line bg-white px-3 py-1 text-xs disabled:opacity-40"
+                    className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2 disabled:opacity-40 disabled:hover:border-line disabled:hover:bg-white"
                     disabled={idx === 0}
                     onClick={() =>
                       setImages((cur) => {
@@ -372,7 +372,7 @@ export function SpotEditor({
                   </button>
                   <button
                     type="button"
-                    className="rounded-pill border border-line bg-white px-3 py-1 text-xs disabled:opacity-40"
+                    className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2 disabled:opacity-40 disabled:hover:border-line disabled:hover:bg-white"
                     disabled={idx === images.length - 1}
                     onClick={() =>
                       setImages((cur) => {
@@ -387,7 +387,7 @@ export function SpotEditor({
                   </button>
                   <button
                     type="button"
-                    className="rounded-pill border border-destructive/30 bg-white px-3 py-1 text-xs text-destructive"
+                    className="rounded-pill border border-destructive/30 bg-white px-3 py-1 text-xs text-destructive transition hover:border-destructive/50 hover:bg-destructive/10"
                     onClick={() =>
                       setImages((cur) =>
                         cur.filter((_, i) => i !== idx).map((v, i) => ({ ...v, displayOrder: i })),
@@ -404,7 +404,7 @@ export function SpotEditor({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            className="rounded-pill border border-line bg-white px-4 py-2 text-sm"
+            className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong hover:bg-surface-2"
             onClick={() =>
               setImages((cur) => [...cur, { url: '', caption: '', displayOrder: cur.length }])
             }
@@ -503,7 +503,7 @@ export function SpotEditor({
                 <div className="flex flex-col justify-end">
                   <button
                     type="button"
-                    className="rounded-pill border border-destructive/30 bg-white px-3 py-1 text-xs text-destructive"
+                    className="rounded-pill border border-destructive/30 bg-white px-3 py-1 text-xs text-destructive transition hover:border-destructive/50 hover:bg-destructive/10"
                     onClick={() => setSpotFlowers((cur) => cur.filter((_, i) => i !== idx))}
                   >
                     {t.removeFlower}
@@ -518,7 +518,7 @@ export function SpotEditor({
         </div>
         <button
           type="button"
-          className="rounded-pill border border-line bg-white px-4 py-2 text-sm"
+          className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong hover:bg-surface-2"
           onClick={() =>
             setSpotFlowers((cur) => [
               ...cur,
@@ -533,7 +533,7 @@ export function SpotEditor({
       <div className="flex items-center justify-between gap-3 pt-2">
         <Link
           href={cancelHref}
-          className="rounded-pill border border-line bg-white px-5 py-2.5 text-sm"
+          className="rounded-pill border border-line bg-white px-5 py-2.5 text-sm transition hover:border-line-strong hover:bg-surface-2"
         >
           {cancelLabel}
         </Link>

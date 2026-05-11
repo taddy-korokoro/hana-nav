@@ -107,13 +107,13 @@ export default async function AdminSpotsPage({
         <div className="flex items-end gap-2">
           <button
             type="submit"
-            className="rounded-pill bg-ink px-4 py-2 text-sm font-medium text-white"
+            className="rounded-pill bg-ink px-4 py-2 text-sm font-medium text-white transition hover:bg-ink/85"
           >
             {filters.apply}
           </button>
           <Link
             href="/admin/spots"
-            className="rounded-pill border border-line bg-white px-4 py-2 text-sm text-ink-muted hover:text-ink"
+            className="rounded-pill border border-line bg-white px-4 py-2 text-sm text-ink-muted transition hover:border-line-strong hover:bg-surface-2 hover:text-ink"
           >
             {filters.reset}
           </Link>
@@ -169,7 +169,7 @@ export default async function AdminSpotsPage({
                   <div className="flex flex-wrap justify-end gap-2">
                     <Link
                       href={`/admin/spots/${s.id}`}
-                      className="rounded-pill border border-line bg-white px-3 py-1 text-xs hover:border-line-strong"
+                      className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2"
                     >
                       {c.actions.edit}
                     </Link>
