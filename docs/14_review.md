@@ -31,30 +31,31 @@
 
 ### NG ワード辞書
 
-- [ ] `lib/ng-words.ts` に基本リストを定義（誹謗中傷・差別・性的表現の代表語）
-- [ ] バージョン定数を持たせて変更履歴を追えるようにする
-- [ ] `containsNgWord(text: string): boolean` を export
+- [x] `lib/ng-words.ts` に基本リストを定義（誹謗中傷・差別・性的表現の代表語）
+- [x] バージョン定数を持たせて変更履歴を追えるようにする
+- [x] `containsNgWord(text: string): boolean` を export
 
 ### Server Action / API
 
-- [ ] レビュー投稿（Server Action）：認証必須、UNIQUE(user_id, spot_id) 違反は更新扱い
-- [ ] NG ワード検出時は 400 で返す
-- [ ] `revalidatePath('/spots/[id]')` で詳細ページ更新
-- [ ] レビュー編集 / 論理削除
+- [x] レビュー投稿（Route Handler）：認証必須、UNIQUE(user_id, spot_id) 違反は更新扱い（POST /api/reviews でアップサート）
+- [x] NG ワード検出時は 400 で返す
+- [x] `revalidatePath('/spots/[id]')` で詳細ページ更新
+- [x] レビュー編集 / 論理削除（PATCH/DELETE /api/reviews/[id]）
+- [x] reviews UPDATE ポリシーに `WITH CHECK` を明示（マイグレーション追加）
 
 ### UI（スポット詳細）
 
-- [ ] 平均評価 + 件数表示
-- [ ] レビューカード一覧（最新5件、続きは「もっと見る」）
-- [ ] 退会済ユーザーの場合は「退会済ユーザー」表示
-- [ ] 自分のレビューがある場合は編集ボタン
-- [ ] 未ログイン時は「ログインしてレビューする」誘導
-- [ ] 投稿フォーム（★選択 + 200文字 textarea + 訪問日）
+- [x] 平均評価 + 件数表示（既存）
+- [x] レビューカード一覧（既存。最大 50 件取得）
+- [x] 退会済ユーザーの場合は「退会済ユーザー」表示（既存）
+- [x] 自分のレビューがある場合は編集ボタン（SpotReviewInteraction）
+- [x] 未ログイン時は「ログインしてレビューする」誘導（SpotReviewInteraction）
+- [x] 投稿フォーム（★選択 + 200文字 textarea + 訪問日）
 
 ### マイページ
 
-- [ ] `/mypage/reviews` で自分のレビュー一覧
-- [ ] 編集・削除動線
+- [x] `/mypage/reviews` で自分のレビュー一覧
+- [x] 編集・削除動線（編集は /spots/[id] へ遷移してフォーム展開、削除はその場で API DELETE）
 
 ### 動作確認
 
@@ -65,8 +66,8 @@
 
 ## 完了基準
 
-- [ ] 投稿・編集・削除・一覧表示ができる
-- [ ] 平均評価がスポット詳細に反映される
+- [x] 投稿・編集・削除・一覧表示ができる
+- [x] 平均評価がスポット詳細に反映される
 
 ## 参考
 
