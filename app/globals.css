@@ -129,4 +129,17 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
+  /*
+   * Tailwind v4 で `<button>` の preflight が `cursor: default` に変わったため、
+   * 有効状態のボタン類は手動でポインタに戻す（v3 までの慣例に揃える）。
+   * `disabled` / `aria-disabled` の場合は対象外（disabled スタイルが優先）。
+   */
+  button:not(:disabled):not([aria-disabled='true']),
+  [role='button']:not([aria-disabled='true']),
+  [role='switch']:not([aria-disabled='true']),
+  [role='menuitem']:not([aria-disabled='true']),
+  [role='option']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
 }

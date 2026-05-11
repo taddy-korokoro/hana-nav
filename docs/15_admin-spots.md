@@ -32,51 +32,51 @@
 
 ### 共通
 
-- [ ] `app/admin/layout.tsx` で admin ロールチェック（middleware と二重防御）
-- [ ] admin 専用ナビゲーション
-- [ ] 全 admin API で `requireAdmin()` を呼ぶ
+- [x] `app/admin/layout.tsx` で admin ロールチェック（middleware と二重防御）
+- [x] admin 専用ナビゲーション
+- [x] 全 admin API で `requireAdmin()` を呼ぶ
 
 ### ダッシュボード（`/admin`）
 
-- [ ] 公開待ちスポット数
-- [ ] 今月の AI 利用回数
-- [ ] 直近の論理削除レビュー件数
-- [ ] 各管理画面への導線
+- [x] 公開待ちスポット数
+- [x] 今月の AI 利用回数
+- [x] 直近の論理削除レビュー件数
+- [x] 各管理画面への導線
 
 ### スポット一覧（`/admin/spots`）
 
-- [ ] 全スポット（未公開含む、論理削除は除く）
-- [ ] フィルタ：公開状態 / 都道府県 / 検索
-- [ ] 公開フラグのトグル
-- [ ] 論理削除アクション
+- [x] 全スポット（未公開含む、論理削除は除く）
+- [x] フィルタ：公開状態 / 都道府県 / 検索
+- [x] 公開フラグのトグル
+- [x] 論理削除アクション
 
 ### 公開待ち（`/admin/spots/pending`）
 
-- [ ] `is_published=false AND deleted_at IS NULL` のみ
-- [ ] 出典・公式 URL の確認 UI（リンク + プレビュー）
-- [ ] 「公開する」ボタン
+- [x] `is_published=false AND deleted_at IS NULL` のみ
+- [x] 出典・公式 URL の確認 UI（リンク + プレビュー）
+- [x] 「公開する」ボタン
 
 ### スポット新規作成（`/admin/spots/new`）
 
-- [ ] フォーム：基本情報・住所・緯度経度（地図クリック）・見頃・公式 URL・出典
-- [ ] 画像アップロード（複数、`display_order` 自動採番）
-- [ ] 関連花の選択（複数、`bloom_*_month` 任意）
-- [ ] Server Action で `spots` + `images` + `spot_flowers` を一括 INSERT
-- [ ] `validateImageOwner` を経由して images を入れる
+- [x] フォーム：基本情報・住所・緯度経度（地図クリック）・見頃・公式 URL・出典
+- [x] 画像アップロード（複数、`display_order` 自動採番）
+- [x] 関連花の選択（複数、`bloom_*_month` 任意）
+- [x] Server Action で `spots` + `images` + `spot_flowers` を一括 INSERT
+- [x] `validateImageOwner` を経由して images を入れる
 
 ### スポット詳細・編集（`/admin/spots/[id]`）
 
-- [ ] 全カラム編集
-- [ ] 画像の追加・並び替え・論理削除
-- [ ] 関連花の追加・削除
-- [ ] 公開フラグの切替
-- [ ] 論理削除 → 子 images がカスケード論理削除されることを確認
+- [x] 全カラム編集
+- [x] 画像の追加・並び替え・論理削除
+- [x] 関連花の追加・削除
+- [x] 公開フラグの切替
+- [x] 論理削除 → 子 images がカスケード論理削除されることを確認
 
 ## 完了基準
 
-- [ ] 管理者がスポットを作成・編集・公開できる
-- [ ] 非管理者はアクセスできない
-- [ ] 出典確認 → 公開のフローが回る
+- [x] 管理者がスポットを作成・編集・公開できる
+- [x] 非管理者はアクセスできない
+- [x] 出典確認 → 公開のフローが回る
 
 ## 参考
 
