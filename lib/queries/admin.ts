@@ -325,6 +325,341 @@ export async function getAdminSpotDetail(id: string): Promise<AdminSpotDetail | 
   };
 }
 
+export type AdminFlowerRow = {
+  id: string;
+  name: string;
+  nameKana: string | null;
+  defaultSeasonStart: number | null;
+  defaultSeasonEnd: number | null;
+  aliases: string[];
+  spotCount: number;
+  updatedAt: string;
+};
+
+export type AdminFlowerListParams = {
+  q?: string;
+};
+
+/**
+ * 管理画面の花マスター一覧。`q` が指定された場合は flowers.name / name_kana の部分一致 +
+ * flower_aliases.alias の部分一致のヒット集合（OR）で絞り込む。alias 検索は別クエリで
+ * flower_id 集合を引いてからメインクエリで `in()` する 2 段構成（リレーション越しの
+ * ilike が Supabase クライアントでは表現しづらいため）。
+ */
+export async function listAdminFlowers(params: AdminFlowerListParams): Promise<AdminFlowerRow[]> {
+  const admin = createAdminClient();
+
+  let flowerIdsFromAlias: Set<string> | null = null;
+  if (params.q) {
+    const term = params.q.trim();
+    if (term.length > 0) {
+      const escaped = term.replace(/[%_,()\\]/g, (c) => '\\' + c);
+      const { data: aliasRows, error: aliasError } = await admin
+        .from('flower_aliases')
+        .select('flower_id')
+        .ilike('alias', `%${escaped}%`)
+        .is('deleted_at', null)
+        .limit(500);
+      if (aliasError) {
+        console.error('[listAdminFlowers] alias search failed', aliasError);
+      } else {
+        flowerIdsFromAlias = new Set((aliasRows ?? []).map((r) => r.flower_id as string));
+      }
+    }
+  }
+
+  let query = admin
+    .from('flowers')
+    .select(
+      `
+      id, name, name_kana,
+      default_season_start, default_season_end, updated_at
+    `,
+    )
+    .is('deleted_at', null)
+    .order('name', { ascending: true })
+    .limit(500);
+
+  if (params.q) {
+    const escaped = params.q.replace(/[%_,()\\]/g, (c) => '\\' + c);
+    const idFilter =
+      flowerIdsFromAlias && flowerIdsFromAlias.size > 0
+        ? `,id.in.(${[...flowerIdsFromAlias].join(',')})`
+        : '';
+    query = query.or(`name.ilike.%${escaped}%,name_kana.ilike.%${escaped}%${idFilter}`);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('[listAdminFlowers] failed', error);
+    return [];
+  }
+
+  type Row = {
+    id: string;
+    name: string;
+    name_kana: string | null;
+    default_season_start: number | null;
+    default_season_end: number | null;
+    updated_at: string;
+  };
+
+  const rows = (data ?? []) as Row[];
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.id);
+
+  // alias / spot_flowers のカウントは別クエリでまとめて取って Map にする
+  const [aliasRes, sfRes] = await Promise.all([
+    admin
+      .from('flower_aliases')
+      .select('flower_id, alias')
+      .in('flower_id', ids)
+      .is('deleted_at', null)
+      .order('alias', { ascending: true }),
+    admin.from('spot_flowers').select('flower_id').in('flower_id', ids).is('deleted_at', null),
+  ]);
+
+  if (aliasRes.error) console.error('[listAdminFlowers] aliases', aliasRes.error);
+  if (sfRes.error) console.error('[listAdminFlowers] spot_flowers', sfRes.error);
+
+  const aliasMap = new Map<string, string[]>();
+  for (const row of aliasRes.data ?? []) {
+    const list = aliasMap.get(row.flower_id as string) ?? [];
+    list.push(row.alias as string);
+    aliasMap.set(row.flower_id as string, list);
+  }
+
+  const spotCountMap = new Map<string, number>();
+  for (const row of sfRes.data ?? []) {
+    const key = row.flower_id as string;
+    spotCountMap.set(key, (spotCountMap.get(key) ?? 0) + 1);
+  }
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    nameKana: r.name_kana,
+    defaultSeasonStart: r.default_season_start,
+    defaultSeasonEnd: r.default_season_end,
+    aliases: aliasMap.get(r.id) ?? [],
+    spotCount: spotCountMap.get(r.id) ?? 0,
+    updatedAt: r.updated_at,
+  }));
+}
+
+export type AdminFlowerDetail = {
+  id: string;
+  name: string;
+  nameKana: string | null;
+  description: string | null;
+  defaultSeasonStart: number | null;
+  defaultSeasonEnd: number | null;
+  updatedAt: string;
+  images: { id: string; url: string; caption: string | null; displayOrder: number }[];
+  aliases: { id: string; alias: string }[];
+  relatedSpots: { id: string; name: string; prefectureName: string }[];
+};
+
+export async function getAdminFlowerDetail(id: string): Promise<AdminFlowerDetail | null> {
+  const admin = createAdminClient();
+
+  const { data: row, error } = await admin
+    .from('flowers')
+    .select(
+      `
+      id, name, name_kana, description,
+      default_season_start, default_season_end, updated_at
+    `,
+    )
+    .eq('id', id)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[getAdminFlowerDetail] failed', error);
+    return null;
+  }
+  if (!row) return null;
+
+  type FlowerRow = {
+    id: string;
+    name: string;
+    name_kana: string | null;
+    description: string | null;
+    default_season_start: number | null;
+    default_season_end: number | null;
+    updated_at: string;
+  };
+  const flower = row as FlowerRow;
+
+  const [imagesRes, aliasesRes, spotsRes] = await Promise.all([
+    admin
+      .from('images')
+      .select('id, url, caption, display_order')
+      .eq('owner_type', 'flower')
+      .eq('owner_id', id)
+      .is('deleted_at', null)
+      .order('display_order', { ascending: true }),
+    admin
+      .from('flower_aliases')
+      .select('id, alias')
+      .eq('flower_id', id)
+      .is('deleted_at', null)
+      .order('alias', { ascending: true }),
+    admin
+      .from('spot_flowers')
+      .select('spot:spots!inner(id, name, prefecture:prefectures(name), deleted_at)')
+      .eq('flower_id', id)
+      .is('deleted_at', null)
+      .is('spot.deleted_at', null),
+  ]);
+
+  type RelatedRow = {
+    spot:
+      | {
+          id: string;
+          name: string;
+          prefecture: { name: string } | { name: string }[] | null;
+          deleted_at: string | null;
+        }
+      | {
+          id: string;
+          name: string;
+          prefecture: { name: string } | { name: string }[] | null;
+          deleted_at: string | null;
+        }[]
+      | null;
+  };
+
+  const relatedSpots = ((spotsRes.data as unknown as RelatedRow[] | null) ?? [])
+    .map((r) => {
+      const spot = Array.isArray(r.spot) ? r.spot[0] : r.spot;
+      if (!spot || spot.deleted_at) return null;
+      const pref = Array.isArray(spot.prefecture) ? spot.prefecture[0] : spot.prefecture;
+      return {
+        id: spot.id,
+        name: spot.name,
+        prefectureName: pref?.name ?? '',
+      };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+
+  return {
+    id: flower.id,
+    name: flower.name,
+    nameKana: flower.name_kana,
+    description: flower.description,
+    defaultSeasonStart: flower.default_season_start,
+    defaultSeasonEnd: flower.default_season_end,
+    updatedAt: flower.updated_at,
+    images: (imagesRes.data ?? []).map((img) => ({
+      id: img.id,
+      url: img.url,
+      caption: img.caption,
+      displayOrder: img.display_order,
+    })),
+    aliases: (aliasesRes.data ?? []).map((a) => ({ id: a.id, alias: a.alias })),
+    relatedSpots,
+  };
+}
+
+export type AdminImageRow = {
+  id: string;
+  ownerType: 'spot' | 'flower';
+  ownerId: string;
+  url: string;
+  caption: string | null;
+  displayOrder: number;
+  ownerName: string | null;
+  updatedAt: string;
+};
+
+export type AdminImageListParams = {
+  ownerType?: 'spot' | 'flower' | 'all';
+  limit?: number;
+  offset?: number;
+};
+
+/**
+ * `/admin/images` 用の全画像横断一覧。owner_type で絞り込み、ページングを支援する。
+ * 親（spots / flowers）の名前は別クエリで引いて Map にして付ける（多態関連のため JOIN 不可）。
+ */
+export async function listAllImages(
+  params: AdminImageListParams,
+): Promise<{ rows: AdminImageRow[]; total: number }> {
+  const admin = createAdminClient();
+
+  const limit = params.limit ?? 60;
+  const offset = params.offset ?? 0;
+
+  let query = admin
+    .from('images')
+    .select('id, owner_type, owner_id, url, caption, display_order, updated_at', {
+      count: 'exact',
+    })
+    .is('deleted_at', null)
+    .order('updated_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (params.ownerType && params.ownerType !== 'all') {
+    query = query.eq('owner_type', params.ownerType);
+  }
+
+  const { data, error, count } = await query;
+  if (error) {
+    console.error('[listAllImages] failed', error);
+    return { rows: [], total: 0 };
+  }
+
+  type Row = {
+    id: string;
+    owner_type: 'spot' | 'flower';
+    owner_id: string;
+    url: string;
+    caption: string | null;
+    display_order: number;
+    updated_at: string;
+  };
+  const rows = (data ?? []) as Row[];
+  if (rows.length === 0) return { rows: [], total: count ?? 0 };
+
+  // 親の名前を別クエリで一括取得
+  const spotIds = rows.filter((r) => r.owner_type === 'spot').map((r) => r.owner_id);
+  const flowerIds = rows.filter((r) => r.owner_type === 'flower').map((r) => r.owner_id);
+
+  const [spotRes, flowerRes] = await Promise.all([
+    spotIds.length > 0
+      ? admin.from('spots').select('id, name, deleted_at').in('id', spotIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; deleted_at: string | null }[] }),
+    flowerIds.length > 0
+      ? admin.from('flowers').select('id, name, deleted_at').in('id', flowerIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; deleted_at: string | null }[] }),
+  ]);
+
+  const ownerNameMap = new Map<string, string | null>();
+  for (const s of spotRes.data ?? []) {
+    ownerNameMap.set(`spot:${s.id}`, s.deleted_at ? null : s.name);
+  }
+  for (const f of flowerRes.data ?? []) {
+    ownerNameMap.set(`flower:${f.id}`, f.deleted_at ? null : f.name);
+  }
+
+  return {
+    rows: rows.map((r) => ({
+      id: r.id,
+      ownerType: r.owner_type,
+      ownerId: r.owner_id,
+      url: r.url,
+      caption: r.caption,
+      displayOrder: r.display_order,
+      ownerName: ownerNameMap.get(`${r.owner_type}:${r.owner_id}`) ?? null,
+      updatedAt: r.updated_at,
+    })),
+    total: count ?? 0,
+  };
+}
+
 export type FlowerOption = { id: string; name: string };
 
 export async function listAllFlowers(): Promise<FlowerOption[]> {
