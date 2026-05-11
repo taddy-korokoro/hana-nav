@@ -1,12 +1,19 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
-import { uploadSpotImage } from '@/app/admin/spots/upload-actions';
 import { resizeImage } from '@/lib/utils/imageResize';
+
+export type UploadActionResult =
+  | { ok: true; url: string; path: string }
+  | {
+      ok: false;
+      code: 'upload_invalid_type' | 'upload_too_large' | 'upload_failed' | 'no_file';
+    };
 
 type Props = {
   label: string;
   uploadingLabel: string;
+  uploadAction: (formData: FormData) => Promise<UploadActionResult>;
   onUploaded: (url: string) => void;
   onError: (code: string) => void;
 };
@@ -15,15 +22,22 @@ const ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_INPUT_BYTES = 5 * 1024 * 1024;
 
 /**
- * 画像 1 枚をアップロードする小さな UI。
+ * 画像 1 枚をアップロードする汎用 UI。owner ごとに異なる Server Action（spot 用 / flower 用）を
+ * `uploadAction` props で受け取り、クライアント側のリサイズ＋送信フローはここに集約する。
  *
  * フロー:
  *   1. ファイル選択 → MIME / サイズ検証
- *   2. `resizeImage` で 1024px / JPEG 0.8 / 2MB 以下に縮小（CLAUDE.md「コスト・セキュリティ境界」準拠）
- *   3. Server Action `uploadSpotImage` に流す（Service Role で `images` バケットに置く）
- *   4. 公開 URL を `onUploaded` で親に通知。親側で `SpotImageInput.url` にセットする想定
+ *   2. `resizeImage` で 1024px / JPEG 0.8 / 2MB 以下に縮小
+ *   3. `uploadAction` Server Action に渡す（呼び出し先で Service Role を使って Storage に PUT）
+ *   4. 公開 URL を `onUploaded` で親に通知
  */
-export function SpotImageUploadButton({ label, uploadingLabel, onUploaded, onError }: Props) {
+export function ImageUploadButton({
+  label,
+  uploadingLabel,
+  uploadAction,
+  onUploaded,
+  onError,
+}: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
@@ -45,7 +59,7 @@ export function SpotImageUploadButton({ label, uploadingLabel, onUploaded, onErr
       formData.set('file', resized);
 
       startTransition(async () => {
-        const result = await uploadSpotImage(formData);
+        const result = await uploadAction(formData);
         if (!result.ok) {
           onError(result.code);
         } else {
@@ -54,7 +68,7 @@ export function SpotImageUploadButton({ label, uploadingLabel, onUploaded, onErr
         setBusy(false);
       });
     } catch (e) {
-      console.error('[SpotImageUploadButton] failed to process file', e);
+      console.error('[ImageUploadButton] failed to process file', e);
       onError('upload_failed');
       setBusy(false);
     }
