@@ -306,6 +306,9 @@ export function SpotEditor({
                 {/* Preview thumbnail */}
                 <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-card border border-line bg-surface-2">
                   {img.url ? (
+                    // 任意ドメインの URL（Supabase Storage + データコレクタ等の外部 URL）を
+                    // プレビューするため next/image の remotePatterns では対応不可。管理画面
+                    // 限定の小さなサムネ表示なので最適化は不要と判断し、<img> を採用する。
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={img.url}
