@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { DeleteConfirmButton } from '@/app/admin/_components/delete-confirm-button';
 import { SpotEditor } from '@/components/admin/SpotEditor';
 import { COPY } from '@/lib/constants/copy';
 import { getAdminSpotDetail, listAllFlowers, listPrefectures } from '@/lib/queries/admin';
-import { softDeleteSpotAction, updateSpotAction } from '../actions';
+import { updateSpotAction } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,16 +82,6 @@ export default async function AdminSpotEditPage({ params }: { params: Promise<{ 
         cancelHref="/admin/spots"
         cancelLabel={COPY.admin.spots.new.cancel}
       />
-
-      <section className="mt-16 rounded-card border border-destructive/20 bg-destructive/5 p-6">
-        <h2 className="font-serif text-lg font-semibold text-destructive">{c.deleteSection}</h2>
-        <p className="mt-2 text-sm text-ink-muted">{c.deleteDescription}</p>
-        <form action={softDeleteSpotAction} className="mt-4">
-          <input type="hidden" name="spot_id" value={detail.id} />
-          <input type="hidden" name="redirect_to" value="/admin/spots" />
-          <DeleteConfirmButton label={c.deleteButton} confirmText={c.deleteConfirm} />
-        </form>
-      </section>
     </section>
   );
 }
