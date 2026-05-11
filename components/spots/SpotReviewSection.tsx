@@ -1,17 +1,22 @@
-import { StarIcon } from '@/components/layout/icons';
+import { StarRating } from '@/components/reviews/StarRating';
 import { COPY } from '@/lib/constants/copy';
 import type { SpotReview } from '@/lib/queries/spotDetail';
 
 type Props = {
   reviews: SpotReview[];
   summary: { count: number; average: number | null };
+  /** ログインユーザー自身のレビュー ID（カード上に「あなたのレビュー」バッジを付ける用）。 */
+  myReviewId?: string | null;
 };
 
 /**
  * レビュー一覧 + 平均評価。`reviewer === null` は profiles の RLS（deleted_at IS NULL のみ参照）で
  * 退会済ユーザーが filter された結果なので、operations.md の方針通り「退会済ユーザー」と表示する。
+ *
+ * `myReviewId` が一致するカードには「あなたのレビュー」バッジを付け、編集導線（上部の
+ * SpotReviewInteraction）と視覚的に紐づけている。
  */
-export function SpotReviewSection({ reviews, summary }: Props) {
+export function SpotReviewSection({ reviews, summary, myReviewId = null }: Props) {
   return (
     <div>
       <div className="flex items-center gap-3">
@@ -37,51 +42,45 @@ export function SpotReviewSection({ reviews, summary }: Props) {
         </p>
       ) : (
         <ul className="mt-6 space-y-4">
-          {reviews.map((review) => (
-            <li key={review.id} className="rounded-card border border-line bg-white p-4 md:p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {review.reviewer?.username ?? COPY.spotDetail.reviews.withdrawnUser}
-                  </p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-ink-muted">
-                    <StarRating rating={review.rating} size="sm" />
-                    <span>
-                      {review.visitedAt
-                        ? COPY.spotDetail.reviews.visitedAt(formatDate(review.visitedAt))
-                        : COPY.spotDetail.reviews.postedAt(formatDate(review.createdAt))}
-                    </span>
+          {reviews.map((review) => {
+            const isMine = myReviewId != null && review.id === myReviewId;
+            return (
+              <li
+                key={review.id}
+                className={`min-w-0 overflow-hidden rounded-card border bg-white p-4 md:p-5 ${
+                  isMine ? 'border-brand/50 ring-1 ring-brand/20' : 'border-line'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 truncate text-sm font-medium">
+                      {review.reviewer?.username ?? COPY.spotDetail.reviews.withdrawnUser}
+                      {isMine && (
+                        <span className="rounded-pill bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand">
+                          {COPY.spotDetail.reviews.yourReviewBadge}
+                        </span>
+                      )}
+                    </p>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-ink-muted">
+                      <StarRating rating={review.rating} size="sm" />
+                      <span>
+                        {review.visitedAt
+                          ? COPY.spotDetail.reviews.visitedAt(formatDate(review.visitedAt))
+                          : COPY.spotDetail.reviews.postedAt(formatDate(review.createdAt))}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              {review.comment && (
-                <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">
-                  {review.comment}
-                </p>
-              )}
-            </li>
-          ))}
+                {review.comment && (
+                  <p className="mt-3 whitespace-pre-line break-words text-sm leading-6 text-ink">
+                    {review.comment}
+                  </p>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
-    </div>
-  );
-}
-
-function StarRating({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md' }) {
-  const filled = Math.round(rating);
-  const sizeClass = size === 'sm' ? 'size-3.5' : 'size-5';
-  return (
-    <div
-      className="flex items-center gap-0.5"
-      aria-label={COPY.spotDetail.reviews.ratingAria(rating)}
-    >
-      {Array.from({ length: 5 }).map((_, i) => (
-        <StarIcon
-          key={i}
-          className={`${sizeClass} ${i < filled ? 'text-brand' : 'text-line-strong'}`}
-          aria-hidden
-        />
-      ))}
     </div>
   );
 }
