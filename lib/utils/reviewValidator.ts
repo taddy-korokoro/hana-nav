@@ -71,6 +71,12 @@ export function parseReviewBody(body: unknown, options?: { requireSpotId?: boole
     if (Number.isNaN(d.getTime())) {
       return { ok: false, code: 'invalid_visited_at' };
     }
+    // 訪問日に未来日（今日より後）は意味的に不自然なので弾く。
+    // 文字列比較で十分（YYYY-MM-DD は辞書順 = 時系列順）。
+    const today = new Date().toISOString().slice(0, 10);
+    if (visitedRaw > today) {
+      return { ok: false, code: 'invalid_visited_at' };
+    }
     visitedAt = visitedRaw;
   } else if (visitedRaw != null && visitedRaw !== '') {
     return { ok: false, code: 'invalid_visited_at' };
