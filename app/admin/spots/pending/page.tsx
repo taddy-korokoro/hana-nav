@@ -47,7 +47,7 @@ export default async function AdminPendingSpotsPage() {
               </div>
               <Link
                 href={`/admin/spots/${s.id}`}
-                className="rounded-pill border border-line bg-white px-3 py-1.5 text-xs hover:border-line-strong"
+                className="rounded-pill border border-line bg-white px-3 py-1.5 text-xs transition hover:border-line-strong hover:bg-surface-2"
               >
                 {c.editLink}
               </Link>

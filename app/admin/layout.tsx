@@ -24,14 +24,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex items-center gap-2 text-sm">
             <Link
               href="/"
-              className="rounded-pill border border-line bg-white px-3 py-1.5 transition hover:border-line-strong"
+              className="rounded-pill border border-line bg-white px-3 py-1.5 transition hover:border-line-strong hover:bg-surface-2"
             >
               {COPY.admin.nav.backToSite}
             </Link>
             <form action={logout}>
               <button
                 type="submit"
-                className="rounded-pill border border-line bg-white px-3 py-1.5 transition hover:border-line-strong"
+                className="rounded-pill border border-line bg-white px-3 py-1.5 transition hover:border-line-strong hover:bg-surface-2"
               >
                 {COPY.nav.logout}
               </button>

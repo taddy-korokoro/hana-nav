@@ -79,7 +79,7 @@ export function SpotImageUploadButton({ label, uploadingLabel, onUploaded, onErr
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={disabled}
-        className="shrink-0 rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-60"
+        className="shrink-0 rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {disabled ? uploadingLabel : label}
       </button>
