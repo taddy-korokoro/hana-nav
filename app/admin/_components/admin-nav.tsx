@@ -11,6 +11,9 @@ const ITEMS: { href: string; label: string }[] = [
   { href: '/admin/spots/pending', label: COPY.admin.nav.spotsPending },
   { href: '/admin/flowers', label: COPY.admin.nav.flowers },
   { href: '/admin/images', label: COPY.admin.nav.images },
+  { href: '/admin/users', label: COPY.admin.nav.users },
+  { href: '/admin/reviews', label: COPY.admin.nav.reviews },
+  { href: '/admin/ai-usage', label: COPY.admin.nav.aiUsage },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -24,6 +27,15 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === '/admin/images') {
     return pathname.startsWith('/admin/images');
+  }
+  if (href === '/admin/users') {
+    return pathname.startsWith('/admin/users');
+  }
+  if (href === '/admin/reviews') {
+    return pathname.startsWith('/admin/reviews');
+  }
+  if (href === '/admin/ai-usage') {
+    return pathname.startsWith('/admin/ai-usage');
   }
   return pathname === href;
 }
