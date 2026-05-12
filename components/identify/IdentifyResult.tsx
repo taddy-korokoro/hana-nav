@@ -78,7 +78,12 @@ export function IdentifyResult() {
   }
 
   const heroImage = data.flower_images[0]?.url ?? null;
-  const displayName = ai.flower_variety || flower?.name || ai.flower_name || '不明な花';
+  // DB マッチがあれば品種名（flower_variety）→ 総称（flower.name）の順で詳細さを優先。
+  // マッチが無い場合は Gemini が flower_variety に「園芸品種」のような汎用文字列を入れて
+  // 返してくるケースがあるため、総称（flower_name）を先に出す。
+  const displayName = flower
+    ? ai.flower_variety || flower.name
+    : ai.flower_name || ai.flower_variety || '不明な花';
 
   return (
     <div className="space-y-8">

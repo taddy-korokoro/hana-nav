@@ -9,19 +9,21 @@ const ITEMS: { href: string; label: string }[] = [
   { href: '/admin', label: COPY.admin.nav.home },
   { href: '/admin/spots', label: COPY.admin.nav.spots },
   { href: '/admin/spots/pending', label: COPY.admin.nav.spotsPending },
-  { href: '/admin/spots/new', label: COPY.admin.nav.spotsNew },
+  { href: '/admin/flowers', label: COPY.admin.nav.flowers },
+  { href: '/admin/images', label: COPY.admin.nav.images },
 ];
 
 function isActive(pathname: string, href: string): boolean {
   if (href === '/admin') return pathname === '/admin';
   if (href === '/admin/spots/pending') return pathname === '/admin/spots/pending';
-  if (href === '/admin/spots/new') return pathname === '/admin/spots/new';
   if (href === '/admin/spots') {
-    return (
-      pathname.startsWith('/admin/spots') &&
-      pathname !== '/admin/spots/pending' &&
-      pathname !== '/admin/spots/new'
-    );
+    return pathname.startsWith('/admin/spots') && pathname !== '/admin/spots/pending';
+  }
+  if (href === '/admin/flowers') {
+    return pathname.startsWith('/admin/flowers');
+  }
+  if (href === '/admin/images') {
+    return pathname.startsWith('/admin/images');
   }
   return pathname === href;
 }

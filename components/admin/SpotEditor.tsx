@@ -3,7 +3,8 @@
 import { useActionState, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
-import { SpotImageUploadButton } from '@/components/admin/SpotImageUploadButton';
+import { ImageGalleryManager } from '@/components/admin/ImageGalleryManager';
+import { uploadSpotImage } from '@/app/admin/spots/upload-actions';
 import { COPY } from '@/lib/constants/copy';
 import type {
   SpotFlowerInput,
@@ -68,7 +69,6 @@ export function SpotEditor({
   const [isPublished, setIsPublished] = useState(initial.isPublished ?? false);
   const [images, setImages] = useState<SpotImageInput[]>(initial.images ?? []);
   const [spotFlowers, setSpotFlowers] = useState<SpotFlowerInput[]>(initial.flowers ?? []);
-  const [uploadErrorKey, setUploadErrorKey] = useState<string | null>(null);
 
   const [state, formAction, pending] = useActionState<FormActionState, FormData>(action, null);
 
@@ -290,140 +290,24 @@ export function SpotEditor({
       {/* Images */}
       <fieldset className="space-y-4">
         <legend className="font-serif text-lg font-semibold">{t.sectionImages}</legend>
-        <p className="text-xs text-ink-muted">{t.urlOrUploadHint}</p>
-        {uploadErrorKey && (
-          <p
-            role="alert"
-            className="rounded-card border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
-          >
-            {errors[uploadErrorKey] ?? errors.upload_failed}
-          </p>
-        )}
-        <div className="space-y-3">
-          {images.map((img, idx) => (
-            <div key={idx} className="rounded-card border border-line bg-white p-4">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-[auto_1fr_auto]">
-                {/* Preview thumbnail */}
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-card border border-line bg-surface-2">
-                  {img.url ? (
-                    // 任意ドメインの URL（Supabase Storage + データコレクタ等の外部 URL）を
-                    // プレビューするため next/image の remotePatterns では対応不可。管理画面
-                    // 限定の小さなサムネ表示なので最適化は不要と判断し、<img> を採用する。
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={img.url}
-                      alt={t.previewAlt(idx)}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-[10px] text-ink-faint">no image</span>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <Field label={t.imageUrlLabel}>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="url"
-                        className={INPUT_CLASS}
-                        value={img.url}
-                        onChange={(e) =>
-                          setImages((cur) =>
-                            cur.map((it, i) => (i === idx ? { ...it, url: e.target.value } : it)),
-                          )
-                        }
-                      />
-                      <SpotImageUploadButton
-                        label={t.uploadButton}
-                        uploadingLabel={t.uploading}
-                        onUploaded={(url) => {
-                          setUploadErrorKey(null);
-                          setImages((cur) => cur.map((it, i) => (i === idx ? { ...it, url } : it)));
-                        }}
-                        onError={(code) => setUploadErrorKey(code)}
-                      />
-                    </div>
-                  </Field>
-                  <Field label={t.imageCaptionLabel}>
-                    <input
-                      className={INPUT_CLASS}
-                      value={img.caption ?? ''}
-                      onChange={(e) =>
-                        setImages((cur) =>
-                          cur.map((it, i) => (i === idx ? { ...it, caption: e.target.value } : it)),
-                        )
-                      }
-                    />
-                  </Field>
-                </div>
-
-                <div className="flex shrink-0 flex-col gap-2">
-                  <button
-                    type="button"
-                    className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2 disabled:opacity-40 disabled:hover:border-line disabled:hover:bg-white"
-                    disabled={idx === 0}
-                    onClick={() =>
-                      setImages((cur) => {
-                        if (idx === 0) return cur;
-                        const next = [...cur];
-                        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-                        return next.map((v, i) => ({ ...v, displayOrder: i }));
-                      })
-                    }
-                  >
-                    {t.moveUp}
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2 disabled:opacity-40 disabled:hover:border-line disabled:hover:bg-white"
-                    disabled={idx === images.length - 1}
-                    onClick={() =>
-                      setImages((cur) => {
-                        if (idx === cur.length - 1) return cur;
-                        const next = [...cur];
-                        [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
-                        return next.map((v, i) => ({ ...v, displayOrder: i }));
-                      })
-                    }
-                  >
-                    {t.moveDown}
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-pill border border-destructive/30 bg-white px-3 py-1 text-xs text-destructive transition hover:border-destructive/50 hover:bg-destructive/10"
-                    onClick={() =>
-                      setImages((cur) =>
-                        cur.filter((_, i) => i !== idx).map((v, i) => ({ ...v, displayOrder: i })),
-                      )
-                    }
-                  >
-                    {t.removeImage}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong hover:bg-surface-2"
-            onClick={() =>
-              setImages((cur) => [...cur, { url: '', caption: '', displayOrder: cur.length }])
-            }
-          >
-            {t.addImage}
-          </button>
-          <SpotImageUploadButton
-            label={t.uploadButton}
-            uploadingLabel={t.uploading}
-            onUploaded={(url) => {
-              setUploadErrorKey(null);
-              setImages((cur) => [...cur, { url, caption: '', displayOrder: cur.length }]);
-            }}
-            onError={(code) => setUploadErrorKey(code)}
-          />
-        </div>
+        <ImageGalleryManager
+          value={images}
+          onChange={setImages}
+          uploadAction={uploadSpotImage}
+          errors={errors}
+          labels={{
+            imageUrlLabel: t.imageUrlLabel,
+            imageCaptionLabel: t.imageCaptionLabel,
+            addImage: t.addImage,
+            removeImage: t.removeImage,
+            moveUp: t.moveUp,
+            moveDown: t.moveDown,
+            uploadButton: t.uploadButton,
+            uploading: t.uploading,
+            previewAlt: t.previewAlt,
+            urlOrUploadHint: t.urlOrUploadHint,
+          }}
+        />
       </fieldset>
 
       {/* Flowers */}
