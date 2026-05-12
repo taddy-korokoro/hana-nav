@@ -58,7 +58,10 @@ export function ImageGalleryManager({ value, onChange, uploadAction, errors, lab
       )}
       <div className="space-y-3">
         {value.map((img, idx) => (
-          <div key={idx} className="rounded-card border border-line bg-white p-4">
+          <div
+            key={img.url || `empty-${idx}`}
+            className="rounded-card border border-line bg-white p-4"
+          >
             <div className="grid grid-cols-1 gap-3 md:grid-cols-[auto_1fr_auto]">
               <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-card border border-line bg-surface-2">
                 {img.url ? (
