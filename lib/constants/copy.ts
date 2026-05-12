@@ -1029,6 +1029,12 @@ export const COPY = {
         empty: '該当する花がありません。',
         actions: {
           edit: '編集',
+          delete: '削除',
+          deleteDialogTitle: '花を削除しますか？',
+          deleteDialogDescription:
+            '削除すると公開ページから非表示になります。紐づく画像もカスケードで削除されます。関連スポットの紐付けは残るため、別途編集してください。',
+          deleteDialogConfirm: '削除する',
+          deleteDialogCancel: 'キャンセル',
         },
       },
       new: {
@@ -1051,13 +1057,6 @@ export const COPY = {
         relatedSpotsEyebrow: 'Related',
         relatedSpotsEmpty: 'まだこの花を登録しているスポットはありません。',
         relatedSpotsCount: (n: number) => `${n} 件のスポットで登録されています`,
-        deleteTitle: '花を削除',
-        deleteButton: '削除する',
-        deleteDialogTitle: 'この花を削除しますか？',
-        deleteDialogDescription:
-          '削除すると公開ページから非表示になります。紐づく画像もカスケードで論理削除されます。関連スポットの紐付けは残るため、別途編集してください。',
-        deleteDialogConfirm: '削除する',
-        deleteDialogCancel: 'キャンセル',
       },
       editor: {
         sectionBasics: '基本情報',
@@ -1124,8 +1123,8 @@ export const COPY = {
         },
         orphanLabel: '親が削除済み',
         orderLabel: (n: number) => `順序 ${n}`,
-        delete: '論理削除',
-        deleteConfirm: 'この画像を論理削除しますか？',
+        delete: '削除',
+        deleteConfirm: 'この画像を削除しますか？',
         empty: '画像がありません。',
         pagination: {
           previous: '前へ',

@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FlowerEditor } from '@/components/admin/FlowerEditor';
-import { DeleteFlowerDialog } from '@/app/admin/flowers/_components/delete-flower-dialog';
 import { COPY } from '@/lib/constants/copy';
 import { getAdminFlowerDetail } from '@/lib/queries/admin';
 import { updateFlowerAction } from '../actions';
@@ -100,22 +99,6 @@ export default async function AdminFlowerEditPage({ params }: { params: Promise<
             </ul>
           </>
         )}
-      </section>
-
-      <section className="mt-12 rounded-card border border-destructive/30 bg-destructive/5 p-4">
-        <h2 className="font-serif text-base font-semibold text-destructive">{c.deleteTitle}</h2>
-        <p className="mt-1 text-xs text-ink-muted">{c.deleteDialogDescription}</p>
-        <div className="mt-3">
-          <DeleteFlowerDialog
-            flowerId={detail.id}
-            flowerName={detail.name}
-            triggerLabel={c.deleteButton}
-            title={c.deleteDialogTitle}
-            description={c.deleteDialogDescription}
-            confirmLabel={c.deleteDialogConfirm}
-            cancelLabel={c.deleteDialogCancel}
-          />
-        </div>
       </section>
     </section>
   );
