@@ -829,10 +829,8 @@ export const COPY = {
     nav: {
       home: 'ホーム',
       spots: 'スポット',
-      spotsNew: '新規作成',
       spotsPending: '公開待ち',
       flowers: '花マスター',
-      flowersNew: '花を追加',
       images: '画像管理',
       users: 'ユーザー',
       reviews: 'レビュー',
