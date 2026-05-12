@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { DeleteFlowerDialog } from '@/app/admin/flowers/_components/delete-flower-dialog';
 import { COPY } from '@/lib/constants/copy';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 import { listAdminFlowers } from '@/lib/queries/admin';
@@ -151,6 +152,15 @@ export default async function AdminFlowersPage({
                       >
                         {c.actions.edit}
                       </Link>
+                      <DeleteFlowerDialog
+                        flowerId={f.id}
+                        flowerName={f.name}
+                        triggerLabel={c.actions.delete}
+                        title={c.actions.deleteDialogTitle}
+                        description={c.actions.deleteDialogDescription}
+                        confirmLabel={c.actions.deleteDialogConfirm}
+                        cancelLabel={c.actions.deleteDialogCancel}
+                      />
                     </div>
                   </td>
                 </tr>
