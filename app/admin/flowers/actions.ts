@@ -109,7 +109,11 @@ export async function softDeleteFlowerAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get('flower_id') ?? '');
   if (!id) return;
-  await softDeleteFlower(id);
+  const result = await softDeleteFlower(id);
+  if (!result.ok) {
+    console.error('[softDeleteFlowerAction] failed', result.error);
+    return;
+  }
   revalidateFlowerPaths(id);
   redirect('/admin/flowers');
 }
