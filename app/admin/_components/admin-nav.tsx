@@ -1,19 +1,36 @@
 'use client';
 
+import {
+  Activity,
+  Clock,
+  Flower2,
+  Image as ImageIcon,
+  LayoutDashboard,
+  MapPin,
+  MessageSquare,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { COPY } from '@/lib/constants/copy';
 import { cn } from '@/lib/utils';
 
-const ITEMS: { href: string; label: string }[] = [
-  { href: '/admin', label: COPY.admin.nav.home },
-  { href: '/admin/spots', label: COPY.admin.nav.spots },
-  { href: '/admin/spots/pending', label: COPY.admin.nav.spotsPending },
-  { href: '/admin/flowers', label: COPY.admin.nav.flowers },
-  { href: '/admin/images', label: COPY.admin.nav.images },
-  { href: '/admin/users', label: COPY.admin.nav.users },
-  { href: '/admin/reviews', label: COPY.admin.nav.reviews },
-  { href: '/admin/ai-usage', label: COPY.admin.nav.aiUsage },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+const ITEMS: NavItem[] = [
+  { href: '/admin', label: COPY.admin.nav.home, icon: LayoutDashboard },
+  { href: '/admin/spots', label: COPY.admin.nav.spots, icon: MapPin },
+  { href: '/admin/spots/pending', label: COPY.admin.nav.spotsPending, icon: Clock },
+  { href: '/admin/flowers', label: COPY.admin.nav.flowers, icon: Flower2 },
+  { href: '/admin/images', label: COPY.admin.nav.images, icon: ImageIcon },
+  { href: '/admin/users', label: COPY.admin.nav.users, icon: Users },
+  { href: '/admin/reviews', label: COPY.admin.nav.reviews, icon: MessageSquare },
+  { href: '/admin/ai-usage', label: COPY.admin.nav.aiUsage, icon: Activity },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -22,46 +39,55 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/admin/spots') {
     return pathname.startsWith('/admin/spots') && pathname !== '/admin/spots/pending';
   }
-  if (href === '/admin/flowers') {
-    return pathname.startsWith('/admin/flowers');
-  }
-  if (href === '/admin/images') {
-    return pathname.startsWith('/admin/images');
-  }
-  if (href === '/admin/users') {
-    return pathname.startsWith('/admin/users');
-  }
-  if (href === '/admin/reviews') {
-    return pathname.startsWith('/admin/reviews');
-  }
-  if (href === '/admin/ai-usage') {
-    return pathname.startsWith('/admin/ai-usage');
-  }
+  if (href === '/admin/flowers') return pathname.startsWith('/admin/flowers');
+  if (href === '/admin/images') return pathname.startsWith('/admin/images');
+  if (href === '/admin/users') return pathname.startsWith('/admin/users');
+  if (href === '/admin/reviews') return pathname.startsWith('/admin/reviews');
+  if (href === '/admin/ai-usage') return pathname.startsWith('/admin/ai-usage');
   return pathname === href;
 }
 
-export function AdminNav() {
+type Props = {
+  onNavigate?: () => void;
+};
+
+/**
+ * 管理画面の縦置きナビゲーション。サイドバー（`lg+`）と Sheet ドロワー（`<lg`）の
+ * 両方から同じコンポーネントを呼び出す。`onNavigate` が渡された場合はリンク
+ * クリック時にコールバックを叩いて Sheet を閉じる。
+ */
+export function AdminNav({ onNavigate }: Props) {
   const pathname = usePathname();
 
   return (
-    <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-6 pb-2 text-sm">
-      {ITEMS.map((item) => {
-        const active = isActive(pathname, item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'rounded-pill px-3 py-1.5 transition',
-              active
-                ? 'bg-ink text-white'
-                : 'border border-line bg-white text-ink-muted hover:border-line-strong hover:bg-surface-2 hover:text-ink',
-            )}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
+    <nav aria-label={COPY.admin.nav.eyebrow}>
+      <ul className="flex flex-col gap-1">
+        {ITEMS.map((item) => {
+          const active = isActive(pathname, item.href);
+          const Icon = item.icon;
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'flex items-center gap-3 rounded-card px-3 py-2 text-sm transition',
+                  active
+                    ? 'bg-brand-soft font-medium text-brand'
+                    : 'text-ink-muted hover:bg-surface-2 hover:text-ink',
+                )}
+              >
+                <Icon
+                  className={cn('size-4 shrink-0', active ? 'text-brand' : 'text-ink-faint')}
+                  strokeWidth={1.75}
+                />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

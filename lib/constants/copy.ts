@@ -836,6 +836,7 @@ export const COPY = {
       reviews: 'レビュー',
       aiUsage: 'AI 利用ログ',
       backToSite: 'サイトに戻る',
+      openMenu: 'メニューを開く',
       eyebrow: 'Admin',
     },
     dashboard: {
