@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { DeleteSpotDialog } from '@/app/admin/_components/delete-spot-dialog';
 import { PublishToggle } from '@/app/admin/_components/publish-toggle';
 import { COPY } from '@/lib/constants/copy';
@@ -45,22 +46,20 @@ export default async function AdminSpotsPage({
   const filters = c.filters;
 
   return (
-    <section className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{c.eyebrow}</p>
-          <h1 className="mt-3 font-serif text-3xl font-bold leading-[1.25] tracking-tight md:text-4xl">
-            {c.title}
-          </h1>
-          <p className="mt-2 text-sm text-ink-muted">{c.description}</p>
-        </div>
-        <Link
-          href="/admin/spots/new"
-          className="rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
-        >
-          {c.newCta}
-        </Link>
-      </header>
+    <section className="mx-auto max-w-6xl px-4 pb-24 pt-8 md:px-6 md:pt-12">
+      <AdminPageHeader
+        eyebrow={c.eyebrow}
+        title={c.title}
+        description={c.description}
+        rightSlot={
+          <Link
+            href="/admin/spots/new"
+            className="rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
+          >
+            {c.newCta}
+          </Link>
+        }
+      />
 
       <form
         method="get"

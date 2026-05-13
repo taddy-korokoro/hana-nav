@@ -34,9 +34,9 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
       <form
         action="/spots"
         method="get"
-        className="flex gap-2 rounded-card border border-line bg-white p-2 shadow-sm"
+        className="flex flex-wrap items-stretch gap-2 rounded-card border border-line bg-white p-2 shadow-sm"
       >
-        <label className="flex flex-1 items-center gap-3 px-3">
+        <label className="flex min-w-[200px] flex-1 items-center gap-3 px-3">
           <SearchIcon className="size-5 text-ink-muted" aria-hidden />
           <input
             type="search"
@@ -47,6 +47,12 @@ export function SpotFilterPanel({ current, prefectureGroups, flowers }: Props) {
           />
         </label>
         <SubmitWithHidden current={current} />
+        <Link
+          href="/spots"
+          className="flex items-center justify-center rounded-card border border-line bg-white px-4 py-2 text-sm text-ink-muted transition hover:border-line-strong hover:bg-surface-2 hover:text-ink"
+        >
+          {COPY.spotsList.clearFilter}
+        </Link>
       </form>
 
       <FilterRow
