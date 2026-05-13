@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { COPY } from '@/lib/constants/copy';
+import { SiteLogo } from './site-logo';
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -8,7 +9,7 @@ export function SiteFooter() {
     <footer className="mt-auto bg-surface-2">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
         <div>
-          <p className="font-serif text-lg font-bold tracking-wider">{COPY.site.name}</p>
+          <SiteLogo size="md" />
           <p className="mt-2 text-xs leading-6 text-ink-muted">{COPY.site.descriptionShort}</p>
         </div>
 

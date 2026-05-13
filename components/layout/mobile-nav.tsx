@@ -14,7 +14,27 @@ import {
 } from '@/components/ui/sheet';
 import { COPY } from '@/lib/constants/copy';
 import { cn } from '@/lib/utils';
-import { BookmarkIcon, LogoutIcon, MenuIcon, SearchIcon, ShieldIcon, UserIcon } from './icons';
+import {
+  BookmarkIcon,
+  CameraIcon,
+  FlowerIcon,
+  LogoutIcon,
+  MenuIcon,
+  SearchIcon,
+  ShieldIcon,
+  UserIcon,
+} from './icons';
+import { SiteLogo } from './site-logo';
+
+/**
+ * ハンバーガーメニュー内の各ナビ項目の左に置く専用アイコン。NAV_ITEMS は
+ * copy.ts 側でアイコンを持たないため、href をキーに mobile-nav 側でマップする。
+ */
+const NAV_ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  '/spots': SearchIcon,
+  '/flowers': FlowerIcon,
+  '/identify': CameraIcon,
+};
 
 type MobileNavProps = {
   isLoggedIn: boolean;
@@ -34,15 +54,15 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
       </SheetTrigger>
       <SheetContent side="right" className="w-80 max-w-[85vw] bg-surface">
         <SheetHeader>
-          <SheetTitle className="font-serif text-xl font-bold tracking-wider">
-            {COPY.site.name}
-          </SheetTitle>
+          <SheetTitle className="sr-only">{COPY.site.name}</SheetTitle>
           <SheetDescription className="sr-only">{COPY.nav.siteMenu}</SheetDescription>
+          <SiteLogo size="md" />
         </SheetHeader>
 
         <nav className="flex flex-col gap-1 px-4 pb-4">
           {COPY.nav.items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = NAV_ITEM_ICONS[item.href];
             return (
               <SheetClose key={item.href} asChild>
                 <Link
@@ -52,20 +72,14 @@ export function MobileNav({ isLoggedIn, isAdmin }: MobileNavProps) {
                     active && 'bg-brand-soft text-brand',
                   )}
                 >
+                  {Icon && (
+                    <Icon className={cn('size-5', active ? 'text-brand' : 'text-ink-muted')} />
+                  )}
                   {item.label}
                 </Link>
               </SheetClose>
             );
           })}
-          <SheetClose asChild>
-            <Link
-              href="/spots"
-              className="mt-2 flex items-center gap-3 rounded-card border border-line bg-white px-3 py-3 text-base hover:border-line-strong"
-            >
-              <SearchIcon className="size-5 text-ink-muted" />
-              {COPY.nav.quickSearch}
-            </Link>
-          </SheetClose>
         </nav>
 
         <div className="mt-auto border-t border-line p-4">
