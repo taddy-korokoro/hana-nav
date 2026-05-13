@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminCard } from '@/app/admin/_components/admin-card';
+import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { AiUsageChart } from '@/components/admin/AiUsageChart';
 import { COPY } from '@/lib/constants/copy';
 import { ESTIMATED_YEN_PER_CALL, getAiUsageStats } from '@/lib/queries/admin-ai-usage';
@@ -19,16 +21,10 @@ export default async function AdminAiUsagePage() {
     summary.last30Days.total > 0 || summary.thisMonth.total > 0 || summary.last7Days.total > 0;
 
   return (
-    <section className="mx-auto max-w-6xl space-y-10 px-6 pb-24 pt-8 md:pt-12">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{c.eyebrow}</p>
-        <h1 className="mt-3 font-serif text-3xl font-bold leading-[1.25] tracking-tight md:text-4xl">
-          {c.title}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-ink-muted">{c.description}</p>
-      </header>
+    <section className="mx-auto max-w-6xl space-y-8 px-4 pb-24 pt-8 md:space-y-10 md:px-6 md:pt-12">
+      <AdminPageHeader eyebrow={c.eyebrow} title={c.title} description={c.description} />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         <SummaryCard
           label={c.summary.last7Days}
           stats={summary.last7Days}
@@ -55,8 +51,7 @@ export default async function AdminAiUsagePage() {
         </p>
       ) : null}
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.daily.heading}</h2>
+      <AdminCard title={c.daily.heading}>
         {daily.every((d) => d.total === 0) ? (
           <p className="mt-3 text-sm text-ink-muted">{c.daily.empty}</p>
         ) : (
@@ -64,12 +59,33 @@ export default async function AdminAiUsagePage() {
             <AiUsageChart rows={daily} />
           </div>
         )}
-      </section>
+      </AdminCard>
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.monthly.heading}</h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[480px] text-left text-sm">
+      <AdminCard title={c.monthly.heading}>
+        {/* モバイル：縦リスト */}
+        <ul className="mt-4 grid grid-cols-1 gap-2 sm:hidden">
+          {monthly.map((m) => (
+            <li
+              key={m.month}
+              className="flex items-baseline justify-between rounded-card border border-line px-3 py-2 text-sm"
+            >
+              <span className="font-medium">{m.month}</span>
+              <span className="flex items-baseline gap-3 text-xs text-ink-muted">
+                <span>
+                  {c.monthly.anonymous} {m.anonymous}
+                </span>
+                <span>
+                  {c.monthly.authenticated} {m.authenticated}
+                </span>
+                <span className="font-medium text-ink">{m.total}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {/* デスクトップ：テーブル */}
+        <div className="mt-4 hidden overflow-x-auto sm:block">
+          <table className="w-full text-left text-sm">
             <thead className="bg-surface-2 text-xs uppercase tracking-wider text-ink-muted">
               <tr>
                 <th className="px-4 py-2">{c.monthly.month}</th>
@@ -90,58 +106,95 @@ export default async function AdminAiUsagePage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </AdminCard>
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.ranking.heading}</h2>
+      <AdminCard title={c.ranking.heading}>
         {ranking.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">{c.ranking.empty}</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[560px] text-left text-sm">
-              <thead className="bg-surface-2 text-xs uppercase tracking-wider text-ink-muted">
-                <tr>
-                  <th className="px-4 py-2">{c.ranking.rank}</th>
-                  <th className="px-4 py-2">{c.ranking.user}</th>
-                  <th className="px-4 py-2 text-right">{c.ranking.count}</th>
-                  <th className="px-4 py-2 text-right">{c.ranking.rewardUnlocked}</th>
-                  <th className="px-4 py-2 text-right">{c.ranking.view}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ranking.map((r, i) => (
-                  <tr key={r.userId} className="border-t border-line">
-                    <td className="px-4 py-2 text-xs text-ink-faint">{i + 1}</td>
-                    <td className="px-4 py-2">
+          <>
+            {/* モバイル：カード */}
+            <ul className="mt-4 grid grid-cols-1 gap-2 md:hidden">
+              {ranking.map((r, i) => (
+                <li
+                  key={r.userId}
+                  className="flex items-center justify-between gap-3 rounded-card border border-line px-3 py-2"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="size-7 shrink-0 rounded-pill bg-surface-2 text-center text-xs font-medium leading-7 text-ink-muted">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0">
                       <Link
                         href={`/admin/users/${r.userId}`}
-                        className="font-medium text-ink hover:text-brand"
+                        className="block truncate text-sm font-medium text-ink hover:text-brand"
                       >
                         {r.username ?? c.ranking.anonymousName}
                       </Link>
-                      {r.isWithdrawn && (
-                        <span className="ml-2 rounded-pill bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
-                          退会済
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-right font-medium">{r.count}</td>
-                    <td className="px-4 py-2 text-right text-ink-muted">{r.rewardUnlockedCount}</td>
-                    <td className="px-4 py-2 text-right">
-                      <Link
-                        href={`/admin/users/${r.userId}`}
-                        className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2"
-                      >
-                        {c.ranking.view}
-                      </Link>
-                    </td>
+                      <p className="mt-0.5 truncate text-[11px] text-ink-faint">
+                        {c.ranking.count} {r.count} ・ {c.ranking.rewardUnlocked}{' '}
+                        {r.rewardUnlockedCount}
+                      </p>
+                    </div>
+                  </div>
+                  {r.isWithdrawn && (
+                    <span className="shrink-0 rounded-pill bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
+                      退会済
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {/* デスクトップ：テーブル */}
+            <div className="mt-4 hidden overflow-x-auto md:block">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-surface-2 text-xs uppercase tracking-wider text-ink-muted">
+                  <tr>
+                    <th className="px-4 py-2">{c.ranking.rank}</th>
+                    <th className="px-4 py-2">{c.ranking.user}</th>
+                    <th className="px-4 py-2 text-right">{c.ranking.count}</th>
+                    <th className="px-4 py-2 text-right">{c.ranking.rewardUnlocked}</th>
+                    <th className="px-4 py-2 text-right">{c.ranking.view}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {ranking.map((r, i) => (
+                    <tr key={r.userId} className="border-t border-line">
+                      <td className="px-4 py-2 text-xs text-ink-faint">{i + 1}</td>
+                      <td className="px-4 py-2">
+                        <Link
+                          href={`/admin/users/${r.userId}`}
+                          className="font-medium text-ink hover:text-brand"
+                        >
+                          {r.username ?? c.ranking.anonymousName}
+                        </Link>
+                        {r.isWithdrawn && (
+                          <span className="ml-2 rounded-pill bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
+                            退会済
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-right font-medium">{r.count}</td>
+                      <td className="px-4 py-2 text-right text-ink-muted">
+                        {r.rewardUnlockedCount}
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        <Link
+                          href={`/admin/users/${r.userId}`}
+                          className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2"
+                        >
+                          {c.ranking.view}
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
-      </section>
+      </AdminCard>
     </section>
   );
 }
@@ -157,13 +210,13 @@ function SummaryCard({
 }) {
   const c = COPY.admin.aiUsage.summary;
   return (
-    <div className="rounded-card border border-line bg-white px-6 py-5">
-      <p className="text-sm text-ink-muted">{label}</p>
-      <p className="mt-3">
-        <span className="font-serif text-3xl font-bold text-ink">{stats.total}</span>
-        <span className="ml-1.5 text-sm text-ink-muted">{suffix}</span>
+    <div className="rounded-card border border-line bg-white px-4 py-4 md:px-6 md:py-5">
+      <p className="text-xs text-ink-muted md:text-sm">{label}</p>
+      <p className="mt-2 md:mt-3">
+        <span className="font-serif text-2xl font-bold text-ink md:text-3xl">{stats.total}</span>
+        <span className="ml-1 text-xs text-ink-muted md:ml-1.5 md:text-sm">{suffix}</span>
       </p>
-      <p className="mt-2 text-xs text-ink-faint">
+      <p className="mt-1 text-[10px] text-ink-faint md:mt-2 md:text-xs">
         {c.anonymous}: {stats.anonymous} ／ {c.authenticated}: {stats.authenticated}
       </p>
     </div>
@@ -172,14 +225,14 @@ function SummaryCard({
 
 function CostCard({ label, yen }: { label: string; yen: number }) {
   return (
-    <div className="rounded-card border border-line bg-white px-6 py-5">
-      <p className="text-sm text-ink-muted">{label}</p>
-      <p className="mt-3">
-        <span className="font-serif text-3xl font-bold text-ink">
+    <div className="rounded-card border border-line bg-white px-4 py-4 md:px-6 md:py-5">
+      <p className="text-xs text-ink-muted md:text-sm">{label}</p>
+      <p className="mt-2 md:mt-3">
+        <span className="font-serif text-2xl font-bold text-ink md:text-3xl">
           ¥{yen.toLocaleString('ja-JP')}
         </span>
       </p>
-      <p className="mt-2 text-xs text-ink-faint">推計値</p>
+      <p className="mt-1 text-[10px] text-ink-faint md:mt-2 md:text-xs">推計値</p>
     </div>
   );
 }
