@@ -90,6 +90,9 @@ export async function listAdminUsers(params: AdminUserListParams): Promise<Admin
     .order('created_at', { ascending: false })
     .limit(500);
 
+  // admin 画面のため、`status` 未指定時は退会済を含む全ユーザーを返す。
+  // 一般画面では `.is('deleted_at', null)` 必須だが、ここでは意図的に逸脱する
+  // （フィルタは admin が UI から明示指定する）。
   if (params.status === 'active') {
     query = query.is('deleted_at', null);
   } else if (params.status === 'withdrawn') {
