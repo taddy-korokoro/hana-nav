@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { RoleBadge, WithdrawnBadge } from '@/app/admin/_components/admin-badges';
+import { AdminCard } from '@/app/admin/_components/admin-card';
+import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { UserBanButton } from '@/components/admin/UserBanButton';
 import { UserRoleSelector } from '@/components/admin/UserRoleSelector';
 import { COPY } from '@/lib/constants/copy';
@@ -30,27 +33,20 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const c = COPY.admin.users.detail;
 
   return (
-    <section className="mx-auto max-w-5xl space-y-10 px-6 pb-24 pt-8 md:pt-12">
-      <header className="space-y-3">
-        <Link href="/admin/users" className="text-xs text-brand hover:underline">
-          ← {c.backToList}
-        </Link>
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{c.eyebrow}</p>
-        <h1 className="font-serif text-3xl font-bold leading-[1.25] tracking-tight md:text-4xl">
-          {detail.username ?? c.anonymousName}
-        </h1>
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <RoleBadge role={detail.role} labels={c.roleLabels} />
-          <StatusBadge
-            isWithdrawn={detail.isWithdrawn}
-            activeLabel={c.statusBadge.active}
-            withdrawnLabel={c.statusBadge.withdrawn}
-          />
-        </div>
-      </header>
+    <section className="mx-auto max-w-5xl space-y-6 px-4 pb-24 pt-8 md:space-y-10 md:px-6 md:pt-12">
+      <AdminPageHeader
+        eyebrow={c.eyebrow}
+        title={detail.username ?? c.anonymousName}
+        backLink={{ href: '/admin/users', label: c.backToList }}
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <RoleBadge role={detail.role} />
+            <WithdrawnBadge isWithdrawn={detail.isWithdrawn} />
+          </div>
+        }
+      />
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.sections.profile}</h2>
+      <AdminCard title={c.sections.profile}>
         <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 text-sm md:grid-cols-2">
           <Item label={c.profileLabels.id} value={<code className="text-xs">{detail.id}</code>} />
           <Item label={c.profileLabels.username} value={detail.username ?? '—'} />
@@ -69,10 +65,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             <Item label={c.profileLabels.deletedAt} value={formatDateTime(detail.deletedAt)} />
           )}
         </dl>
-      </section>
+      </AdminCard>
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.sections.dangerZone}</h2>
+      <AdminCard title={c.sections.dangerZone}>
         <p className="mt-2 text-xs text-ink-muted">
           {isSelf ? c.cannotDemoteSelf : c.banAction.confirmBan}
         </p>
@@ -89,10 +84,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             disabled={isSelf && !detail.isWithdrawn}
           />
         </div>
-      </section>
+      </AdminCard>
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.sections.reviews}</h2>
+      <AdminCard title={c.sections.reviews}>
         {detail.reviews.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">{c.reviewsEmpty}</p>
         ) : (
@@ -129,10 +123,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             ))}
           </ul>
         )}
-      </section>
+      </AdminCard>
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <h2 className="font-serif text-lg font-semibold">{c.sections.bookmarks}</h2>
+      <AdminCard title={c.sections.bookmarks}>
         {detail.bookmarks.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">{c.bookmarksEmpty}</p>
         ) : (
@@ -157,13 +150,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             ))}
           </ul>
         )}
-      </section>
+      </AdminCard>
 
-      <section className="rounded-card border border-line bg-white p-6">
-        <header className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="font-serif text-lg font-semibold">{c.sections.aiUsage}</h2>
-          <p className="text-xs text-ink-muted">{c.aiUsageTotal(detail.aiUsageTotal)}</p>
-        </header>
+      <AdminCard
+        title={c.sections.aiUsage}
+        titleExtra={<p className="text-xs text-ink-muted">{c.aiUsageTotal(detail.aiUsageTotal)}</p>}
+      >
         {detail.aiUsage.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">{c.aiUsageEmpty}</p>
         ) : (
@@ -185,7 +177,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             ))}
           </ul>
         )}
-      </section>
+      </AdminCard>
     </section>
   );
 }
@@ -196,37 +188,6 @@ function Item({ label, value }: { label: string; value: React.ReactNode }) {
       <dt className="text-xs text-ink-faint">{label}</dt>
       <dd className="text-sm text-ink">{value}</dd>
     </div>
-  );
-}
-
-function RoleBadge({ role, labels }: { role: 'user' | 'admin'; labels: Record<string, string> }) {
-  const cls =
-    role === 'admin'
-      ? 'inline-flex items-center rounded-pill bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand'
-      : 'inline-flex items-center rounded-pill bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink-muted';
-  return <span className={cls}>{labels[role]}</span>;
-}
-
-function StatusBadge({
-  isWithdrawn,
-  activeLabel,
-  withdrawnLabel,
-}: {
-  isWithdrawn: boolean;
-  activeLabel: string;
-  withdrawnLabel: string;
-}) {
-  if (isWithdrawn) {
-    return (
-      <span className="inline-flex items-center rounded-pill bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-        {withdrawnLabel}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center rounded-pill bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-      {activeLabel}
-    </span>
   );
 }
 
