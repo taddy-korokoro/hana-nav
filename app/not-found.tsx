@@ -3,29 +3,35 @@ import { ArrowRightIcon } from '@/components/layout/icons';
 import { SiteLogo } from '@/components/layout/site-logo';
 import { COPY } from '@/lib/constants/copy';
 
-export default function SpotDetailNotFound() {
+/**
+ * グローバル 404 ページ。各セグメント固有の `not-found.tsx`（spots / flowers /
+ * areas）にマッチしないルートでフォールバック表示される。
+ */
+export default function GlobalNotFound() {
   return (
     <main className="mx-auto max-w-2xl px-6 pb-24 pt-16 text-center">
       <div className="flex justify-center">
         <SiteLogo size="2xl" variant="error" />
       </div>
       <h1 className="mt-6 font-serif text-3xl font-bold tracking-tight md:text-4xl">
-        {COPY.spotDetailNotFound.title}
+        ページが見つかりませんでした
       </h1>
-      <p className="mt-4 text-sm leading-7 text-ink-muted">{COPY.spotDetailNotFound.description}</p>
+      <p className="mt-4 text-sm leading-7 text-ink-muted">
+        URL が誤っているか、削除された可能性があります。トップから探し直してください。
+      </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Link
-          href="/spots"
+          href="/"
           className="inline-flex items-center gap-1.5 rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
         >
-          {COPY.spotDetailNotFound.backToList}
+          {COPY.common.backToTop}
           <ArrowRightIcon className="size-4" />
         </Link>
         <Link
-          href="/"
+          href="/spots"
           className="inline-flex items-center rounded-pill border border-line bg-white px-5 py-2.5 text-sm font-medium transition hover:border-line-strong"
         >
-          {COPY.common.backToTop}
+          スポット検索へ
         </Link>
       </div>
     </main>

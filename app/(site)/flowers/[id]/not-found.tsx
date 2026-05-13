@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
+import { SiteLogo } from '@/components/layout/site-logo';
 import { COPY } from '@/lib/constants/copy';
 
 export default function FlowerDetailNotFound() {
   return (
     <main className="mx-auto max-w-2xl px-6 pb-24 pt-16 text-center">
-      <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
-        {COPY.flowerDetailNotFound.code}
-      </p>
-      <h1 className="mt-3 font-serif text-3xl font-bold tracking-tight md:text-4xl">
+      <div className="flex justify-center">
+        <SiteLogo size="2xl" variant="error" />
+      </div>
+      <h1 className="mt-6 font-serif text-3xl font-bold tracking-tight md:text-4xl">
         {COPY.flowerDetailNotFound.title}
       </h1>
       <p className="mt-4 text-sm leading-7 text-ink-muted">
