@@ -8,7 +8,7 @@ import { UserBanButton } from '@/components/admin/UserBanButton';
 import { UserRoleSelector } from '@/components/admin/UserRoleSelector';
 import { COPY } from '@/lib/constants/copy';
 import { getAdminUserDetail } from '@/lib/queries/admin-users';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/supabase/get-user';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,10 +24,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     notFound();
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user: me },
-  } = await supabase.auth.getUser();
+  // layout の requireAdmin() と同じユーザーを参照する。`React.cache` によって
+  // 同一リクエスト内では Auth サーバー往復が 1 回に集約される。
+  const me = await getCurrentUser();
   const isSelf = me?.id === detail.id;
 
   const c = COPY.admin.users.detail;
