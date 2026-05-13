@@ -82,6 +82,8 @@ export async function listAdminReviews(params: AdminReviewListParams): Promise<A
 
     const [spotMatchRes, profileMatchRes] = await Promise.all([
       admin.from('spots').select('id').ilike('name', `%${term}%`).is('deleted_at', null).limit(200),
+      // admin 画面のため、退会済ユーザーの投稿も検索対象に含める意図で
+      // `.is('deleted_at', null)` を意図的に外している（一般画面では必須）。
       admin.from('profiles').select('id').ilike('username', `%${term}%`).limit(200),
     ]);
 
