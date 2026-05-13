@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { logout } from '@/app/auth/logout/actions';
 import { LogoutIcon, MenuIcon } from '@/components/layout/icons';
+import { SiteLogo } from '@/components/layout/site-logo';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { COPY } from '@/lib/constants/copy';
 import { AdminNav } from './admin-nav';
@@ -32,8 +33,8 @@ export function AdminShell({ children }: Props) {
     <div className="flex min-h-dvh flex-col bg-surface text-ink lg:flex-row">
       {/* モバイル：上部のトップバー（ロゴ + 右端ハンバーガー） */}
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
-        <Link href="/admin" className="flex items-baseline gap-2">
-          <span className="font-serif text-base font-bold tracking-wider">{COPY.site.name}</span>
+        <Link href="/admin" aria-label={COPY.site.name} className="flex items-center gap-2">
+          <SiteLogo size="sm" />
           <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-brand">
             {COPY.admin.nav.eyebrow}
           </span>
@@ -53,11 +54,10 @@ export function AdminShell({ children }: Props) {
                 <Link
                   href="/admin"
                   onClick={() => setOpen(false)}
-                  className="flex items-baseline gap-3"
+                  aria-label={COPY.site.name}
+                  className="flex items-center gap-3"
                 >
-                  <span className="font-serif text-lg font-bold tracking-wider">
-                    {COPY.site.name}
-                  </span>
+                  <SiteLogo size="md" />
                   <span className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
                     {COPY.admin.nav.eyebrow}
                   </span>
@@ -93,8 +93,8 @@ export function AdminShell({ children }: Props) {
       {/* デスクトップ：サイドバー */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 border-r border-line bg-white lg:flex lg:flex-col">
         <div className="border-b border-line px-5 py-5">
-          <Link href="/admin" className="flex items-baseline gap-3">
-            <span className="font-serif text-lg font-bold tracking-wider">{COPY.site.name}</span>
+          <Link href="/admin" aria-label={COPY.site.name} className="flex items-center gap-3">
+            <SiteLogo size="md" />
             <span className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
               {COPY.admin.nav.eyebrow}
             </span>

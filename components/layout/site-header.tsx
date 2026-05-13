@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { SearchIcon } from './icons';
+import { SiteLogo } from './site-logo';
 import { UserMenu } from './user-menu';
 
 /**
@@ -37,8 +38,8 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 bg-surface/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="font-serif text-xl font-bold tracking-wider">
-          {COPY.site.name}
+        <Link href="/" aria-label={COPY.site.name} className="flex items-center">
+          <SiteLogo size="md" />
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
