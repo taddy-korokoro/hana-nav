@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { FlowerEditor } from '@/components/admin/FlowerEditor';
 import { COPY } from '@/lib/constants/copy';
 import { createFlowerAction } from '../actions';
@@ -14,14 +15,8 @@ export default function AdminNewFlowerPage() {
   const c = COPY.admin.flowers.new;
 
   return (
-    <section className="mx-auto max-w-4xl px-6 pb-24 pt-8 md:pt-12">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{c.eyebrow}</p>
-        <h1 className="mt-3 font-serif text-3xl font-bold leading-[1.25] tracking-tight md:text-4xl">
-          {c.title}
-        </h1>
-        <p className="mt-3 text-sm leading-7 text-ink-muted">{c.description}</p>
-      </header>
+    <section className="mx-auto max-w-4xl px-4 pb-24 pt-8 md:px-6 md:pt-12">
+      <AdminPageHeader eyebrow={c.eyebrow} title={c.title} description={c.description} />
 
       <FlowerEditor
         initial={{

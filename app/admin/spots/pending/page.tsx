@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { COPY } from '@/lib/constants/copy';
 import { listPendingSpots } from '@/lib/queries/admin';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
@@ -17,14 +18,8 @@ export default async function AdminPendingSpotsPage() {
   const c = COPY.admin.spots.pending;
 
   return (
-    <section className="mx-auto max-w-5xl px-6 pb-24 pt-8 md:pt-12">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{c.eyebrow}</p>
-        <h1 className="mt-3 font-serif text-3xl font-bold leading-[1.25] tracking-tight md:text-4xl">
-          {c.title}
-        </h1>
-        <p className="mt-3 text-sm leading-7 text-ink-muted">{c.description}</p>
-      </header>
+    <section className="mx-auto max-w-5xl px-4 pb-24 pt-8 md:px-6 md:pt-12">
+      <AdminPageHeader eyebrow={c.eyebrow} title={c.title} description={c.description} />
 
       <div className="mt-8 space-y-4">
         {spots.length === 0 && (

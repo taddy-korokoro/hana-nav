@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/supabase/get-user';
 import type { User } from '@supabase/supabase-js';
 
 /**
@@ -7,19 +8,21 @@ import type { User } from '@supabase/supabase-js';
  * でなければ `/` にリダイレクトする。未ログインの場合は middleware が先に
  * /auth/login へ捌くが、middleware 経路外（直接呼び出し）でも安全側に倒す。
  *
+ * `getCurrentUser()` を経由するため、同一リクエスト内で `requireAdmin()` と
+ * 別の `getCurrentUser()` 呼び出しがあっても Auth サーバー往復は 1 回に
+ * まとまる（`React.cache` メモ化）。
+ *
  * 戻り値は admin ユーザー本体。`profiles.role` を再取得したい場合は呼び出し
  * 元で別途 select する。
  */
 export async function requireAdmin(): Promise<User> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect('/auth/login');
   }
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')

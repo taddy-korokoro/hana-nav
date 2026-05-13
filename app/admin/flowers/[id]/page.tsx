@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { FlowerEditor } from '@/components/admin/FlowerEditor';
 import { COPY } from '@/lib/constants/copy';
 import { getAdminFlowerDetail } from '@/lib/queries/admin';
@@ -26,17 +27,13 @@ export default async function AdminFlowerEditPage({ params }: { params: Promise<
   const action = updateFlowerAction.bind(null, id);
 
   return (
-    <section className="mx-auto max-w-4xl px-6 pb-24 pt-8 md:pt-12">
-      <header className="space-y-3">
-        <Link href="/admin/flowers" className="text-xs text-brand hover:underline">
-          ← {c.backToList}
-        </Link>
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{c.eyebrow}</p>
-        <h1 className="font-serif text-3xl font-bold leading-[1.25] tracking-tight md:text-4xl">
-          {detail.name}
-        </h1>
-        <p className="text-xs text-ink-faint">{c.savedAt(detail.updatedAt)}</p>
-      </header>
+    <section className="mx-auto max-w-4xl px-4 pb-24 pt-8 md:px-6 md:pt-12">
+      <AdminPageHeader
+        eyebrow={c.eyebrow}
+        title={detail.name}
+        backLink={{ href: '/admin/flowers', label: c.backToList }}
+        meta={<p className="text-xs text-ink-faint">{c.savedAt(detail.updatedAt)}</p>}
+      />
 
       <FlowerEditor
         initial={{
