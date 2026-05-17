@@ -1,5 +1,7 @@
+import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { FlowerAttributes } from '@/components/flowers/FlowerAttributes';
 import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
 import { FlowerSpotsList } from '@/components/flowers/FlowerSpotsList';
@@ -63,14 +65,15 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
 
         {seasonText && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-xs font-medium ${
-                inSeason ? 'bg-brand/10 text-brand' : 'bg-surface-2 text-ink-muted'
-              }`}
-            >
+            <span className="inline-flex items-center rounded-pill bg-surface-2 px-3 py-1 text-xs font-medium text-ink-muted">
               {COPY.flowerDetail.seasonBadge(seasonText)}
-              {inSeason && COPY.flowerDetail.inSeasonSuffix}
             </span>
+            {inSeason && (
+              <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand px-3 py-1 text-xs font-medium text-white shadow-sm">
+                <Sparkles className="size-3.5" aria-hidden="true" />
+                {COPY.flowerDetail.inSeasonLabel}
+              </span>
+            )}
           </div>
         )}
       </header>
@@ -91,6 +94,21 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
         />
         <div className="mt-4">
           <FlowerSeasonChart start={flower.defaultSeasonStart} end={flower.defaultSeasonEnd} />
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <SectionHeader
+          title={COPY.flowerDetail.sections.attributesTitle}
+          eyebrow={COPY.flowerDetail.sections.attributesEyebrow}
+        />
+        <div className="mt-4">
+          <FlowerAttributes
+            cultivationDifficulty={flower.cultivationDifficulty}
+            coldTolerance={flower.coldTolerance}
+            heatTolerance={flower.heatTolerance}
+            shadeTolerance={flower.shadeTolerance}
+          />
         </div>
       </section>
 

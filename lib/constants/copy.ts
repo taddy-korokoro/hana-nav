@@ -225,7 +225,7 @@ export const COPY = {
       `${params.prefectureName}の${params.name}は${params.seasonText}が見頃。` +
       `${params.description ? params.description + ' ' : ''}アクセス、見どころ情報を hana nav がお届けします。`,
     bestSeasonBadge: (range: string) => `見頃 ${range}`,
-    inSeasonSuffix: '・今が見頃',
+    inSeasonLabel: '今が見頃',
     info: {
       address: '住所',
       access: 'アクセス',
@@ -434,15 +434,69 @@ export const COPY = {
     },
     seasonBadge: (range: string) => `見頃 ${range}`,
     seasonUnknown: '見頃情報は準備中です',
-    inSeasonSuffix: '・今が見頃',
+    inSeasonLabel: '今が見頃',
     sections: {
       aboutTitle: '花の特徴',
       seasonTitle: '見頃カレンダー',
       seasonEyebrow: 'Season',
+      attributesTitle: '栽培情報',
+      attributesEyebrow: 'Attributes',
       aliasesTitle: '別名・品種',
       aliasesEyebrow: 'Aliases',
       spotsTitle: 'この花が見られるスポット',
       spotsEyebrow: 'Spots',
+    },
+    // DB の英語識別子 → 表示用日本語ラベル。
+    // 識別子の集合は flowers テーブルの CHECK 制約と一致させる
+    // （migration 20260516000001_flowers_attributes.sql 参照）。
+    attributes: {
+      empty: '栽培情報は登録されていません。',
+      unregistered: '未登録',
+      labels: {
+        cultivationDifficulty: '栽培難易度',
+        coldTolerance: '耐寒性',
+        heatTolerance: '耐暑性',
+        shadeTolerance: '耐陰性',
+      },
+      difficulty: {
+        EASY: '易しい',
+        SLIGHTLY_EASY: 'やや易しい',
+        NORMAL: '普通',
+        SLIGHTLY_HARD: 'やや難しい',
+        HARD: '難しい',
+      },
+      tolerance: {
+        STRONG: '強い',
+        SLIGHTLY_STRONG: 'やや強い',
+        NORMAL: '普通',
+        SLIGHTLY_WEAK: 'やや弱い',
+        WEAK: '弱い',
+      },
+      shade: {
+        AVAILABLE: 'あり',
+        UNAVAILABLE: 'なし',
+      },
+      // 4 段階の視覚記号（◎ / ○ / △ / ×）。
+      // 5 段階の値を 4 シンボルに圧縮するため、NORMAL と SLIGHTLY_HARD（または SLIGHTLY_WEAK）
+      // が同じ △ になる。記号だけでは区別できないので、UI 側で必ず日本語ラベルを併記する。
+      difficultySymbol: {
+        EASY: '◎',
+        SLIGHTLY_EASY: '○',
+        NORMAL: '△',
+        SLIGHTLY_HARD: '△',
+        HARD: '×',
+      },
+      toleranceSymbol: {
+        STRONG: '◎',
+        SLIGHTLY_STRONG: '○',
+        NORMAL: '△',
+        SLIGHTLY_WEAK: '△',
+        WEAK: '×',
+      },
+      shadeSymbol: {
+        AVAILABLE: '○',
+        UNAVAILABLE: '×',
+      },
     },
     aliases: {
       empty: '別名・品種は登録されていません。',
