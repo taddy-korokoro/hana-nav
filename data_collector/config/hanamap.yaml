@@ -1,0 +1,22 @@
+# hanamap.com 専用スクレイパ設定（01_scrape_hanamap.py が参照）
+#
+# サイト構造:
+#   /flower/area/                          → 47 都道府県のエントリーポイント
+#   /flower/area/{prefecture_path}/        → スポット一覧（ページネーション）
+#   /flower/area/{prefecture_path}/entry-N.html → スポット詳細
+
+base_url: https://hanamap.com
+area_index_path: /flower/area/
+
+# 動作確認モード: target_prefecture_paths を 1-2 個に絞り、max_entries_per_prefecture で件数制限
+# 本番モード:     target_prefecture_paths を空（[]）にすると area_index_path から 47 都道府県を自動収集
+target_prefecture_paths: []
+
+# 1 都道府県あたりの最大件数。null なら無制限。スモーク時は 10 程度を推奨
+max_entries_per_prefecture: null
+
+# リクエスト間スリープ秒数（2.0 以上を推奨。礼儀正しさとオーバーツーリズム対策）
+sleep_sec: 2.0
+
+# 1 都道府県あたりの最大ページ数（暴走防止の安全弁。北海道は実測 5 ページ）
+max_pages_per_prefecture: 20

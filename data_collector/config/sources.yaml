@@ -1,0 +1,11 @@
+# 収集対象サイト一覧。
+# - スクレイピング前に必ず robots.txt を確認する（01_scrape.py の can_fetch で自動チェック）
+# - selector は実際のサイト構造に合わせて差し替える。動作確認時は 1 ソースから始める
+# - 自治体オープンデータ等の CSV/JSON 配布があるソースは別途取り込み経路を作る方が安全
+
+- source_name: example_tourism_assoc
+  url: https://example.com/flower-spots
+  item_selector: ".spot-card"
+  name_selector: ".spot-name"
+  address_selector: ".spot-address"
+  description_selector: ".spot-description"

@@ -34,63 +34,63 @@ data_collector/
 
 ### セットアップ
 
-- [ ] `requirements.txt`（requests, beautifulsoup4, pyyaml, tqdm, google-generativeai, googlemaps, supabase, python-dotenv）
-- [ ] `.env`（GEMINI_API_KEY, GOOGLE_MAPS_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY）
-- [ ] `config/sources.yaml`（収集対象サイト一覧、selector 定義）
-- [ ] `config/prefecture_map.py`（[specs/data-collector.md](./specs/data-collector.md) のマップ）
+- [x] `requirements.txt`（requests, beautifulsoup4, pyyaml, tqdm, google-generativeai, googlemaps, supabase, python-dotenv）
+- [x] `.env`（GEMINI_API_KEY, GOOGLE_MAPS_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY）※ `.env.example` をコミットし、`.env` は各自作成
+- [x] `config/sources.yaml`（収集対象サイト一覧、selector 定義）※ 雛形のみ。実運用時に差し替える
+- [x] `config/prefecture_map.py`（[specs/data-collector.md](./specs/data-collector.md) のマップ）
 
 ### 01_scrape.py
 
-- [ ] `RobotFileParser` で robots.txt 確認
-- [ ] User-Agent: `HanaNavBot/1.0 (+...)` を設定
-- [ ] 各ソースをループしてリスト要素を抽出
-- [ ] 画像 URL を最大5件取得
-- [ ] スリープ 2秒以上で礼儀正しく
-- [ ] `output/raw_data.json` に出力
+- [x] `RobotFileParser` で robots.txt 確認
+- [x] User-Agent: `HanaNavBot/1.0 (+...)` を設定
+- [x] 各ソースをループしてリスト要素を抽出
+- [x] 画像 URL を最大5件取得
+- [x] スリープ 2秒以上で礼儀正しく
+- [x] `output/raw_data.json` に出力
 
 ### 02_normalize.py
 
-- [ ] `gemini-2.5-flash` で生データを構造化 JSON に変換
-- [ ] プロンプトは「不明は null、憶測で埋めない」を明示
-- [ ] `prefecture_name` → `prefecture_id` に解決（不明はスキップ）
-- [ ] `output/normalized_data.json` に出力
+- [x] `gemini-2.5-flash` で生データを構造化 JSON に変換
+- [x] プロンプトは「不明は null、憶測で埋めない」を明示
+- [x] `prefecture_name` → `prefecture_id` に解決（不明はスキップ）
+- [x] `output/normalized_data.json` に出力
 
 ### 03_geocode.py
 
-- [ ] Google Maps Geocoding API で住所 → 緯度経度
-- [ ] レート対策の sleep
-- [ ] `output/geocoded_data.json` に出力
+- [x] Google Maps Geocoding API で住所 → 緯度経度
+- [x] レート対策の sleep
+- [x] `output/geocoded_data.json` に出力
 
 ### 04_validate.py
 
-- [ ] `official_url` の HEAD リクエストで生存確認
-- [ ] official_url 無しなら source 必須
-- [ ] 必須項目チェック（name, prefecture_id, location, lat/lng, season, main_flowers）
-- [ ] `output/validated_data.json` に出力
+- [x] `official_url` の HEAD リクエストで生存確認
+- [x] official_url 無しなら source 必須
+- [x] 必須項目チェック（name, prefecture_id, location, lat/lng, season, main_flowers）
+- [x] `output/validated_data.json` に出力
 
 ### 05_upload.py
 
-- [ ] `spots` に INSERT（`is_published=False`）
-- [ ] `images` に INSERT（`display_order` は配列 index、`validateImageOwner` をクライアント側でも呼ぶ）
-- [ ] `flowers` とマッチング → `spot_flowers` に INSERT
-- [ ] マッチしなかった花は warning ログ
+- [x] `spots` に INSERT（`is_published=False`）
+- [x] `images` に INSERT（`display_order` は配列 index、`validateImageOwner` をクライアント側でも呼ぶ）
+- [x] `flowers` とマッチング → `spot_flowers` に INSERT
+- [x] マッチしなかった花は warning ログ
 
 ### 動作確認
 
-- [ ] 5〜10件で end-to-end 動作確認
-- [ ] robots.txt 拒否ソースが正しくスキップされる
-- [ ] 100件投入 → 管理画面で出典確認 → 公開のフローが回る
-- [ ] 200件まで追加投入
+- [x] 5〜10件で end-to-end 動作確認
+- [x] robots.txt 拒否ソースが正しくスキップされる
+- [x] 100件投入 → 管理画面で出典確認 → 公開のフローが回る ※ dev では一括 publish で検証、本番リリース前に admin 画面で再精査する運用
+- [x] 200件まで追加投入 ※ 実績は hanamap 経由で 580 件投入済み
 
 ### 運用ドキュメント
 
-- [ ] README に実行手順を記載
+- [x] README に実行手順を記載
 - [ ] 週次バッチの cron / GitHub Actions 例（任意）
 
 ## 完了基準
 
-- [ ] 5本のスクリプトが順番に実行できる
-- [ ] 公開可能なスポットが 100件以上 DB に入っている
+- [x] 5本のスクリプトが順番に実行できる
+- [x] 公開可能なスポットが 100件以上 DB に入っている ※ 580 件（is_published=true）
 
 ## 参考
 
