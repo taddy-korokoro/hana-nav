@@ -117,7 +117,18 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
     .eq('owner_type', 'flower')
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
-  if (imgError) console.error('[getFlowerList] failed to fetch flower images', imgError);
+  if (imgError) {
+    // ここはあえて throw せず空マップで継続する（URL 長制限のように images だけ取れなく
+    // ても花一覧自体は表示したい）。ただし「DB 障害」と「プロキシ層のエラー」を区別する
+    // ため、PostgrestError の主要プロパティを構造化して残す。再発時は cover_image_url
+    // 列や DISTINCT ON view への移行を検討する。
+    console.error('[getFlowerList] failed to fetch flower images', {
+      message: imgError.message,
+      code: imgError.code,
+      details: imgError.details,
+      hint: imgError.hint,
+    });
+  }
 
   const coverByOwner = new Map<string, string>();
   for (const img of images ?? []) {
