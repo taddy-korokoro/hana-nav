@@ -61,11 +61,15 @@ def _resolve_flower_id(flower_name: str) -> str | None:
     if direct.data:
         return direct.data[0]["id"]
 
+    # 親 flower の deleted_at も join で同時確認する（TS 側 findFlowerIdByAlias と
+    # 防衛水準を揃える）。cascade トリガで通常は alias.deleted_at も連動するが、
+    # 万一トリガが外れていた場合に論理削除済みの花を紐付けてしまうのを防ぐ。
     alias = (
         supabase.table("flower_aliases")
-        .select("flower_id")
+        .select("flower_id, flower:flowers!inner(id, deleted_at)")
         .eq("alias", flower_name)
         .is_("deleted_at", "null")
+        .is_("flower.deleted_at", "null")
         .limit(1)
         .execute()
     )
