@@ -15,12 +15,19 @@ const fetchFlowerRow = cache(async (id: string) => {
   return supabase
     .from('flowers')
     .select(
-      'id, name, name_kana, description, default_season_start, default_season_end, updated_at',
+      // prettier-ignore-next-line: Supabase の型推論はリテラル文字列を要求するため 1 行に保つ
+      'id, name, name_kana, description, default_season_start, default_season_end, cultivation_difficulty, cold_tolerance, heat_tolerance, shade_tolerance, updated_at',
     )
     .eq('id', id)
     .is('deleted_at', null)
     .maybeSingle();
 });
+
+// flowers.cultivation_difficulty / *_tolerance / shade_tolerance の CHECK 制約と同じ値域。
+// DB が許容する識別子だけが流れてくる前提で型を絞る（万一壊れたら null へフォールバック）。
+export type CultivationDifficulty = 'EASY' | 'SLIGHTLY_EASY' | 'NORMAL' | 'SLIGHTLY_HARD' | 'HARD';
+export type ToleranceLevel = 'STRONG' | 'SLIGHTLY_STRONG' | 'NORMAL' | 'SLIGHTLY_WEAK' | 'WEAK';
+export type ShadeTolerance = 'AVAILABLE' | 'UNAVAILABLE';
 
 export type FlowerListItem = {
   id: string;
@@ -61,6 +68,10 @@ export type FlowerDetail = {
   description: string | null;
   defaultSeasonStart: number | null;
   defaultSeasonEnd: number | null;
+  cultivationDifficulty: CultivationDifficulty | null;
+  coldTolerance: ToleranceLevel | null;
+  heatTolerance: ToleranceLevel | null;
+  shadeTolerance: ShadeTolerance | null;
   updatedAt: string;
 };
 
@@ -94,12 +105,16 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
   }
   if (!flowers || flowers.length === 0) return [];
 
-  const ids = flowers.map((f) => f.id);
+  // 当初は `.in('owner_id', flowers.map(f => f.id))` で絞っていたが、greensnap 投入後に
+  // flowers が 600 件超になり、UUID 600+ 個の `?owner_id=in.(...)` が URL 長制限
+  // （プロキシで 8-16KB）を超えて images クエリが空 error で失敗していた。
+  // owner_type='flower' で絞れば全件取得しても数百 KB 程度なので、`.in()` を外して
+  // クライアント側で grouping に切り替える。10000 件規模になったら DISTINCT ON view
+  // か `flowers.cover_image_url` 列を検討する。
   const { data: images, error: imgError } = await supabase
     .from('images')
     .select('owner_id, url, display_order')
     .eq('owner_type', 'flower')
-    .in('owner_id', ids)
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
   if (imgError) console.error('[getFlowerList] failed to fetch flower images', imgError);
@@ -140,6 +155,10 @@ export async function getFlowerDetail(id: string): Promise<FlowerDetailBundle | 
     description: row.description ?? null,
     defaultSeasonStart: row.default_season_start ?? null,
     defaultSeasonEnd: row.default_season_end ?? null,
+    cultivationDifficulty: (row.cultivation_difficulty as CultivationDifficulty | null) ?? null,
+    coldTolerance: (row.cold_tolerance as ToleranceLevel | null) ?? null,
+    heatTolerance: (row.heat_tolerance as ToleranceLevel | null) ?? null,
+    shadeTolerance: (row.shade_tolerance as ShadeTolerance | null) ?? null,
     updatedAt: row.updated_at,
   };
 

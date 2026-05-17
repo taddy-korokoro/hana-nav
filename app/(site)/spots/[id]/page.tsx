@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -104,16 +105,17 @@ export default async function SpotDetailPage({
         {spot.nameKana && <p className="mt-2 text-sm text-ink-muted">{spot.nameKana}</p>}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-xs font-medium ${
-              inSeason ? 'bg-brand/10 text-brand' : 'bg-surface-2 text-ink-muted'
-            }`}
-          >
+          <span className="inline-flex items-center rounded-pill bg-surface-2 px-3 py-1 text-xs font-medium text-ink-muted">
             {COPY.spotDetail.bestSeasonBadge(
               formatSeasonRange(spot.bestSeasonStart, spot.bestSeasonEnd),
             )}
-            {inSeason && COPY.spotDetail.inSeasonSuffix}
           </span>
+          {inSeason && (
+            <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand px-3 py-1 text-xs font-medium text-white shadow-sm">
+              <Sparkles className="size-3.5" aria-hidden="true" />
+              {COPY.spotDetail.inSeasonLabel}
+            </span>
+          )}
           {flowers.slice(0, 3).map((flower) => (
             <Link
               key={flower.flowerId}
