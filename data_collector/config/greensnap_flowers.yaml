@@ -1,0 +1,17 @@
+# greensnap.jp 花マスター専用スクレイパ設定（01_scrape_greensnap_flowers.py が参照）
+#
+# サイト構造:
+#   /category1/flower                       → 一覧 1 ページ目（= ?p=1 と同等）
+#   /category1/flower/botany/list?p={N}     → 一覧 N ページ目
+#   /category1/flower/botany/{id}/growth    → 花の詳細ページ（dt.c-labelDlList と説明文がある）
+
+base_url: https://greensnap.jp
+list_path: /category1/flower
+# 2 ページ目以降は ?p=N で取得
+list_paginated_path: /category1/flower/botany/list
+
+# 動作確認モード: max_pages を 1-2 に絞る。本番モードでは null（または 32 まで上げる）
+max_pages: null
+
+# リクエスト間スリープ秒数（2.0 以上を推奨）
+sleep_sec: 2.0
