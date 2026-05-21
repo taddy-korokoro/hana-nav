@@ -8,6 +8,7 @@ export type BookmarkListItem = {
   bestSeasonEnd: number;
   flowerNames: string[];
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
   bookmarkedAt: string;
 };
 
@@ -125,6 +126,7 @@ export async function getMyBookmarks(userId: string): Promise<BookmarkListItem[]
         bestSeasonEnd: spot.best_season_end,
         flowerNames,
         coverImageUrl: null,
+        coverImageCaption: null,
         bookmarkedAt: r.created_at,
       };
       return item;
@@ -136,7 +138,7 @@ export async function getMyBookmarks(userId: string): Promise<BookmarkListItem[]
   const spotIds = items.map((i) => i.spotId);
   const { data: imageRows, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', spotIds)
     .is('deleted_at', null)
@@ -147,13 +149,16 @@ export async function getMyBookmarks(userId: string): Promise<BookmarkListItem[]
     return items;
   }
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of imageRows ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
   return items.map((item) => ({
     ...item,
-    coverImageUrl: coverByOwner.get(item.spotId) ?? null,
+    coverImageUrl: coverByOwner.get(item.spotId)?.url ?? null,
+    coverImageCaption: coverByOwner.get(item.spotId)?.caption ?? null,
   }));
 }

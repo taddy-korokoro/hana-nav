@@ -10,6 +10,7 @@ export type SeasonalSpot = {
   latitude: number | null;
   longitude: number | null;
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
   flowerNames: string[];
 };
 
@@ -53,16 +54,18 @@ export async function getSeasonalSpots(limit = 24): Promise<SeasonalSpot[]> {
   const ids = inSeason.map((s) => s.id);
   const { data: images, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', ids)
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
   if (imgError) console.error('[getSeasonalSpots] failed to fetch spot images', imgError);
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of images ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
   return inSeason.slice(0, limit).map((s) => {
@@ -88,7 +91,8 @@ export async function getSeasonalSpots(limit = 24): Promise<SeasonalSpot[]> {
       bestSeasonEnd: row.best_season_end,
       latitude: row.latitude ?? null,
       longitude: row.longitude ?? null,
-      coverImageUrl: coverByOwner.get(row.id) ?? null,
+      coverImageUrl: coverByOwner.get(row.id)?.url ?? null,
+      coverImageCaption: coverByOwner.get(row.id)?.caption ?? null,
       flowerNames,
     };
   });
@@ -100,6 +104,7 @@ export type FeaturedFlower = {
   defaultSeasonStart: number | null;
   defaultSeasonEnd: number | null;
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
 };
 
 /**
@@ -121,16 +126,18 @@ export async function getFeaturedFlowers(limit = 12): Promise<FeaturedFlower[]> 
   const ids = flowers.map((f) => f.id);
   const { data: images, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'flower')
     .in('owner_id', ids)
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
   if (imgError) console.error('[getFeaturedFlowers] failed to fetch flower images', imgError);
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of images ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
   return flowers.map((f) => ({
@@ -138,6 +145,7 @@ export async function getFeaturedFlowers(limit = 12): Promise<FeaturedFlower[]> 
     name: f.name,
     defaultSeasonStart: f.default_season_start ?? null,
     defaultSeasonEnd: f.default_season_end ?? null,
-    coverImageUrl: coverByOwner.get(f.id) ?? null,
+    coverImageUrl: coverByOwner.get(f.id)?.url ?? null,
+    coverImageCaption: coverByOwner.get(f.id)?.caption ?? null,
   }));
 }
