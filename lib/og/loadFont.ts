@@ -17,7 +17,7 @@ export async function loadGoogleFont(
     family,
   )}:${weight}&text=${encodeURIComponent(text)}&format=truetype`;
 
-  const cssRes = await fetch(url);
+  const cssRes = await fetch(url, { cache: 'force-cache' });
   if (!cssRes.ok) {
     throw new Error(`[loadGoogleFont] failed to fetch CSS: ${cssRes.status}`);
   }
@@ -30,7 +30,7 @@ export async function loadGoogleFont(
     throw new Error('[loadGoogleFont] could not find TTF url in Google Fonts CSS');
   }
 
-  const fontRes = await fetch(fontUrl);
+  const fontRes = await fetch(fontUrl, { cache: 'force-cache' });
   if (!fontRes.ok) {
     throw new Error(`[loadGoogleFont] failed to fetch font: ${fontRes.status}`);
   }
