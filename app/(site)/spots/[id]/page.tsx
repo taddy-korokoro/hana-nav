@@ -84,7 +84,11 @@ export default async function SpotDetailPage({
 
   return (
     <article className="mx-auto max-w-5xl px-6 pb-24 pt-8 md:pt-12">
-      <SpotJsonLd spot={spot} coverImageUrl={images[0]?.url ?? null} />
+      <SpotJsonLd
+        spot={spot}
+        coverImageUrl={images[0]?.url ?? null}
+        reviewSummary={reviewSummary}
+      />
 
       <header className="mb-8">
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
@@ -294,7 +298,15 @@ function safeHostname(url: string): string {
   }
 }
 
-function SpotJsonLd({ spot, coverImageUrl }: { spot: SpotDetail; coverImageUrl: string | null }) {
+function SpotJsonLd({
+  spot,
+  coverImageUrl,
+  reviewSummary,
+}: {
+  spot: SpotDetail;
+  coverImageUrl: string | null;
+  reviewSummary: { count: number; average: number | null };
+}) {
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'TouristAttraction',
@@ -316,6 +328,15 @@ function SpotJsonLd({ spot, coverImageUrl }: { spot: SpotDetail; coverImageUrl: 
   }
   if (coverImageUrl) jsonLd.image = coverImageUrl;
   if (spot.officialUrl) jsonLd.url = spot.officialUrl;
+  if (reviewSummary.count > 0 && reviewSummary.average != null) {
+    jsonLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: reviewSummary.average,
+      reviewCount: reviewSummary.count,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
 
   return (
     <script

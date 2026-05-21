@@ -6,7 +6,7 @@ import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
 import { FlowerSpotsList } from '@/components/flowers/FlowerSpotsList';
 import { COPY } from '@/lib/constants/copy';
-import { getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
+import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +54,8 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
 
   return (
     <article className="mx-auto max-w-5xl px-6 pb-24 pt-8 md:pt-12">
+      <FlowerJsonLd flower={flower} coverImageUrl={images[0]?.url ?? null} />
+
       <header className="mb-8">
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.flowersList.eyebrow}
@@ -166,5 +168,29 @@ function SectionHeader({ title, eyebrow }: { title: string; eyebrow?: string }) 
       )}
       <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight">{title}</h2>
     </div>
+  );
+}
+
+function FlowerJsonLd({
+  flower,
+  coverImageUrl,
+}: {
+  flower: FlowerDetail;
+  coverImageUrl: string | null;
+}) {
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Thing',
+    name: flower.name,
+    alternateName: flower.nameKana ?? undefined,
+    description: flower.description ?? undefined,
+  };
+  if (coverImageUrl) jsonLd.image = coverImageUrl;
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
   );
 }
