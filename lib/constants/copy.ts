@@ -22,7 +22,6 @@ export type NavItem = (typeof NAV_ITEMS)[number];
 const POLICY_LINKS = [
   { label: '利用規約', href: '/terms' },
   { label: 'プライバシーポリシー', href: '/privacy' },
-  { label: '特定商取引法に基づく表記', href: '/legal' },
 ] as const;
 
 const MONTHS_EN = [
@@ -111,6 +110,35 @@ export const COPY = {
     about: 'About',
     contact: 'お問い合わせ',
     policyLinks: POLICY_LINKS,
+  },
+
+  // -----------------------------------------------------------------------------------
+  // 静的ページ（/terms, /privacy）のヘッダー・メタ情報
+  // 本文は各 page.tsx に静的 JSX で記述する（仕様メモ: docs/20_static-pages.md）。
+  // -----------------------------------------------------------------------------------
+  staticPages: {
+    lastUpdatedLabel: '最終更新日',
+    historyHeading: '改定履歴',
+    terms: {
+      metaTitle: '利用規約',
+      metaDescription:
+        'hana nav の利用規約。サービス内容・禁止事項・AI 機能の取り扱い・現地マナー・免責事項を定めています。',
+      eyebrow: 'Terms of Service',
+      title: '利用規約',
+      description:
+        '本規約は、hana nav（以下「本サービス」といいます）の利用条件を定めるものです。本サービスのご利用前にお読みください。',
+      lastUpdated: '2026-05-21',
+    },
+    privacy: {
+      metaTitle: 'プライバシーポリシー',
+      metaDescription:
+        'hana nav が取得する情報、利用目的、第三者提供、Cookie の利用、退会・データ削除請求の窓口を記載しています。',
+      eyebrow: 'Privacy Policy',
+      title: 'プライバシーポリシー',
+      description:
+        '本ポリシーは、hana nav（以下「本サービス」といいます）における利用者の個人情報の取り扱いを定めるものです。',
+      lastUpdated: '2026-05-21',
+    },
   },
 
   // -----------------------------------------------------------------------------------
