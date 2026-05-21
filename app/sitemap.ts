@@ -27,6 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/spots`, lastModified: now, priority: 0.9, changeFrequency: 'daily' },
     { url: `${baseUrl}/flowers`, lastModified: now, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${baseUrl}/identify`, lastModified: now, priority: 0.7, changeFrequency: 'monthly' },
+    { url: `${baseUrl}/terms`, lastModified: now, priority: 0.3, changeFrequency: 'yearly' },
+    { url: `${baseUrl}/privacy`, lastModified: now, priority: 0.3, changeFrequency: 'yearly' },
   ];
 
   const spotEntries: MetadataRoute.Sitemap = (spotsRes.data ?? []).map((s) => ({
