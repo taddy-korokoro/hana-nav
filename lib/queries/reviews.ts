@@ -56,6 +56,7 @@ export type MyReviewListItem = {
     bestSeasonStart: number;
     bestSeasonEnd: number;
     coverImageUrl: string | null;
+    coverImageCaption: string | null;
   };
 };
 
@@ -132,6 +133,7 @@ export async function getMyReviews(userId: string): Promise<MyReviewListItem[]> 
           bestSeasonStart: spot.best_season_start,
           bestSeasonEnd: spot.best_season_end,
           coverImageUrl: null,
+          coverImageCaption: null,
         },
       };
       return item;
@@ -143,7 +145,7 @@ export async function getMyReviews(userId: string): Promise<MyReviewListItem[]> 
   const spotIds = items.map((i) => i.spot.id);
   const { data: imageRows, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', spotIds)
     .is('deleted_at', null)
@@ -154,13 +156,19 @@ export async function getMyReviews(userId: string): Promise<MyReviewListItem[]> 
     return items;
   }
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of imageRows ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
   return items.map((item) => ({
     ...item,
-    spot: { ...item.spot, coverImageUrl: coverByOwner.get(item.spot.id) ?? null },
+    spot: {
+      ...item.spot,
+      coverImageUrl: coverByOwner.get(item.spot.id)?.url ?? null,
+      coverImageCaption: coverByOwner.get(item.spot.id)?.caption ?? null,
+    },
   }));
 }

@@ -54,8 +54,9 @@ export function FlowerTypeGrid({ flowers }: { flowers: FeaturedFlower[] }) {
               {flower.coverImageUrl ? (
                 <Image
                   src={flower.coverImageUrl}
-                  alt={COPY.common.photoAlt(flower.name)}
+                  alt={flower.coverImageCaption ?? COPY.common.photoAlt(flower.name)}
                   fill
+                  priority={i === 0}
                   className="object-cover transition group-hover:scale-105"
                   sizes="(min-width: 1024px) 240px, (min-width: 640px) 33vw, 50vw"
                 />
