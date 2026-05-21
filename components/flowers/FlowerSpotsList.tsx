@@ -40,7 +40,7 @@ export function FlowerSpotsList({ spots }: { spots: FlowerSpot[] }) {
               {spot.coverImageUrl ? (
                 <Image
                   src={spot.coverImageUrl}
-                  alt={COPY.common.photoAlt(spot.name)}
+                  alt={spot.coverImageCaption ?? COPY.common.photoAlt(spot.name)}
                   fill
                   className="object-cover transition group-hover:scale-105"
                   sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"

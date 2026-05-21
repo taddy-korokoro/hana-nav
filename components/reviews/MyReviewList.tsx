@@ -36,7 +36,7 @@ export function MyReviewList({ items }: { items: MyReviewListItem[] }) {
               {item.spot.coverImageUrl ? (
                 <Image
                   src={item.spot.coverImageUrl}
-                  alt={COPY.common.photoAlt(item.spot.name)}
+                  alt={item.spot.coverImageCaption ?? COPY.common.photoAlt(item.spot.name)}
                   fill
                   className="object-cover"
                   sizes="(min-width: 640px) 192px, 100vw"

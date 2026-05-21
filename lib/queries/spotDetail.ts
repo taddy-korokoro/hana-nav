@@ -54,6 +54,7 @@ export type RelatedSpot = {
   bestSeasonStart: number;
   bestSeasonEnd: number;
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
   reason: 'prefecture' | 'flower';
 };
 
@@ -368,6 +369,7 @@ async function fetchRelatedSpots(args: {
       bestSeasonStart: s.best_season_start,
       bestSeasonEnd: s.best_season_end,
       coverImageUrl: null,
+      coverImageCaption: null,
       reason: 'prefecture',
     });
   }
@@ -427,6 +429,7 @@ async function fetchRelatedSpots(args: {
         bestSeasonStart: s.best_season_start,
         bestSeasonEnd: s.best_season_end,
         coverImageUrl: null,
+        coverImageCaption: null,
         reason: 'flower',
       });
     }
@@ -437,7 +440,7 @@ async function fetchRelatedSpots(args: {
 
   const { data: images, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', ids)
     .is('deleted_at', null)
@@ -447,14 +450,20 @@ async function fetchRelatedSpots(args: {
     console.error('[getSpotDetail] failed to fetch related spot images', imgError);
   }
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of images ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
   return ids.map((id) => {
     const entry = collected.get(id)!;
-    return { ...entry, coverImageUrl: coverByOwner.get(id) ?? null };
+    return {
+      ...entry,
+      coverImageUrl: coverByOwner.get(id)?.url ?? null,
+      coverImageCaption: coverByOwner.get(id)?.caption ?? null,
+    };
   });
 }
 

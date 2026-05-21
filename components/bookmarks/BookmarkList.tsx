@@ -25,7 +25,7 @@ export function BookmarkList({ items }: { items: BookmarkListItem[] }) {
                 {item.coverImageUrl ? (
                   <Image
                     src={item.coverImageUrl}
-                    alt={COPY.common.photoAlt(item.spotName)}
+                    alt={item.coverImageCaption ?? COPY.common.photoAlt(item.spotName)}
                     fill
                     className="object-cover transition group-hover:scale-105"
                     sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
