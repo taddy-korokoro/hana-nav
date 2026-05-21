@@ -31,7 +31,6 @@ UPDATE profiles SET role = 'admin' WHERE id = '...';
 | 旅のしおり生成       | `/identify/story`        | Canvas APIで縦長画像を生成 → SNSシェア               | クライアント完結                                    |
 | 利用規約             | `/terms`                 | 静的ページ                                           | -                                                   |
 | プライバシーポリシー | `/privacy`               | 静的ページ                                           | -                                                   |
-| 特定商取引法など     | `/legal`                 | 静的ページ                                           | -                                                   |
 
 ## 認証ページ一覧
 
