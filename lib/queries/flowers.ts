@@ -36,6 +36,7 @@ export type FlowerListItem = {
   defaultSeasonStart: number | null;
   defaultSeasonEnd: number | null;
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
 };
 
 export type FlowerImage = {
@@ -57,6 +58,7 @@ export type FlowerSpot = {
   bestSeasonStart: number;
   bestSeasonEnd: number;
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
   bloomStartMonth: number | null;
   bloomEndMonth: number | null;
 };
@@ -113,7 +115,7 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
   // か `flowers.cover_image_url` 列を検討する。
   const { data: images, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'flower')
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
@@ -130,9 +132,11 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
     });
   }
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of images ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
   return flowers.map((f) => ({
@@ -141,7 +145,8 @@ export async function getFlowerList(): Promise<FlowerListItem[]> {
     nameKana: f.name_kana ?? null,
     defaultSeasonStart: f.default_season_start ?? null,
     defaultSeasonEnd: f.default_season_end ?? null,
-    coverImageUrl: coverByOwner.get(f.id) ?? null,
+    coverImageUrl: coverByOwner.get(f.id)?.url ?? null,
+    coverImageCaption: coverByOwner.get(f.id)?.caption ?? null,
   }));
 }
 
@@ -335,6 +340,7 @@ async function fetchSpotsByFlower(flowerId: string): Promise<FlowerSpot[]> {
         bestSeasonStart: spot.best_season_start,
         bestSeasonEnd: spot.best_season_end,
         coverImageUrl: null as string | null,
+        coverImageCaption: null as string | null,
         bloomStartMonth: sf.bloom_start_month ?? null,
         bloomEndMonth: sf.bloom_end_month ?? null,
       } satisfies FlowerSpot;
@@ -346,19 +352,25 @@ async function fetchSpotsByFlower(flowerId: string): Promise<FlowerSpot[]> {
   const ids = items.map((s) => s.id);
   const { data: images, error: imgError } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', ids)
     .is('deleted_at', null)
     .order('display_order', { ascending: true });
   if (imgError) console.error('[getFlowerDetail] failed to fetch related spot images', imgError);
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of images ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
 
-  return items.map((s) => ({ ...s, coverImageUrl: coverByOwner.get(s.id) ?? null }));
+  return items.map((s) => ({
+    ...s,
+    coverImageUrl: coverByOwner.get(s.id)?.url ?? null,
+    coverImageCaption: coverByOwner.get(s.id)?.caption ?? null,
+  }));
 }
 
 /**

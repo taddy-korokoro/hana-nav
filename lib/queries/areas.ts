@@ -181,7 +181,8 @@ export const getAreaDetail = cache(async (prefectureId: number): Promise<AreaDet
       bestSeasonEnd: r.best_season_end,
       latitude: r.latitude ?? null,
       longitude: r.longitude ?? null,
-      coverImageUrl: imageRows.get(r.id) ?? null,
+      coverImageUrl: imageRows.get(r.id)?.url ?? null,
+      coverImageCaption: imageRows.get(r.id)?.caption ?? null,
       flowerNames,
     };
   });
@@ -194,12 +195,14 @@ export const getAreaDetail = cache(async (prefectureId: number): Promise<AreaDet
   };
 });
 
-async function fetchSpotCovers(spotIds: string[]): Promise<Map<string, string>> {
+async function fetchSpotCovers(
+  spotIds: string[],
+): Promise<Map<string, { url: string; caption: string | null }>> {
   if (spotIds.length === 0) return new Map();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('images')
-    .select('owner_id, url, display_order')
+    .select('owner_id, url, caption, display_order')
     .eq('owner_type', 'spot')
     .in('owner_id', spotIds)
     .is('deleted_at', null)
@@ -210,9 +213,11 @@ async function fetchSpotCovers(spotIds: string[]): Promise<Map<string, string>> 
     return new Map();
   }
 
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   for (const img of data ?? []) {
-    if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+    if (!coverByOwner.has(img.owner_id)) {
+      coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+    }
   }
   return coverByOwner;
 }

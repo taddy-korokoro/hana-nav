@@ -30,6 +30,7 @@ export type SpotSearchResult = {
   latitude: number | null;
   longitude: number | null;
   coverImageUrl: string | null;
+  coverImageCaption: string | null;
   flowerNames: string[];
 };
 
@@ -228,18 +229,20 @@ export async function searchSpots(params: SpotSearchParams): Promise<SpotSearchP
 
   // カバー画像をまとめて取得
   const ids = sliced.map((r) => r.id);
-  const coverByOwner = new Map<string, string>();
+  const coverByOwner = new Map<string, { url: string; caption: string | null }>();
   if (ids.length > 0) {
     const { data: images, error: imgError } = await supabase
       .from('images')
-      .select('owner_id, url, display_order')
+      .select('owner_id, url, caption, display_order')
       .eq('owner_type', 'spot')
       .in('owner_id', ids)
       .is('deleted_at', null)
       .order('display_order', { ascending: true });
     if (imgError) console.error('[searchSpots] failed to fetch images', imgError);
     for (const img of images ?? []) {
-      if (!coverByOwner.has(img.owner_id)) coverByOwner.set(img.owner_id, img.url);
+      if (!coverByOwner.has(img.owner_id)) {
+        coverByOwner.set(img.owner_id, { url: img.url, caption: img.caption ?? null });
+      }
     }
   }
 
@@ -257,7 +260,8 @@ export async function searchSpots(params: SpotSearchParams): Promise<SpotSearchP
       bestSeasonEnd: r.best_season_end,
       latitude: r.latitude ?? null,
       longitude: r.longitude ?? null,
-      coverImageUrl: coverByOwner.get(r.id) ?? null,
+      coverImageUrl: coverByOwner.get(r.id)?.url ?? null,
+      coverImageCaption: coverByOwner.get(r.id)?.caption ?? null,
       flowerNames,
     };
   });
