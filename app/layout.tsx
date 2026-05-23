@@ -14,9 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+// 700 のみ読み込み（500 未使用）。font-semibold は 700 で代用。
 const notoSerifJp = Noto_Serif_JP({
   variable: '--font-noto-serif-jp',
-  weight: ['500', '700'],
+  weight: ['700'],
   subsets: ['latin'],
   display: 'swap',
 });
@@ -56,6 +57,20 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} ${notoSerifJp.variable} h-full antialiased`}
     >
+      <head>
+        {/* 外部画像 CDN への preconnect で LCP 改善 */}
+        <link rel="preconnect" href="https://hanamap.com" />
+        <link
+          rel="preconnect"
+          href="https://dadfpmh61h9tr.cloudfront.net"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://d3pbyuzcd27kd.cloudfront.net"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster />
