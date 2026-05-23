@@ -6,9 +6,10 @@ import { SearchBar } from '@/components/home/SearchBar';
 import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 
-// 5 分 ISR。今月見頃スポット・花マスターは頻繁に更新されないため CDN キャッシュで配信。
-// Supabase クエリ内で cookies() を参照する場合は dynamic レンダリングに戻るが、
-// その場合でもエッジ層のキャッシュは効きやすくなる。
+// revalidate=300 を設定しているが、getSeasonalSpots / getFeaturedFlowers が
+// createClient() → cookies() を呼び出すため、現状は dynamic レンダリングに
+// フォールバックして ISR は発動しない。cookies() 依存を除去した時点で自動的に
+// 5 分 ISR が有効になる土台として残している。
 export const revalidate = 300;
 
 // 初期バンドルから @vis.gl/react-google-maps と @googlemaps/markerclusterer を切り出す。
