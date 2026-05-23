@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title,
       description,
       type: 'article',
+      url: `/flowers/${id}`,
       images: meta.coverImageUrl ? [{ url: meta.coverImageUrl }] : undefined,
     },
   };
