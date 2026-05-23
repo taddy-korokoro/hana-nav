@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect } from 'react';
 
 /**
@@ -70,7 +69,8 @@ export default function GlobalError({
             >
               もう一度試す
             </button>
-            <Link
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error は Router コンテキスト非依存にしたいので next/link を使わない */}
+            <a
               href="/"
               style={{
                 background: '#fff',
@@ -84,7 +84,7 @@ export default function GlobalError({
               }}
             >
               トップへ
-            </Link>
+            </a>
           </div>
         </main>
       </body>
