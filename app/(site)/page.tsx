@@ -1,8 +1,8 @@
-import nextDynamic from 'next/dynamic';
 import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { SearchBar } from '@/components/home/SearchBar';
+import { SeasonMapClient } from '@/components/home/SeasonMapClient';
 import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 
@@ -11,20 +11,6 @@ import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 // フォールバックして ISR は発動しない。cookies() 依存を除去した時点で自動的に
 // 5 分 ISR が有効になる土台として残している。
 export const revalidate = 300;
-
-// 初期バンドルから @vis.gl/react-google-maps と @googlemaps/markerclusterer を切り出す。
-// SeasonMap はファーストビュー外でかつ巨大なため遅延ロードする。
-const SeasonMap = nextDynamic(
-  () => import('@/components/home/SeasonMap').then((m) => ({ default: m.SeasonMap })),
-  {
-    loading: () => (
-      <div
-        className="h-[420px] w-full rounded-card-lg bg-surface-2 md:h-[520px]"
-        aria-hidden="true"
-      />
-    ),
-  },
-);
 
 export default async function HomePage() {
   const currentMonth = new Date().getMonth() + 1;
@@ -51,7 +37,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="mt-6">
-            <SeasonMap spots={spotsWithCoords} apiKey={apiKey} />
+            <SeasonMapClient spots={spotsWithCoords} apiKey={apiKey} />
           </div>
         </section>
       )}
