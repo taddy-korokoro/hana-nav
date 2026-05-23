@@ -1,13 +1,16 @@
-import { Suspense } from 'react';
 import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { SearchBar } from '@/components/home/SearchBar';
-import { SeasonMap } from '@/components/home/SeasonMap';
+import { SeasonMapClient } from '@/components/home/SeasonMapClient';
 import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 
-export const dynamic = 'force-dynamic';
+// revalidate=300 を設定しているが、getSeasonalSpots / getFeaturedFlowers が
+// createClient() → cookies() を呼び出すため、現状は dynamic レンダリングに
+// フォールバックして ISR は発動しない。cookies() 依存を除去した時点で自動的に
+// 5 分 ISR が有効になる土台として残している。
+export const revalidate = 300;
 
 export default async function HomePage() {
   const currentMonth = new Date().getMonth() + 1;
@@ -34,13 +37,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="mt-6">
-            <Suspense
-              fallback={
-                <div className="h-[420px] w-full rounded-card-lg bg-surface-2 md:h-[520px]" />
-              }
-            >
-              <SeasonMap spots={spotsWithCoords} apiKey={apiKey} />
-            </Suspense>
+            <SeasonMapClient spots={spotsWithCoords} apiKey={apiKey} />
           </div>
         </section>
       )}
