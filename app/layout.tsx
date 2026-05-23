@@ -60,7 +60,6 @@ export default function RootLayout({
       <head>
         {/* 外部画像 CDN への preconnect で LCP 改善 */}
         <link rel="preconnect" href="https://hanamap.com" />
-        <link rel="dns-prefetch" href="https://hanamap.com" />
         <link
           rel="preconnect"
           href="https://dadfpmh61h9tr.cloudfront.net"
