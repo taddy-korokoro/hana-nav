@@ -66,7 +66,7 @@
 - [ ] Google Search Console にサイトマップ（`/sitemap.xml`）を送信
 - [ ] OGP 画像（`/og-default.png`、1200×630px）を配置
 - [ ] robots.txt で `/admin/`, `/api/`, `/auth/`, `/mypage/` がブロックされていることを確認
-- [ ] 独自ドメイン設定 + HTTPS 確認
+- [ ] HTTPS で配信されていることを確認（本番 URL は `https://hananav.site`。Vercel が自動発行する Let's Encrypt 証明書を使用）
 
 ### コンテンツ
 
@@ -95,7 +95,7 @@
 
 1. <https://console.cloud.google.com/apis/credentials> を開く
 2. 該当キーを開いて **DELETE KEY**
-3. 新キー発行 → HTTP リファラー制限を本番ドメインに設定（`https://hana-nav.jp/*` のみ）
+3. 新キー発行 → HTTP リファラー制限を本番 URL に設定（`https://hananav.site/*` / `https://www.hananav.site/*` / `http://localhost:3000/*` のみ）
 4. Vercel に新キーを登録 → Redeploy
 
 リファラー制限を最初から設定していれば、流出してもリファラー以外からは使えないので即時無効化は不要。
