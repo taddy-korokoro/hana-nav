@@ -15,6 +15,7 @@ import { isBookmarked } from '@/lib/queries/bookmarks';
 import { getMyReviewForSpot } from '@/lib/queries/reviews';
 import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
 import { createClient } from '@/lib/supabase/server';
+import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export const dynamic = 'force-dynamic';
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title,
       description: meta.description ?? description,
       type: 'article',
+      url: `/spots/${id}`,
       images: meta.coverImageUrl ? [{ url: meta.coverImageUrl }] : undefined,
     },
   };
@@ -79,7 +81,7 @@ export default async function SpotDetailPage({
       }
     : null;
 
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = tokyoMonth();
   const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
 
   return (

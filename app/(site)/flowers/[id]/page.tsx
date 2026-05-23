@@ -7,6 +7,7 @@ import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
 import { FlowerSpotsList } from '@/components/flowers/FlowerSpotsList';
 import { COPY } from '@/lib/constants/copy';
 import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
+import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +35,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title,
       description,
       type: 'article',
+      url: `/flowers/${id}`,
       images: meta.coverImageUrl ? [{ url: meta.coverImageUrl }] : undefined,
     },
   };
@@ -46,7 +48,7 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
 
   const { flower, aliases, images, spots } = bundle;
   const seasonText = formatSeasonRange(flower.defaultSeasonStart, flower.defaultSeasonEnd);
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = tokyoMonth();
   const inSeason =
     flower.defaultSeasonStart != null &&
     flower.defaultSeasonEnd != null &&

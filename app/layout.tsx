@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     siteName: COPY.site.name,
     title: COPY.site.titleDefault,
     description: COPY.site.description,
+    url: '/',
     locale: 'ja_JP',
   },
   twitter: {

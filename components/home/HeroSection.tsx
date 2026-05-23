@@ -1,8 +1,9 @@
 import { COPY } from '@/lib/constants/copy';
+import { tokyoYmd } from '@/lib/utils/dateUtils';
 
 export function HeroSection({ currentMonth }: { currentMonth: number }) {
   const monthEn = COPY.common.months.en[currentMonth] ?? '';
-  const monthLine = COPY.home.hero.monthLine(monthEn, new Date().getFullYear());
+  const monthLine = COPY.home.hero.monthLine(monthEn, tokyoYmd().year);
   return (
     <section className="pb-10 pt-12 md:pb-16 md:pt-20">
       <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">{monthLine}</p>
