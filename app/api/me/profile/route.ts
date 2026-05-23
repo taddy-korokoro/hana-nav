@@ -4,6 +4,43 @@ import { createClient } from '@/lib/supabase/server';
 import { validateUsername } from '@/lib/utils/usernameValidator';
 
 /**
+ * GET /api/me/profile
+ *
+ * 認証状態とプロフィール情報を返す。SiteHeader の Client 側から
+ * ログイン状態を判定するために使う。未認証は 200 + null。
+ * Cache-Control: private, no-store でユーザー個別に分離。
+ */
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json(null, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username, avatar_url, role')
+    .eq('id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  return NextResponse.json(
+    {
+      email: user.email ?? '',
+      username: profile?.username ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
+      isAdmin: profile?.role === 'admin',
+    },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
+}
+
+/**
  * PATCH /api/me/profile
  *
  * 認証必須。`{ username?: string; avatar_url?: string | null }` の部分更新。
