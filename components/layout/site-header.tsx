@@ -1,40 +1,18 @@
 import Link from 'next/link';
 import { COPY } from '@/lib/constants/copy';
-import { createClient } from '@/lib/supabase/server';
-import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { SearchIcon } from './icons';
 import { SiteLogo } from './site-logo';
-import { UserMenu } from './user-menu';
+import { UserNavIsland } from './user-nav-island';
 
 /**
- * 全ページ共通ヘッダー（Server Component）。
- * Supabase からログイン状態と role を取得し、未ログインなら ログイン/会員登録 を、
- * ログイン済なら UserMenu を表示する。
+ * 全ページ共通ヘッダー（Server Component / cookies 非依存）。
+ *
+ * ログイン状態に応じた表示は `<UserNavIsland />`（Client Component）に分離。
+ * SiteHeader 自体が cookies を読まないことで、トップ等の公開ページが
+ * ISR の対象になる。
  */
-export async function SiteHeader() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let username: string | null = null;
-  let avatarUrl: string | null = null;
-  let isAdmin = false;
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username, avatar_url, role')
-      .eq('id', user.id)
-      .is('deleted_at', null)
-      .maybeSingle();
-
-    username = profile?.username ?? null;
-    avatarUrl = profile?.avatar_url ?? null;
-    isAdmin = profile?.role === 'admin';
-  }
-
+export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 bg-surface/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
@@ -88,33 +66,7 @@ export async function SiteHeader() {
             <SearchIcon className="size-5" />
           </Link>
 
-          {user ? (
-            <div className="hidden md:block">
-              <UserMenu
-                email={user.email ?? ''}
-                username={username}
-                avatarUrl={avatarUrl}
-                isAdmin={isAdmin}
-              />
-            </div>
-          ) : (
-            <div className="hidden items-center gap-2 md:flex">
-              <Link
-                href="/auth/login"
-                className="rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong"
-              >
-                {COPY.nav.login}
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
-              >
-                {COPY.nav.signup}
-              </Link>
-            </div>
-          )}
-
-          <MobileNav isLoggedIn={!!user} isAdmin={isAdmin} />
+          <UserNavIsland />
         </div>
       </div>
     </header>
