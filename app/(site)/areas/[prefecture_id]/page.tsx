@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return {
     title,
     description,
-    openGraph: { title, description, type: 'website' },
+    openGraph: { title, description, type: 'website', url: `/areas/${prefecture_id}` },
   };
 }
 

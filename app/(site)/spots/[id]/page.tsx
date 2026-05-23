@@ -43,6 +43,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title,
       description: meta.description ?? description,
       type: 'article',
+      url: `/spots/${id}`,
       images: meta.coverImageUrl ? [{ url: meta.coverImageUrl }] : undefined,
     },
   };
