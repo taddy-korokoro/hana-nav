@@ -1,13 +1,29 @@
-import { Suspense } from 'react';
+import nextDynamic from 'next/dynamic';
 import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { SearchBar } from '@/components/home/SearchBar';
-import { SeasonMap } from '@/components/home/SeasonMap';
 import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 
-export const dynamic = 'force-dynamic';
+// 5 分 ISR。今月見頃スポット・花マスターは頻繁に更新されないため CDN キャッシュで配信。
+// Supabase クエリ内で cookies() を参照する場合は dynamic レンダリングに戻るが、
+// その場合でもエッジ層のキャッシュは効きやすくなる。
+export const revalidate = 300;
+
+// 初期バンドルから @vis.gl/react-google-maps と @googlemaps/markerclusterer を切り出す。
+// SeasonMap はファーストビュー外でかつ巨大なため遅延ロードする。
+const SeasonMap = nextDynamic(
+  () => import('@/components/home/SeasonMap').then((m) => ({ default: m.SeasonMap })),
+  {
+    loading: () => (
+      <div
+        className="h-[420px] w-full rounded-card-lg bg-surface-2 md:h-[520px]"
+        aria-hidden="true"
+      />
+    ),
+  },
+);
 
 export default async function HomePage() {
   const currentMonth = new Date().getMonth() + 1;
@@ -34,13 +50,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="mt-6">
-            <Suspense
-              fallback={
-                <div className="h-[420px] w-full rounded-card-lg bg-surface-2 md:h-[520px]" />
-              }
-            >
-              <SeasonMap spots={spotsWithCoords} apiKey={apiKey} />
-            </Suspense>
+            <SeasonMap spots={spotsWithCoords} apiKey={apiKey} />
           </div>
         </section>
       )}
