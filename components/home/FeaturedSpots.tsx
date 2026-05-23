@@ -63,6 +63,7 @@ export function FeaturedSpots({
                   alt={spot.coverImageCaption ?? COPY.common.photoAlt(spot.name)}
                   fill
                   priority={i === 0}
+                  fetchPriority={i === 0 ? 'high' : 'auto'}
                   className="object-cover transition group-hover:scale-105"
                   sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
                 />

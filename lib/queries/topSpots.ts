@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 import { isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export type SeasonalSpot = {
@@ -20,7 +20,7 @@ export type SeasonalSpot = {
  * Client（地図）には素の数値だけ渡せる形にする。
  */
 export async function getSeasonalSpots(limit = 24): Promise<SeasonalSpot[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const currentMonth = new Date().getMonth() + 1;
 
   const { data: spots, error } = await supabase
@@ -112,7 +112,7 @@ export type FeaturedFlower = {
  * 画像があれば優先、なければ呼び出し側でグラデーションプレースホルダーを表示する。
  */
 export async function getFeaturedFlowers(limit = 12): Promise<FeaturedFlower[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: flowers, error } = await supabase
     .from('flowers')
