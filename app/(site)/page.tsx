@@ -6,11 +6,12 @@ import { SearchBar } from '@/components/home/SearchBar';
 import { SeasonMap } from '@/components/home/SeasonMap';
 import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
+import { tokyoMonth } from '@/lib/utils/dateUtils';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = tokyoMonth();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const [spots, flowers] = await Promise.all([getSeasonalSpots(24), getFeaturedFlowers(12)]);

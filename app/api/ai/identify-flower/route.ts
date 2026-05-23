@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient as createServiceClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { tokyoTodayStartIso } from '@/lib/utils/dateUtils';
 
 /**
  * AI 花判定エンドポイント。
@@ -47,13 +48,12 @@ async function checkRateLimit(
   userId: string | null,
   anonId: string | null,
 ): Promise<RateLimitInfo> {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
+  // 日境界は JST 基準。Vercel ランタイムは UTC 固定のため `setHours(0)` だと
+  // 朝 9 時 (JST) 前のリクエストが「前日」扱いになる。
   let query = supabaseAdmin
     .from('ai_usage_logs')
     .select('id, reward_unlocked')
-    .gte('used_at', todayStart.toISOString())
+    .gte('used_at', tokyoTodayStartIso())
     .is('deleted_at', null);
 
   if (userId) {

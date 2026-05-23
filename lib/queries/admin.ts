@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { tokyoMonthStartIso } from '@/lib/utils/dateUtils';
 
 /**
  * 管理画面用クエリ。`admin` 系画面・API は RLS をバイパスする必要があるため、
@@ -15,9 +16,10 @@ export type AdminDashboardStats = {
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   const admin = createAdminClient();
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  // monthStart は JST の今月 1 日 00:00。Vercel UTC ランタイムでも JST 基準で集計する。
+  // sevenDaysAgo は絶対 7 日間なのでタイムゾーンに依存しない。
+  const monthStart = tokyoMonthStartIso();
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const [pendingRes, aiRes, deletedReviewRes] = await Promise.all([
     admin

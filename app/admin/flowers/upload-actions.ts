@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { tokyoYmd } from '@/lib/utils/dateUtils';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 
 const BUCKET = 'images';
@@ -35,11 +36,11 @@ export async function uploadFlowerImage(formData: FormData): Promise<UploadResul
 
   const admin = createAdminClient();
 
-  const now = new Date();
-  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const { year, month } = tokyoYmd();
+  const ym = `${year}-${String(month).padStart(2, '0')}`;
   const ext = extFromMime(file.type);
   const rand = Math.random().toString(36).slice(2, 10);
-  const path = `flowers/${ym}/${now.getTime()}-${rand}.${ext}`;
+  const path = `flowers/${ym}/${Date.now()}-${rand}.${ext}`;
 
   const { error: uploadError } = await admin.storage.from(BUCKET).upload(path, file, {
     contentType: file.type,
