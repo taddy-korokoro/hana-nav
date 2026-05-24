@@ -7,10 +7,6 @@ import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 
-// revalidate=300 を設定しているが、getSeasonalSpots / getFeaturedFlowers が
-// createClient() → cookies() を呼び出すため、現状は dynamic レンダリングに
-// フォールバックして ISR は発動しない。cookies() 依存を除去した時点で自動的に
-// 5 分 ISR が有効になる土台として残している。
 export const revalidate = 300;
 
 export default async function HomePage() {
