@@ -25,6 +25,47 @@
 
 ## TODO
 
+### 0. 月次リセット前の緊急対応（着手の最初に実施）
+
+チケット 21 デプロイ後、`/spots` への bot トラフィック（12 時間で 644K req / Cache hit 0%）により Vercel が Pause（Fast Origin Transfer 31.24GB/10GB、Fluid Active CPU 6h37m/4h）。月次リセット（6/1）で復活した瞬間に再 Pause しないよう、22 本体（`cacheComponents` + `use cache`）と直交する以下 2 点を先行で main に乗せておく。
+
+#### 0-1. middleware matcher を保護パスに絞る
+
+- [ ] `middleware.ts:8-18` の matcher を `/mypage/:path*` / `/admin/:path*` / `/auth/callback` の 3 パスに限定
+  ```ts
+  export const config = {
+    matcher: ['/mypage/:path*', '/admin/:path*', '/auth/callback'],
+  };
+  ```
+- 公開ページから `supabase.auth.getUser()` 呼び出しが消える（Fluid Active CPU の主要因を除去）
+- Cookie 同期は `lib/supabase/server.ts` 側の `setAll` で行われるので、ログインユーザーがマイページに遷移した時点で同期される。実害なし
+- `/auth/callback` だけ残すのは OAuth コールバック直後のセッション更新を担保するため
+- 22 本体の `cacheComponents` 対応とは独立した恒久措置として扱う
+
+#### 0-3. Vercel Firewall で `/spots` にレート制限
+
+コード変更なし。Vercel Dashboard 操作のみ。
+
+- [ ] Dashboard → Firewall → Custom Rules → Add Rule で以下を作成
+  - Name: `rate-limit-spots-bot`
+  - If: `Path` `starts with` `/spots`
+  - Then: `Rate Limit`（Fixed Window / 60 requests / 1 minute / Key by IP Address）
+  - Action when exceeded: `Deny`（429）/ Duration `10 minutes`
+- 60 req/min/IP は人間操作では到達しない値。bot 由来トラフィックのみを抑制する
+- 正規クローラー（Googlebot 等）を守りたい場合は AND 条件で `User-Agent does not contain "Googlebot"` を追加
+- Firewall は Hobby プランでも利用可。Edge Request はカウントされるが、関数実行・Origin Transfer は発生しない
+- リセット後 1〜2 日は Firewall Logs で当たり方を確認し、閾値を調整
+
+#### リセット前のフロー
+
+1. ブランチ `feat/22-instant-navigation` を `main` から作成
+2. 0-1 をコミット → PR → main へ merge（Vercel は Paused のままなので deploy は走らないが、6/1 リセット時に自動デプロイされる）
+3. 0-3 を Vercel Dashboard で設定（Paused でも Firewall ルールは適用可能）
+4. 6/1 リセット後、Usage 推移を 2〜3 日観測
+5. 問題なければ以下「設計確認」「実装」に進む
+
+> 0-2 として検討していた `/spots` への `export const revalidate = 300` 暫定対応は、22 本体の `cacheComponents` + `use cache` で同じ効果が得られるため**スキップ**。万が一 22 本体が 6/1 を跨ぎそうな場合のみ、hotfix で先行投入する。
+
 ### 設計確認
 
 - [ ] `cacheComponents` 有効化に伴って影響を受けるページを棚卸し（`grep -r "force-dynamic" app/`）
@@ -59,6 +100,28 @@
 - [ ] 公開ページのうち主要ルートが `unstable_instant` 対応で `npm run build` が通る
 - [ ] 一覧 ↔ 詳細の遷移がプリフェッチ済み URL で即座に切り替わる
 - [ ] マイページ・管理画面など対象外ルートが意図的に `unstable_instant = false` で除外されている
+
+## チケット 21 残項目の最終確認（リセット後）
+
+チケット [21](./21_deploy-launch.md) のうち、Vercel Pause 解除（月次リセット = 6/1）後でしか実施できない項目をここで仕上げる。22 本体（`cacheComponents` + `unstable_instant`）は Performance スコアに大きく寄与するため、Lighthouse 計測は本セクションのタイミングが最適。
+
+### SEO 最終確認
+
+- [ ] Lighthouse モバイルスコア：Performance / SEO ともに 80+
+  - 22 本体実装後に計測。閾値未達の場合は LCP / CLS / 主要 LCP 画像の優先度を切り分け
+  - 計測場所：本番 URL `https://hananav.site/` および `/spots`、`/spots/[id]`、`/flowers/[id]`
+
+### ローンチ後すぐの監視
+
+- [ ] 初日：Vercel Logs を 1 時間ごとに確認、500 系エラーがないか
+- [ ] AI 利用回数（`ai_usage_logs`）の急増を監視。バズ検知時は API キー無効化を即決
+- [ ] Supabase DB サイズの推移を確認
+
+### チケット 21 の完了基準
+
+- [ ] 本番 URL で全機能が動作する
+- [ ] コストアラートが設定されている
+- [ ] ローンチチェックリスト全項目が完了している（[`launch-runbook.md`](./launch-runbook.md) のチェック状況）
 
 ## 参考
 

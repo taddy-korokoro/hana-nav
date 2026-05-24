@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { COPY } from '@/lib/constants/copy';
+import { tokyoYmd } from '@/lib/utils/dateUtils';
 import { SiteLogo } from './site-logo';
 
 export function SiteFooter() {
-  const year = new Date().getFullYear();
+  const year = tokyoYmd().year;
 
   return (
     <footer className="mt-auto bg-surface-2">
