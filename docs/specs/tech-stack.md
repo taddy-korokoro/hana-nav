@@ -36,8 +36,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
 NEXT_PUBLIC_BASE_URL=
-TZ=Asia/Tokyo
 ```
+
+> **`TZ` は Vercel の予約環境変数**（AWS Lambda 由来）で、Vercel 上で登録するとエラーになる。ローカル開発でも設定しない方針に統一。JST 基準が必要な箇所は `lib/utils/dateUtils.ts` のヘルパー（`tokyoMonth()` / `tokyoYmd()` / `tokyoTodayStartIso()` / `tokyoMonthStartIso()`）を使う。
 
 ## 画像ホスティング
 
@@ -127,10 +128,15 @@ CREATE POLICY "Users can delete own avatars"
 
 本サービスは日本国内向けのため **JST（Asia/Tokyo）を基準とする**。
 
-- **Node.js ランタイム**：`.env.local` と Vercel の環境変数に `TZ=Asia/Tokyo` を設定する。`new Date()` / `console.log` の出力、AI 利用回数の「今日」判定（`ai_usage_logs`）、サーバーログの時刻表記が JST に揃う。
-- **DB（Supabase）**：全ての時刻カラムは `TIMESTAMPTZ` で UTC 保管する。DB セッションの TZ は変更しない（クライアント側で変換する前提を崩さない）。
+- **Node.js ランタイム**：Vercel Functions は `TZ` が予約環境変数で **UTC 固定**（[Reserved environment variables](https://vercel.com/docs/environment-variables/reserved-environment-variables) に記載）。`TZ=Asia/Tokyo` は登録できないため、`new Date()` をそのまま使うと本番では UTC で動く。
+- **JST が必要な箇所**：`lib/utils/dateUtils.ts` のヘルパーを必ず経由する。
+  - `tokyoMonth()` — JST の月（1-12）。「今月見頃」判定に使う。
+  - `tokyoYmd()` — JST の `{ year, month, day }`。年・月・日を個別に使うとき。
+  - `tokyoTodayStartIso()` — JST 今日 00:00 を UTC ISO で返す。`ai_usage_logs` の「今日」カウントに使う。
+  - `tokyoMonthStartIso()` — JST 今月 1 日 00:00 を UTC ISO で返す。月次集計の下限に使う。
+- **DB（Supabase）**：全ての時刻カラムは `TIMESTAMPTZ` で UTC 保管する。DB セッションの TZ は変更しない（アプリ層で変換する前提を崩さない）。
 - **表示**：日付・時刻を画面表示する箇所では `Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', ... })` か dayjs/date-fns 等で明示的に `Asia/Tokyo` に変換する。`toLocaleString()` の暗黙ロケール依存に頼らない。
-- **「今日」判定**：AI 利用上限・「今日見頃」など日付境界が絡むロジックは、JST の 00:00–23:59 を境界として扱う。`TZ=Asia/Tokyo` 設定下では `new Date().toISOString().slice(0, 10)` は UTC 日付になるので、JST 日付が必要な場合は `Intl.DateTimeFormat` か日付ユーティリティで明示変換する。
+- **Client Component の `new Date()`**：ブラウザ側ではユーザーの端末 TZ で動くため、国内ユーザーには JST で表示される。ただし SSR で同じコンポーネントを描いた直後にハイドレーションすると差分が出るので、SSR と Client の双方を跨ぐ日付値は **Server で JST 化してから props で渡す**。
 
 ## ディレクトリ構成
 

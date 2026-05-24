@@ -1,4 +1,5 @@
 import { createAnonClient } from '@/lib/supabase/anon';
+import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export type SeasonalSpot = {
@@ -21,7 +22,7 @@ export type SeasonalSpot = {
  */
 export async function getSeasonalSpots(limit = 24): Promise<SeasonalSpot[]> {
   const supabase = createAnonClient();
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = tokyoMonth();
 
   const { data: spots, error } = await supabase
     .from('spots')
