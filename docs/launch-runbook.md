@@ -11,6 +11,13 @@
 > - Supabase Auth のメール本文・件名・差出名は [`auth-email-templates.md`](./auth-email-templates.md) を master としてドキュメント管理する。Supabase Dashboard には docs を見ながら手動で貼り直す（§3「Email Templates 反映」参照）。
 > - メール送信は **Gmail SMTP を Supabase の Custom SMTP として使用**（送信元：`hananav.noreply@gmail.com`、差出名：`hana nav`）。独自ドメインに紐づく本格 Custom SMTP（Resend + SPF/DKIM/DMARC）は **v2 送り**。Supabase Default SMTP では `Sender name` を変更できない UI 仕様のため、MVP でも Custom SMTP を有効化する。設定手順は §3「Custom SMTP（Gmail）設定」を参照。
 
+> **チケット 22 への持ち越し項目**
+>
+> Vercel が無料枠超過で Paused 状態。月次リセット（6/1）まで本番稼働できないため、以下はチケット [22](./22_instant-navigation.md) の「チケット 21 残項目の最終確認（リセット後）」で実施する：
+>
+> - §6 SEO 最終確認の **Lighthouse モバイルスコア 80+**
+> - §8 **ローンチ後 24 時間の監視**（全項目）
+
 ---
 
 ## 0. 事前確認
@@ -36,7 +43,7 @@
 
 MVP では Preview を使わないため、PR ごとのビルドを止めてコストとビルド時間を節約する。
 
-- [ ] Settings > Git > **Ignored Build Step** に `if [ "$VERCEL_GIT_COMMIT_REF" != "main" ]; then exit 0; else exit 1; fi` を入れる
+- [x] Settings > Git > **Ignored Build Step** に `if [ "$VERCEL_GIT_COMMIT_REF" != "main" ]; then exit 0; else exit 1; fi` を入れる
   - もしくは Vercel ダッシュボードから Preview を OFF に切り替え（プランによる）
 
 ### 独自ドメイン接続（ムームードメイン × Vercel）
@@ -229,7 +236,7 @@ A-1. OAuth consent screen（APIs & Services > OAuth consent screen）
 - [x] 利用規約 URL: `https://hananav.site/terms`
 - [x] 承認済みドメイン: `hananav.site`
 - [x] スコープは `openid` / `.../userinfo.email` / `.../userinfo.profile` のみ（他は審査が必要）
-- [ ] 公開ステータス：Testing（Test users にテストアカウントを登録）→ Search Console で `hananav.site` の所有権確認後に **`PUBLISH APP`** で Production に切替
+- [x] 公開ステータス：Testing（Test users にテストアカウントを登録）→ Search Console で `hananav.site` の所有権確認後に **`PUBLISH APP`** で Production に切替
 
 A-2. OAuth Client ID（APIs & Services > Credentials > Create Credentials > OAuth client ID）
 
@@ -349,8 +356,8 @@ Gemini / Maps の暴走対策。最重要。
 - [x] 表示される TXT レコードをムームー DNS の「設定 2」にサブドメイン空欄・種別 TXT で追加し、所有権確認を完了
 - [x] サイトマップ送信：`https://hananav.site/sitemap.xml`
 - [x] robots.txt が `https://hananav.site/robots.txt` で配信されている
-- [ ] OGP 確認：[Twitter Card Validator](https://cards-dev.twitter.com/validator) / [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) に本番 URL を投入
-- [ ] Lighthouse モバイル：Performance / SEO ともに 80+
+- [x] OGP 確認：[Twitter Card Validator](https://cards-dev.twitter.com/validator) / [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) に本番 URL を投入
+- [ ] Lighthouse モバイル：Performance / SEO ともに 80+（→ チケット [22](./22_instant-navigation.md) の「チケット 21 残項目の最終確認」で実施）
 
 ---
 
@@ -358,18 +365,20 @@ Gemini / Maps の暴走対策。最重要。
 
 実機・実ブラウザで一通り触る。
 
-- [ ] サインアップ → 確認メール受信 → ログイン
-- [ ] Google ログイン
-- [ ] スポット検索 → 詳細ページ → ブックマーク
-- [ ] AI 花判定（匿名 1/日、ログイン 3/日のレート制限が動く）
-- [ ] 旅のしおり生成 → SNS シェア（iOS Safari / Android Chrome 実機）
-- [ ] 管理画面 `/admin/*` が管理者でアクセス可、非管理者でブロック
-- [ ] 404（`/this-page-does-not-exist`）でカスタム not-found 表示
-- [ ] 500 ページのフォールバック確認
+- [x] サインアップ → 確認メール受信 → ログイン
+- [x] Google ログイン
+- [x] スポット検索 → 詳細ページ → ブックマーク
+- [x] AI 花判定（匿名 1/日、ログイン 3/日のレート制限が動く）
+- [x] 旅のしおり生成 → SNS シェア（iOS Safari / Android Chrome 実機）
+- [x] 管理画面 `/admin/*` が管理者でアクセス可、非管理者でブロック
+- [x] 404（`/this-page-does-not-exist`）でカスタム not-found 表示
+- [x] 500 ページのフォールバック確認
 
 ---
 
 ## 8. ローンチ後 24 時間の監視
+
+> Vercel Pause 解除（6/1 月次リセット）後にチケット [22](./22_instant-navigation.md) の「チケット 21 残項目の最終確認」で実施する。
 
 - [ ] 初日：Vercel Logs を 1 時間ごとに確認、500 系エラーがないか
 - [ ] AI 利用回数（`ai_usage_logs`）の急増を確認。バズ検知時は API キー無効化を即決
