@@ -19,7 +19,7 @@ export function FlowerImageGallery({ images, flowerName }: Props) {
 
   if (images.length === 0) {
     return (
-      <div className="grid aspect-[16/9] w-full place-items-center overflow-hidden rounded-card-lg bg-gradient-to-br from-pink-300 via-rose-200 to-orange-100">
+      <div className="grid aspect-[4/3] w-full max-w-md place-items-center overflow-hidden rounded-card bg-gradient-to-br from-pink-300 via-rose-200 to-orange-100">
         <div className="text-center text-white/85">
           <span aria-hidden className="block font-serif text-7xl font-light">
             {flowerName.slice(0, 1)}
@@ -33,15 +33,15 @@ export function FlowerImageGallery({ images, flowerName }: Props) {
   const active = images[activeIndex] ?? images[0];
 
   return (
-    <div>
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-card-lg bg-surface-2">
+    <div className="max-w-md">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-card bg-surface-2">
         <Image
           src={active.url}
           alt={active.caption ?? COPY.common.photoAlt(flowerName)}
           fill
           priority
           className="object-cover"
-          sizes="(min-width: 1024px) 960px, 100vw"
+          sizes="(min-width: 768px) 360px, 100vw"
         />
         {active.caption && (
           <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-ink/60 to-transparent p-4">

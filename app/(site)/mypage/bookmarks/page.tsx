@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BookmarkList } from '@/components/bookmarks/BookmarkList';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 import { getMyBookmarks } from '@/lib/queries/bookmarks';
 import { requireUser } from '@/lib/utils/requireUser';
@@ -18,6 +19,14 @@ export default async function MyBookmarksPage() {
   return (
     <section className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
       <header className="mb-8">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.mypage.top.title, href: '/mypage' },
+            { label: COPY.bookmark.list.title },
+          ]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.bookmark.list.eyebrow}
         </p>

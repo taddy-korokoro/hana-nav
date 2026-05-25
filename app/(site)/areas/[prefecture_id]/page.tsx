@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AreaBreadcrumb } from '@/components/areas/AreaBreadcrumb';
 import { AreaMonthlyCalendar } from '@/components/areas/AreaMonthlyCalendar';
 import { RelatedAreas } from '@/components/areas/RelatedAreas';
 import { ArrowRightIcon } from '@/components/layout/icons';
 import { SpotCard } from '@/components/spots/SpotCard';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 import { getAreaDetail, getPrefecture } from '@/lib/queries/areas';
 
@@ -69,7 +69,15 @@ export default async function AreaDetailPage({ params }: { params: Params }) {
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24">
       <header className="pb-6 pt-12 md:pt-16">
-        <AreaBreadcrumb region={prefecture.region} prefectureName={prefecture.name} />
+        <Breadcrumb
+          ariaLabel={COPY.area.breadcrumb.aria}
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.nav.labels.spots, href: '/spots' },
+            { label: prefecture.region },
+            { label: prefecture.name },
+          ]}
+        />
         <p className="mt-4 text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.area.eyebrow}
         </p>

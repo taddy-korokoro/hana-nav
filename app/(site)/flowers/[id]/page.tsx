@@ -5,6 +5,7 @@ import { FlowerAttributes } from '@/components/flowers/FlowerAttributes';
 import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
 import { FlowerSpotsList } from '@/components/flowers/FlowerSpotsList';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
@@ -55,10 +56,18 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
     isInBestSeason(flower.defaultSeasonStart, flower.defaultSeasonEnd, currentMonth);
 
   return (
-    <article className="mx-auto max-w-5xl px-6 pb-24 pt-8 md:pt-12">
+    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
       <FlowerJsonLd flower={flower} coverImageUrl={images[0]?.url ?? null} />
 
       <header className="mb-8">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.nav.labels.flowers, href: '/flowers' },
+            { label: flower.name },
+          ]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.flowersList.eyebrow}
         </p>

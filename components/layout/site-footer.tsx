@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { COPY } from '@/lib/constants/copy';
 import { tokyoYmd } from '@/lib/utils/dateUtils';
-import { SiteLogo } from './site-logo';
 
 export function SiteFooter() {
   const year = tokyoYmd().year;
@@ -10,8 +9,7 @@ export function SiteFooter() {
     <footer className="mt-auto bg-surface-2">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
         <div>
-          <SiteLogo size="md" />
-          <p className="mt-2 text-xs leading-6 text-ink-muted">{COPY.site.descriptionShort}</p>
+          <p className="text-xs leading-6 text-ink-muted">{COPY.site.descriptionShort}</p>
         </div>
 
         <nav>
