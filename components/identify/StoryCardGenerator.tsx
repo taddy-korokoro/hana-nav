@@ -337,7 +337,7 @@ export function StoryCardGenerator() {
             <img src={downloadUrl} alt={sc.previewAlt} className="size-full object-cover" />
           ) : isGenerating ? (
             <div className="flex size-full flex-col items-center justify-center gap-3 text-sm text-ink-muted">
-              <Spinner size="lg" className="text-brand" label={sc.generating} />
+              <Spinner size="lg" className="text-brand" label={null} />
               <span>{sc.generating}</span>
             </div>
           ) : (

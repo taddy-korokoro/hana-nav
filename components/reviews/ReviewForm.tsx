@@ -155,7 +155,7 @@ export function ReviewForm({ spotId, initial, onCancel, showDelete }: Props) {
 
       <fieldset>
         <legend className="text-sm font-medium text-ink">{f.ratingLabel}</legend>
-        <div className="mt-2 flex items-center gap-1" role="radiogroup" aria-label={f.ratingLabel}>
+        <div className="mt-2 flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
