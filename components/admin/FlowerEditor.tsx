@@ -14,7 +14,7 @@ import type {
 import type { FlowerFormActionState } from '@/app/admin/flowers/actions';
 
 const INPUT_CLASS =
-  'w-full rounded-card border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-line-strong ';
+  'w-full rounded-card border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-line-strong';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 

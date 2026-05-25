@@ -31,7 +31,7 @@ type Props = {
 };
 
 const INPUT_CLASS =
-  'w-full rounded-card border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-line-strong ';
+  'w-full rounded-card border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-line-strong';
 
 /**
  * 画像一覧を編集する汎用コンポーネント。spot / flower の両エディタから利用される。
