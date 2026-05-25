@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { StoryCardGenerator } from '@/components/identify/StoryCardGenerator';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 
 export const metadata: Metadata = {
@@ -10,8 +11,17 @@ export const metadata: Metadata = {
 
 export default function IdentifyStoryPage() {
   return (
-    <div className="mx-auto max-w-5xl px-6 pb-24">
+    <div className="mx-auto max-w-6xl px-6 pb-24">
       <section className="pb-6 pt-12 md:pt-16">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.nav.labels.identify, href: '/identify' },
+            { label: COPY.identify.result.title, href: '/identify/result' },
+            { label: COPY.identify.storyCard.title },
+          ]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.identify.storyCard.eyebrow}
         </p>

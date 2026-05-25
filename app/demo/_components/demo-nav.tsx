@@ -3,6 +3,7 @@ import Link from 'next/link';
 const SAMPLES = [
   { label: 'トップ', href: '/demo' },
   { label: 'スポット一覧', href: '/demo/spots' },
+  { label: 'UI 基盤', href: '/demo/ui' },
 ];
 
 export function DemoNav({ current }: { current: string }) {

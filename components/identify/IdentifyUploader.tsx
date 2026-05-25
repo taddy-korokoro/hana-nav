@@ -1,8 +1,10 @@
 'use client';
 
+import { Camera, ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { FormBanner } from '@/components/ui/form-banner';
 import { COPY } from '@/lib/constants/copy';
 import { getAnonymousId } from '@/lib/utils/anonymousId';
 import { resizeImage } from '@/lib/utils/imageResize';
@@ -203,10 +205,12 @@ export function IdentifyUploader() {
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={submitting || reached}
+                loading={submitting}
+                loadingText={COPY.identify.upload.submitting}
+                disabled={reached}
                 className="min-w-40"
               >
-                {submitting ? COPY.identify.upload.submitting : COPY.identify.upload.submit}
+                {COPY.identify.upload.submit}
               </Button>
               <Button type="button" variant="outline" onClick={handleReset} disabled={submitting}>
                 {COPY.identify.upload.retake}
@@ -214,7 +218,7 @@ export function IdentifyUploader() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <label className="cursor-pointer">
               <input
                 ref={cameraInputRef}
@@ -225,7 +229,7 @@ export function IdentifyUploader() {
                 onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
               />
               <span className="flex h-32 flex-col items-center justify-center gap-2 rounded-card border border-dashed border-line bg-surface-2 text-sm font-medium text-ink-muted transition hover:border-brand hover:text-ink">
-                <span className="text-2xl">📸</span>
+                <Camera className="size-8" strokeWidth={1.5} aria-hidden />
                 {COPY.identify.upload.camera}
               </span>
             </label>
@@ -238,7 +242,7 @@ export function IdentifyUploader() {
                 onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
               />
               <span className="flex h-32 flex-col items-center justify-center gap-2 rounded-card border border-dashed border-line bg-surface-2 text-sm font-medium text-ink-muted transition hover:border-brand hover:text-ink">
-                <span className="text-2xl">🖼️</span>
+                <ImageIcon className="size-8" strokeWidth={1.5} aria-hidden />
                 {COPY.identify.upload.pickFile}
               </span>
             </label>
@@ -248,9 +252,10 @@ export function IdentifyUploader() {
         <p className="mt-4 text-xs text-ink-faint">{COPY.identify.upload.tips}</p>
 
         {errorKey && (
-          <div className="mt-4 rounded-card border border-rose-200 bg-rose-50 p-4 text-sm">
-            <p className="font-medium text-ink">{COPY.identify.error.genericTitle}</p>
-            <p className="mt-1 text-ink-muted">{COPY.identify.error[errorKey]}</p>
+          <div className="mt-4">
+            <FormBanner variant="error" title={COPY.identify.error.genericTitle}>
+              {COPY.identify.error[errorKey]}
+            </FormBanner>
           </div>
         )}
       </div>

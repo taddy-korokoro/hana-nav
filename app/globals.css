@@ -27,6 +27,10 @@
   --color-autumn: #b888c7;
   --color-winter: #c44862;
 
+  /* Status — エラー・必須マーク・破壊的アクション */
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fde8e8;
+
   /* Radius */
   --radius-card: 1rem;
   --radius-card-lg: 1.5rem;
@@ -112,5 +116,51 @@ body {
   [role='menuitem']:not([aria-disabled='true']),
   [role='option']:not([aria-disabled='true']) {
     cursor: pointer;
+  }
+
+  /*
+   * focus-visible のベース。design.md「インタラクション状態」参照。
+   * キーボード操作時のみ brand 色のリングを出し、マウスクリックでは出さない。
+   * input/textarea/select は除外し、各フォーム側で `focus:border-brand` 等の
+   * 控えめなスタイルで対応する（フォーム枠の周囲にピンクリングが出ると視覚的に強すぎる）。
+   * 個別コンポーネントでの focus 上書きは原則禁止（必要な場合は ring の色のみ変更）。
+   */
+  :where(
+    a,
+    button,
+    [role='button'],
+    [role='switch'],
+    [role='menuitem'],
+    [role='option'],
+    summary
+  ):focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 4px color-mix(in srgb, var(--color-brand) 50%, transparent);
+    border-radius: inherit;
+  }
+
+  /* input/textarea/select は box-shadow ベースのリングを一切出さない（フォーム枠周辺のピンク輪を抑制） */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible {
+    box-shadow: none !important;
+    outline: none;
+  }
+
+  /* モーション抑制を尊重 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

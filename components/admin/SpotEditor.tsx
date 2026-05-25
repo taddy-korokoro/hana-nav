@@ -15,7 +15,7 @@ import type { FormActionState } from '@/app/admin/spots/actions';
 import { CoordinatePicker } from './CoordinatePicker';
 
 const INPUT_CLASS =
-  'w-full rounded-card border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-line-strong focus:ring-2 focus:ring-brand/20';
+  'w-full rounded-card border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-line-strong ';
 
 type PrefectureOption = { id: number; name: string; region: string };
 type FlowerOption = { id: string; name: string };

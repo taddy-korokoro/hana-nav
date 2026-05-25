@@ -37,6 +37,10 @@
 | `summer`      | `#f5c84b` | 夏の花カテゴリ（向日葵・紫陽花）                |
 | `autumn`      | `#b888c7` | 秋の花カテゴリ（コスモス・彼岸花）              |
 | `winter`      | `#c44862` | 冬の花カテゴリ（梅・椿）                        |
+| `danger`      | `#b91c1c` | 破壊的アクション・エラーメッセージ・必須マーク  |
+| `danger-soft` | `#fde8e8` | エラーバナー背景                                |
+
+成功（success）系の色は **brand を流用**する（`bg-brand-soft text-brand`）。確定したアクション後の通知やプロフィール保存完了などに使う。専用の緑系は追加しない（画面に色が散らかるのを避ける）。
 
 ### 角丸
 
@@ -299,11 +303,71 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 - **`ink-faint`**：日付・ピーク時期・補助の補助
 - **`line`**：検索バー・チップ・入力欄のみ。**カードは原則ボーダーなし**
 
+## インタラクション状態
+
+ボタン・リンク・入力欄・カードなどのインタラクティブ要素に必ず付ける状態。**個別コンポーネントで自前実装せず、共通コンポーネント（`<Button>` / `<Spinner>` 等）が責任を持つ**。
+
+### フォーカス（focus-visible）
+
+- **ボタン・リンク・summary** など押下系の要素に **`focus-visible:ring-2 ring-brand/40 ring-offset-2`** を効かせる
+- ベースは `app/globals.css` の `:where(a, button, ...):focus-visible` で一括適用
+- **input / textarea / select はピンクリングの対象外**。フォーム要素は `focus:border-brand` 等の控えめな枠色変化で対応する（フォーム外周に pink リングが出ると視覚的に強すぎるため）
+- マウスクリック時にリングを出さないため `focus-visible:` のみを使う（`focus:` 単体は禁止）
+
+### ホバー
+
+- リンク：`hover:text-brand`（文字色反転）
+- ボタン（primary）：`hover:bg-brand-hover`
+- ボタン（outline）：`hover:border-ink hover:bg-ink hover:text-white`（黒地反転）
+- カード：`hover:border-line-strong` か、画像 zoom（`group-hover:scale-105`）
+
+### 無効（disabled）
+
+- `disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none`
+- 共通 `<Button>` が一括で付与。個別の `<button>` には書かない
+
+### 読み込み（loading）
+
+- 共通 `<Button loading>` を使う：自動で `disabled` 化＋左に `<Spinner size="sm" />` を表示
+- スピナー単体（フォーム外・ページ内処理など）は `<Spinner size="md" />` を使う
+- 推定時間は表示しない（不正確で逆効果）。フェーズ名（「処理中…」「解析中…」等）の文言で代替する
+
+### モーション抑制
+
+- `prefers-reduced-motion: reduce` を持つユーザに対して `animate-spin` / `animate-pulse` を抑制する（`globals.css` のメディアクエリで一括）
+
+## フォーム規約
+
+### 必須マーク・任意マーク
+
+- **必須マーク（`*`）は表示しない**。input は `required` 属性を持つが、ラベル側にビジュアルマークは置かない（プロダクトデザインの判断）。HTML の `required` 属性とブラウザのバリデーションで十分とする
+- 任意項目：何も付けない。誤解を招きそうな場面に限り `<span className="ml-1 text-xs text-ink-faint">（任意）</span>` を付ける
+
+### エラーメッセージ
+
+- input の直下に配置（`<p id="{name}-error" role="alert" className="mt-1 text-xs text-danger">`）
+- input には `aria-describedby="{name}-error"` を必ず紐付け
+- ヘルプテキストがあれば `aria-describedby="{name}-error {name}-hint"` のようにスペース区切りで複数紐付け
+
+### success / error バナー（フォーム全体）
+
+- 共通 `<FormBanner variant="success|error">` を使う
+- success：`bg-brand-soft text-brand border border-brand/20`
+- error：`bg-danger-soft text-danger border border-danger/20`
+- `role="alert"`（error）/ `role="status"`（success）を内部で付与
+
+### ボタンの loading 状態
+
+- Server Action フォーム：`useFormStatus().pending` を `<Button loading={pending}>` に渡す
+- 通常 `onClick`：`useTransition` / `useState` の値をそのまま `loading` に渡す
+- 二重送信は loading 中の `disabled` で構造的に防ぐ
+
 ## アイコン
 
-- 基本：`strokeWidth={1.5}`、`fill="none"`、`stroke="currentColor"` の細線
+- ライブラリ：**`lucide-react` に統一**（22b で確定）。自前 SVG は段階的に廃止。
+- 基本：`strokeWidth={1.5}`、`stroke="currentColor"` の細線
 - サイズ：`size-4`（本文内）／ `size-5`（フィールド内）／ `size-6`（ナビ）
-- ライブラリ：当面 `app/demo/_components/icons.tsx` の自前 SVG を使用（本番共有時は `@/components/ui/icons.tsx` に昇格）。本番では `lucide-react` を導入予定（チケット 01）— 線の太さ・形状の方向性が同じなので置換は機械的に可能
+- スピナーは `<Spinner>`（lucide `Loader2` ラッパ）を経由して使う。直接 `<Loader2 className="animate-spin" />` を書かない（サイズや色の規格化を共通化するため）
 
 ## コンポーネント階層
 

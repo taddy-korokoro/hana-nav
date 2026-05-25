@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTransition, useState } from 'react';
 import { toast } from 'sonner';
 import { BookmarkIcon } from '@/components/layout/icons';
+import { Spinner } from '@/components/ui/spinner';
 import { COPY } from '@/lib/constants/copy';
 
 type Props = {
@@ -72,7 +73,7 @@ export function BookmarkButton({
   };
 
   const baseClass =
-    'inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-medium transition disabled:opacity-60';
+    'inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed';
   const activeClass = optimistic
     ? 'bg-brand text-white hover:bg-brand-hover'
     : 'border border-line bg-white text-ink hover:bg-surface-2';
@@ -83,6 +84,7 @@ export function BookmarkButton({
       onClick={handleClick}
       disabled={isPending}
       aria-pressed={optimistic}
+      aria-busy={isPending || undefined}
       aria-label={
         optimistic
           ? COPY.bookmark.button.ariaRemove(spotName)
@@ -90,11 +92,15 @@ export function BookmarkButton({
       }
       className={`${baseClass} ${activeClass}`}
     >
-      <BookmarkIcon
-        className="size-4"
-        // 保存済みは塗りつぶし表示にして状態が一目で分かるようにする
-        style={optimistic ? { fill: 'currentColor' } : undefined}
-      />
+      {isPending ? (
+        <Spinner size="sm" label={null} />
+      ) : (
+        <BookmarkIcon
+          className="size-4"
+          // 保存済みは塗りつぶし表示にして状態が一目で分かるようにする
+          style={optimistic ? { fill: 'currentColor' } : undefined}
+        />
+      )}
       {isPending
         ? optimistic
           ? COPY.bookmark.button.adding

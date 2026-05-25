@@ -16,9 +16,21 @@ import { ArrowRightIcon } from '@/components/layout/icons';
 import { COPY } from '@/lib/constants/copy';
 import type { SeasonalSpot } from '@/lib/queries/topSpots';
 
-const JAPAN_CENTER = { lat: 36.5, lng: 138.5 };
+const JAPAN_CENTER = { lat: 38, lng: 138.5 };
 const DEFAULT_ZOOM = 5;
+const MIN_ZOOM = 4;
 const MAP_ID = 'hana-nav-season-map';
+
+// パン制限用の矩形：操作中に海外側へドラッグできないようにする。
+// strictBounds: true との組み合わせで、コンテナ高さがこの矩形より縦方向に長いと
+// Google Maps が表示範囲を矩形に合わせて自動でズームインしてしまう。
+// → 縦に余裕を持たせて北海道（最北 ~45.5°）が確実に収まるよう north を引き上げ。
+const JAPAN_BOUNDS = {
+  south: 16,
+  west: 118,
+  north: 52,
+  east: 152,
+};
 
 type Props = {
   spots: SeasonalSpot[];
@@ -35,11 +47,13 @@ export function SeasonMap({ spots, apiKey }: Props) {
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="relative h-[420px] w-full overflow-hidden rounded-card-lg border border-line bg-white md:h-[520px]">
+      <div className="relative h-[640px] w-full overflow-hidden rounded-card-lg border border-line bg-white md:h-[836px]">
         <Map
           mapId={MAP_ID}
           defaultCenter={JAPAN_CENTER}
           defaultZoom={DEFAULT_ZOOM}
+          minZoom={MIN_ZOOM}
+          restriction={{ latLngBounds: JAPAN_BOUNDS, strictBounds: true }}
           gestureHandling="greedy"
           disableDefaultUI={false}
           clickableIcons={false}

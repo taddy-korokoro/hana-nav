@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { StarIcon } from '@/components/layout/icons';
+import { Button } from '@/components/ui/button';
+import { FormBanner } from '@/components/ui/form-banner';
 import { COPY } from '@/lib/constants/copy';
 
 const COMMENT_MAX = 200;
@@ -46,6 +48,12 @@ export function ReviewForm({ spotId, initial, onCancel, showDelete }: Props) {
 
   const isEdit = initial?.reviewId != null;
   const f = COPY.spotDetail.reviews.form;
+  const fieldId = useId();
+  const commentId = `${fieldId}-comment`;
+  const commentHintId = `${fieldId}-comment-hint`;
+  const visitedId = `${fieldId}-visited`;
+  const visitedHintId = `${fieldId}-visited-hint`;
+  const errorId = `${fieldId}-error`;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -147,7 +155,7 @@ export function ReviewForm({ spotId, initial, onCancel, showDelete }: Props) {
 
       <fieldset>
         <legend className="text-sm font-medium text-ink">{f.ratingLabel}</legend>
-        <div className="mt-2 flex items-center gap-1">
+        <div className="mt-2 flex items-center gap-1" role="radiogroup" aria-label={f.ratingLabel}>
           {[1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
@@ -155,7 +163,7 @@ export function ReviewForm({ spotId, initial, onCancel, showDelete }: Props) {
               onClick={() => setRating(value)}
               aria-label={f.ratingStarAria(value)}
               aria-pressed={rating === value}
-              className="rounded-full p-1 transition hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-brand/30"
+              className="rounded-full p-1 transition hover:bg-surface-2"
             >
               <StarIcon
                 className={`size-7 ${value <= rating ? 'text-brand' : 'text-line-strong'}`}
@@ -167,72 +175,80 @@ export function ReviewForm({ spotId, initial, onCancel, showDelete }: Props) {
         <p className="mt-1 text-xs text-ink-muted">{f.ratingHint}</p>
       </fieldset>
 
-      <label className="block">
-        <span className="text-sm font-medium text-ink">{f.commentLabel}</span>
+      <div>
+        <label htmlFor={commentId} className="block text-sm font-medium text-ink">
+          {f.commentLabel}
+          <span className="ml-1 text-xs text-ink-faint">（任意）</span>
+        </label>
         <textarea
+          id={commentId}
           name="comment"
           rows={4}
           maxLength={COMMENT_MAX}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={f.commentPlaceholder}
-          className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+          aria-describedby={commentHintId}
+          className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-line-strong"
         />
-        <span className="mt-1 block text-right text-xs text-ink-muted">
+        <span id={commentHintId} className="mt-1 block text-right text-xs text-ink-muted">
           {f.commentCounter(comment.length, COMMENT_MAX)}
         </span>
-      </label>
+      </div>
 
-      <label className="block">
-        <span className="text-sm font-medium text-ink">{f.visitedAtLabel}</span>
+      <div>
+        <label htmlFor={visitedId} className="block text-sm font-medium text-ink">
+          {f.visitedAtLabel}
+          <span className="ml-1 text-xs text-ink-faint">（任意）</span>
+        </label>
         <input
+          id={visitedId}
           type="date"
           name="visited_at"
           value={visitedAt}
           onChange={(e) => setVisitedAt(e.target.value)}
-          className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-60"
+          aria-describedby={visitedHintId}
+          className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-line-strong sm:w-60"
         />
-        <span className="mt-1 block text-xs text-ink-muted">{f.visitedAtHint}</span>
-      </label>
+        <span id={visitedHintId} className="mt-1 block text-xs text-ink-muted">
+          {f.visitedAtHint}
+        </span>
+      </div>
 
       {errorMessage && (
-        <p
-          className="rounded-card bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {errorMessage}
-        </p>
+        <FormBanner variant="error" className="text-sm">
+          <span id={errorId}>{errorMessage}</span>
+        </FormBanner>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
+        <Button
           type="submit"
+          loading={busy === 'submitting'}
+          loadingText={f.submitting}
           disabled={busy !== 'idle'}
-          className="inline-flex items-center justify-center rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {busy === 'submitting' ? f.submitting : isEdit ? f.submitEdit : f.submitPost}
-        </button>
+          {isEdit ? f.submitEdit : f.submitPost}
+        </Button>
 
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={busy !== 'idle'}
-            className="inline-flex items-center justify-center rounded-pill border border-line bg-white px-5 py-2.5 text-sm font-medium text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="button" variant="outline" onClick={onCancel} disabled={busy !== 'idle'}>
             {f.cancel}
-          </button>
+          </Button>
         )}
 
         {showDelete && initial?.reviewId && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleDelete}
+            loading={busy === 'deleting'}
+            loadingText={f.deleting}
             disabled={busy !== 'idle'}
-            className="ml-auto inline-flex items-center justify-center rounded-pill px-4 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-60"
+            className="ml-auto text-danger hover:bg-danger-soft hover:text-danger"
           >
-            {busy === 'deleting' ? f.deleting : f.deleteAction}
-          </button>
+            {f.deleteAction}
+          </Button>
         )}
       </div>
     </form>

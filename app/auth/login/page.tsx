@@ -41,6 +41,7 @@ export default async function LoginPage({
           type="password"
           required
           autoComplete="current-password"
+          minLength={8}
         />
         <PrimaryButton type="submit">{COPY.auth.login.submit}</PrimaryButton>
       </form>
