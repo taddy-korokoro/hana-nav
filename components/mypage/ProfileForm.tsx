@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
 import { updateUsername } from '@/app/(site)/mypage/profile/actions';
+import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
 import { USERNAME_MAX, USERNAME_MIN } from '@/lib/utils/usernameValidator';
 
@@ -19,6 +20,9 @@ type Props = {
 export function ProfileForm({ initialUsername }: Props) {
   const [username, setUsername] = useState(initialUsername);
   const [pending, startTransition] = useTransition();
+  const fieldId = useId();
+  const inputId = `${fieldId}-username`;
+  const hintId = `${fieldId}-username-hint`;
 
   return (
     <form
@@ -29,9 +33,12 @@ export function ProfileForm({ initialUsername }: Props) {
       }}
       className="space-y-4"
     >
-      <label className="block">
-        <span className="text-sm font-medium text-ink">{COPY.mypage.profile.usernameLabel}</span>
+      <div>
+        <label htmlFor={inputId} className="block text-sm font-medium text-ink">
+          {COPY.mypage.profile.usernameLabel}
+        </label>
         <input
+          id={inputId}
           type="text"
           name="username"
           required
@@ -40,20 +47,17 @@ export function ProfileForm({ initialUsername }: Props) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
-          className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+          aria-describedby={hintId}
+          className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-line-strong"
         />
-        <span className="mt-1 block text-xs text-ink-muted">
+        <span id={hintId} className="mt-1 block text-xs text-ink-muted">
           {COPY.mypage.profile.usernameHint}
         </span>
-      </label>
+      </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="inline-flex items-center justify-center rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {pending ? COPY.mypage.profile.submitting : COPY.mypage.profile.submit}
-      </button>
+      <Button type="submit" loading={pending} loadingText={COPY.mypage.profile.submitting}>
+        {COPY.mypage.profile.submit}
+      </Button>
     </form>
   );
 }

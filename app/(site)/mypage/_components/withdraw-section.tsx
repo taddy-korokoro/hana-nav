@@ -1,6 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { FormBanner } from '@/components/ui/form-banner';
 import { COPY } from '@/lib/constants/copy';
 import { withdraw } from '../actions';
 
@@ -29,13 +31,15 @@ export function WithdrawSection({ errorMessage }: { errorMessage?: string | null
           </p>
           <p className="mt-1 text-xs text-ink-muted">{COPY.mypage.top.withdraw.description}</p>
         </div>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => setOpen(true)}
-          className="inline-flex shrink-0 items-center justify-center rounded-pill border border-line bg-white px-4 py-2 text-xs font-medium text-ink-muted transition hover:border-line-strong hover:text-ink"
+          className="shrink-0 text-ink-muted"
         >
           {COPY.mypage.top.withdraw.title}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -46,12 +50,9 @@ export function WithdrawSection({ errorMessage }: { errorMessage?: string | null
       <p className="mt-2 text-sm text-ink-muted">{COPY.mypage.top.withdraw.description}</p>
 
       {errorMessage && (
-        <p
-          className="mt-4 rounded-card bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {errorMessage}
-        </p>
+        <div className="mt-4">
+          <FormBanner variant="error">{errorMessage}</FormBanner>
+        </div>
       )}
 
       <form id={formId} action={withdraw} className="mt-5 space-y-4">
@@ -76,29 +77,25 @@ export function WithdrawSection({ errorMessage }: { errorMessage?: string | null
             value={phrase}
             onChange={(e) => setPhrase(e.target.value)}
             autoComplete="off"
-            className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="mt-1.5 w-full rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-line-strong"
           />
         </label>
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
-          <button
-            type="submit"
-            disabled={!ready}
-            className="inline-flex items-center justify-center rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:bg-ink-faint"
-          >
+          <Button type="submit" variant="danger" disabled={!ready}>
             {COPY.mypage.top.withdraw.submit}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
             onClick={() => {
               setOpen(false);
               setAgreed(false);
               setPhrase('');
             }}
-            className="inline-flex items-center justify-center rounded-pill border border-line bg-white px-5 py-2.5 text-sm font-medium transition hover:border-line-strong"
           >
             {COPY.mypage.top.withdraw.cancel}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

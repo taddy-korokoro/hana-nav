@@ -10,6 +10,7 @@ import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
 import { SpotMapPin } from '@/components/spots/SpotMapPin';
 import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
 import { SpotReviewInteraction } from '@/components/reviews/SpotReviewInteraction';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 import { isBookmarked } from '@/lib/queries/bookmarks';
 import { getMyReviewForSpot } from '@/lib/queries/reviews';
@@ -85,7 +86,7 @@ export default async function SpotDetailPage({
   const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
 
   return (
-    <article className="mx-auto max-w-5xl px-6 pb-24 pt-8 md:pt-12">
+    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
       <SpotJsonLd
         spot={spot}
         coverImageUrl={images[0]?.url ?? null}
@@ -93,6 +94,14 @@ export default async function SpotDetailPage({
       />
 
       <header className="mb-8">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.nav.labels.spots, href: '/spots' },
+            { label: spot.name },
+          ]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {spot.prefectureRegion} ・ {spot.prefectureName}
         </p>

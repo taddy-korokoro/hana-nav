@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 
 const COPY_PAGE = COPY.staticPages.terms;
@@ -10,8 +11,12 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <section className="mx-auto max-w-3xl px-6 pb-24 pt-8 md:pt-12">
+    <section className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
       <header className="pb-8">
+        <Breadcrumb
+          className="mb-4"
+          items={[{ label: COPY.nav.labels.home, href: '/' }, { label: COPY_PAGE.title }]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY_PAGE.eyebrow}
         </p>
@@ -24,7 +29,7 @@ export default function TermsPage() {
         </p>
       </header>
 
-      <article className="space-y-10 text-sm leading-7 text-ink">
+      <article className="max-w-3xl space-y-10 text-sm leading-7 text-ink">
         <section>
           <h2 className="font-serif text-xl font-bold">第 1 条（適用範囲）</h2>
           <p className="mt-3">

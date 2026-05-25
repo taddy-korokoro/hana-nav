@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { MyReviewList } from '@/components/reviews/MyReviewList';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 import { getMyReviews } from '@/lib/queries/reviews';
 import { requireUser } from '@/lib/utils/requireUser';
@@ -16,8 +17,16 @@ export default async function MyReviewsPage() {
   const items = await getMyReviews(user.id);
 
   return (
-    <section className="mx-auto max-w-4xl px-6 pb-24 pt-8 md:pt-12">
+    <section className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
       <header className="mb-8">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.mypage.top.title, href: '/mypage' },
+            { label: COPY.mypage.reviews.title },
+          ]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.mypage.reviews.eyebrow}
         </p>
