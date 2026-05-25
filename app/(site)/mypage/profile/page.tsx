@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AvatarUploader } from '@/components/mypage/AvatarUploader';
 import { ProfileForm } from '@/components/mypage/ProfileForm';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { FormBanner } from '@/components/ui/form-banner';
 import { COPY } from '@/lib/constants/copy';
 import { getMyProfile } from '@/lib/queries/mypage';
 import { requireUser } from '@/lib/utils/requireUser';
@@ -31,8 +33,16 @@ export default async function MyProfilePage({
   const initialUsername = profile.username ?? '';
 
   return (
-    <section className="mx-auto max-w-2xl px-6 pb-24 pt-8 md:pt-12">
+    <section className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
       <header className="pb-2">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: COPY.nav.labels.home, href: '/' },
+            { label: COPY.mypage.top.title, href: '/mypage' },
+            { label: COPY.mypage.profile.title },
+          ]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.mypage.profile.eyebrow}
         </p>
@@ -50,30 +60,29 @@ export default async function MyProfilePage({
         </Link>
       </header>
 
-      {successMessage && (
-        <p className="mt-6 rounded-card bg-brand-soft px-3 py-2 text-sm text-brand" role="status">
-          {successMessage}
-        </p>
-      )}
-      {errorMessage && (
-        <p
-          className="mt-6 rounded-card bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {errorMessage}
-        </p>
-      )}
+      <div className="max-w-2xl">
+        {successMessage && (
+          <div className="mt-6">
+            <FormBanner variant="success">{successMessage}</FormBanner>
+          </div>
+        )}
+        {errorMessage && (
+          <div className="mt-6">
+            <FormBanner variant="error">{errorMessage}</FormBanner>
+          </div>
+        )}
 
-      <div className="mt-8 rounded-card-lg bg-white p-6 sm:p-8">
-        <AvatarUploader
-          userId={user.id}
-          initialUrl={profile.avatarUrl}
-          initialFallback={fallback}
-        />
-      </div>
+        <div className="mt-8 rounded-card-lg bg-white p-6 sm:p-8">
+          <AvatarUploader
+            userId={user.id}
+            initialUrl={profile.avatarUrl}
+            initialFallback={fallback}
+          />
+        </div>
 
-      <div className="mt-6 rounded-card-lg bg-white p-6 sm:p-8">
-        <ProfileForm initialUsername={initialUsername} />
+        <div className="mt-6 rounded-card-lg bg-white p-6 sm:p-8">
+          <ProfileForm initialUsername={initialUsername} />
+        </div>
       </div>
     </section>
   );

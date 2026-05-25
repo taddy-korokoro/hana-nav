@@ -1,9 +1,18 @@
+import { Search, X } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { FlowerCard } from '@/components/flowers/FlowerCard';
 import { FlowerKanaIndex } from '@/components/flowers/FlowerKanaIndex';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
-import { findFlowerIdByAlias, getFlowerList, groupFlowersByKana } from '@/lib/queries/flowers';
+import {
+  type FlowerListItem,
+  findFlowerIdByAlias,
+  getFlowerList,
+  groupFlowersByKana,
+} from '@/lib/queries/flowers';
 
 // flowers マスターは管理画面からの編集が反映されるべきなので動的レンダリング。
 // （MVP では更新頻度は低いが、編集後すぐに反映されないと混乱を招くため）
@@ -14,12 +23,24 @@ export const metadata: Metadata = {
   description: COPY.flowersList.metaDescription,
 };
 
-type SearchParams = Promise<{ alias?: string | string[] }>;
+type SearchParams = Promise<{ alias?: string | string[]; q?: string | string[] }>;
+
+/** 名前またはふりがなに query（部分一致・大文字小文字非区別）を含む花だけを返す */
+function filterFlowersByKeyword(flowers: FlowerListItem[], query: string): FlowerListItem[] {
+  const q = query.toLowerCase();
+  return flowers.filter((f) => {
+    if (f.name.toLowerCase().includes(q)) return true;
+    if (f.nameKana && f.nameKana.toLowerCase().includes(q)) return true;
+    return false;
+  });
+}
 
 export default async function FlowersPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const aliasRaw = Array.isArray(sp.alias) ? sp.alias[0] : sp.alias;
   const aliasQuery = aliasRaw?.trim() ?? '';
+  const qRaw = Array.isArray(sp.q) ? sp.q[0] : sp.q;
+  const keyword = qRaw?.trim() ?? '';
 
   // AI 判定や外部リンクから `?alias=ソメイヨシノ` で来た場合は flower_aliases を引いて
   // 該当があれば詳細ページへリダイレクト。無ければ一覧上部に「該当なし」のバナーを出す。
@@ -29,12 +50,18 @@ export default async function FlowersPage({ searchParams }: { searchParams: Sear
   }
 
   const flowers = await getFlowerList();
-  const groups = groupFlowersByKana(flowers);
   const aliasMissed = aliasQuery.length > 0;
+  const isSearching = keyword.length > 0;
+  const filtered = isSearching ? filterFlowersByKeyword(flowers, keyword) : flowers;
+  const groups = groupFlowersByKana(filtered);
 
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24">
       <section className="pb-6 pt-12 md:pt-16">
+        <Breadcrumb
+          className="mb-4"
+          items={[{ label: COPY.nav.labels.home, href: '/' }, { label: COPY.nav.labels.flowers }]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.flowersList.eyebrow}
         </p>
@@ -55,46 +82,102 @@ export default async function FlowersPage({ searchParams }: { searchParams: Sear
         </div>
       )}
 
+      {/* 花専用の検索フォーム（花名・ふりがなに対する部分一致） */}
+      <form
+        action="/flowers"
+        method="get"
+        role="search"
+        className="mb-4 flex items-center gap-2 rounded-card-lg border border-line bg-white p-2 shadow-sm transition-colors focus-within:border-line-strong"
+      >
+        <Search className="ml-3 size-5 shrink-0 text-ink-muted" aria-hidden />
+        <input
+          type="search"
+          name="q"
+          defaultValue={keyword}
+          placeholder={COPY.flowersList.search.placeholder}
+          className="w-full bg-transparent py-3 text-base outline-none placeholder:text-ink-faint"
+        />
+        <Button type="submit" size="md" className="shrink-0">
+          <Search className="size-4" aria-hidden />
+          {COPY.flowersList.search.submit}
+        </Button>
+      </form>
+
+      {isSearching && (
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <span className="text-sm text-ink-muted">
+            {COPY.flowersList.search.resultHeading(keyword, filtered.length)}
+          </span>
+          <Link
+            href="/flowers"
+            className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-ink"
+          >
+            <X className="size-3.5" aria-hidden />
+            {COPY.flowersList.search.clear}
+          </Link>
+        </div>
+      )}
+
       {flowers.length === 0 ? (
         <div className="mt-8 rounded-card border border-line bg-white p-10 text-center">
           <p className="font-serif text-lg font-bold">{COPY.flowersList.empty.title}</p>
           <p className="mt-2 text-sm text-ink-muted">{COPY.flowersList.empty.description}</p>
         </div>
+      ) : isSearching && filtered.length === 0 ? (
+        <div className="mt-8 rounded-card border border-line bg-white p-10 text-center">
+          <p className="font-serif text-lg font-bold">
+            {COPY.flowersList.search.noResult(keyword)}
+          </p>
+        </div>
       ) : (
         <>
-          <section className="pb-8">
-            <FlowerKanaIndex groups={groups} />
-          </section>
+          {!isSearching && (
+            <section className="pb-8">
+              <FlowerKanaIndex groups={groups} />
+            </section>
+          )}
 
           <section className="flex items-baseline justify-between border-t border-line pt-6">
             <p className="text-sm text-ink-muted">
-              <span className="font-serif text-2xl font-bold text-ink">{flowers.length}</span>
-              <span className="ml-2">{COPY.flowersList.countSuffix}</span>
+              <span className="font-serif text-2xl font-bold text-ink">{filtered.length}</span>
+              <span className="ml-2">
+                {isSearching ? COPY.flowersList.search.countSuffix : COPY.flowersList.countSuffix}
+              </span>
             </p>
           </section>
 
-          {groups.map((group) => (
-            <section
-              key={group.label}
-              id={`kana-${group.label}`}
-              aria-label={COPY.flowersList.sectionAria(group.label)}
-              // anchor ジャンプ時にヘッダーで隠れないようスクロール余白を持たせる
-              className="scroll-mt-24 pt-12"
-            >
-              <div className="flex items-baseline gap-3">
-                <h2 className="font-serif text-2xl font-bold tracking-tight">{group.label}</h2>
-                <span className="text-xs text-ink-faint">
-                  {group.flowers.length}
-                  {COPY.flowersList.countSuffix}
-                </span>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {group.flowers.map((flower, i) => (
+          {isSearching ? (
+            <section aria-label={COPY.flowersList.search.resultHeading(keyword, filtered.length)}>
+              <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {filtered.map((flower, i) => (
                   <FlowerCard key={flower.id} flower={flower} index={i} />
                 ))}
               </div>
             </section>
-          ))}
+          ) : (
+            groups.map((group) => (
+              <section
+                key={group.label}
+                id={`kana-${group.label}`}
+                aria-label={COPY.flowersList.sectionAria(group.label)}
+                // anchor ジャンプ時にヘッダーで隠れないようスクロール余白を持たせる
+                className="scroll-mt-24 pt-12"
+              >
+                <div className="flex items-baseline gap-3">
+                  <h2 className="font-serif text-2xl font-bold tracking-tight">{group.label}</h2>
+                  <span className="text-xs text-ink-faint">
+                    {group.flowers.length}
+                    {COPY.flowersList.countSuffix}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {group.flowers.map((flower, i) => (
+                    <FlowerCard key={flower.id} flower={flower} index={i} />
+                  ))}
+                </div>
+              </section>
+            ))
+          )}
         </>
       )}
     </div>

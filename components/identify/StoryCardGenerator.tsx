@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type React from 'react';
 import { Button } from '@/components/ui/button';
+import { FormBanner } from '@/components/ui/form-banner';
+import { Spinner } from '@/components/ui/spinner';
 import { COPY } from '@/lib/constants/copy';
 import { drawImageCover, loadImage, wrapText } from '@/lib/utils/canvasHelpers';
 import {
@@ -263,7 +265,7 @@ export function StoryCardGenerator() {
             value={flowerName}
             onChange={(e) => setFlowerNameOverride(e.target.value)}
             placeholder={sc.form.flowerPlaceholder}
-            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-line-strong"
             maxLength={40}
           />
         </Field>
@@ -273,7 +275,7 @@ export function StoryCardGenerator() {
             value={flowerLanguage}
             onChange={(e) => setFlowerLanguageOverride(e.target.value)}
             placeholder={sc.form.flowerLanguagePlaceholder}
-            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-line-strong"
             maxLength={40}
           />
         </Field>
@@ -283,7 +285,7 @@ export function StoryCardGenerator() {
             value={spotName}
             onChange={(e) => setSpotNameOverride(e.target.value)}
             placeholder={sc.form.spotPlaceholder}
-            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-line-strong"
             maxLength={40}
           />
         </Field>
@@ -292,7 +294,7 @@ export function StoryCardGenerator() {
             type="date"
             value={visitedDate}
             onChange={(e) => setVisitedDate(e.target.value)}
-            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-line-strong"
           />
         </Field>
         <Field label={sc.form.commentLabel}>
@@ -300,7 +302,7 @@ export function StoryCardGenerator() {
             value={comment}
             onChange={(e) => setComment(e.target.value.slice(0, COMMENT_MAX))}
             placeholder={sc.form.commentPlaceholder}
-            className="min-h-24 w-full resize-y rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+            className="min-h-24 w-full resize-y rounded-card border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-line-strong"
             maxLength={COMMENT_MAX}
           />
           <p className="mt-1 text-right text-xs text-ink-faint">
@@ -309,8 +311,13 @@ export function StoryCardGenerator() {
         </Field>
 
         <div className="flex flex-wrap gap-3 pt-2">
-          <Button type="submit" disabled={isGenerating} className="min-w-40">
-            {isGenerating ? sc.generating : downloadUrl ? sc.regenerate : sc.generate}
+          <Button
+            type="submit"
+            loading={isGenerating}
+            loadingText={sc.generating}
+            className="min-w-40"
+          >
+            {downloadUrl ? sc.regenerate : sc.generate}
           </Button>
           <Button asChild variant="outline">
             <Link href="/identify/result">{sc.backToResult}</Link>
@@ -319,11 +326,7 @@ export function StoryCardGenerator() {
 
         <p className="text-xs text-ink-faint">{sc.perfHint}</p>
 
-        {errorKey && (
-          <div className="rounded-card border border-rose-200 bg-rose-50 p-4 text-sm text-ink-muted">
-            {sc.errors[errorKey]}
-          </div>
-        )}
+        {errorKey && <FormBanner variant="error">{sc.errors[errorKey]}</FormBanner>}
       </form>
 
       <div className="space-y-4">
@@ -333,8 +336,9 @@ export function StoryCardGenerator() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={downloadUrl} alt={sc.previewAlt} className="size-full object-cover" />
           ) : isGenerating ? (
-            <div className="flex size-full items-center justify-center">
-              <div className="size-12 animate-spin rounded-full border-4 border-line border-t-brand" />
+            <div className="flex size-full flex-col items-center justify-center gap-3 text-sm text-ink-muted">
+              <Spinner size="lg" className="text-brand" label={sc.generating} />
+              <span>{sc.generating}</span>
             </div>
           ) : (
             <div className="flex size-full items-center justify-center px-6 text-center text-sm text-ink-muted">

@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
 import { Pagination } from '@/components/spots/Pagination';
 import { SpotCard } from '@/components/spots/SpotCard';
-import { SpotFilterPanel } from '@/components/spots/SpotFilterPanel';
+import { SpotSearchPanel } from '@/components/spots/SpotSearchPanel';
 import { SpotMapView } from '@/components/spots/SpotMapView';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 import {
   getFlowerOptions,
@@ -51,6 +52,10 @@ export default async function SpotsPage({
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24">
       <section className="pb-6 pt-12 md:pt-16">
+        <Breadcrumb
+          className="mb-4"
+          items={[{ label: COPY.nav.labels.home, href: '/' }, { label: COPY.nav.labels.spots }]}
+        />
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
           {COPY.spotsList.eyebrow}
         </p>
@@ -62,7 +67,7 @@ export default async function SpotsPage({
         </p>
       </section>
 
-      <SpotFilterPanel current={params} prefectureGroups={prefectureGroups} flowers={flowers} />
+      <SpotSearchPanel current={params} prefectureGroups={prefectureGroups} flowers={flowers} />
 
       <section className="flex items-baseline justify-between border-t border-line pt-6">
         <p className="text-sm text-ink-muted">

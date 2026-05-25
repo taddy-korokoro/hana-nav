@@ -9,12 +9,20 @@
  */
 
 // =====================================================================================
-// ナビゲーション項目（ヘッダー / モバイル / フッターの 3 箇所で共有）
+// ナビゲーション項目（ヘッダー / モバイル / フッター / パンくずの 4 箇所で共有）
+// パンくず内の表記はヘッダー表記と統一するため、NAV_LABELS を単一の真実とする。
 // =====================================================================================
+const NAV_LABELS = {
+  home: 'トップ',
+  spots: 'スポット検索',
+  flowers: '花の種類',
+  identify: 'AI花判定',
+} as const;
+
 export const NAV_ITEMS = [
-  { label: 'スポット検索', href: '/spots' },
-  { label: '花の種類', href: '/flowers' },
-  { label: 'AI花判定', href: '/identify' },
+  { label: NAV_LABELS.spots, href: '/spots' },
+  { label: NAV_LABELS.flowers, href: '/flowers' },
+  { label: NAV_LABELS.identify, href: '/identify' },
 ] as const;
 
 export type NavItem = (typeof NAV_ITEMS)[number];
@@ -89,6 +97,7 @@ export const COPY = {
   // -----------------------------------------------------------------------------------
   nav: {
     items: NAV_ITEMS,
+    labels: NAV_LABELS,
     quickSearch: 'スポットを検索',
     headerSearchPlaceholder: 'キーワード検索',
     openMenu: 'メニューを開く',
@@ -147,9 +156,9 @@ export const COPY = {
   home: {
     hero: {
       eyebrow: 'Find your bloom',
-      title: '満開を、見逃さない。',
+      title: 'いま、咲きごろ。',
       description:
-        '全国の花畑スポットを、エリア・季節・花の種類から探せます。今が見頃の場所も、来月の予習も。',
+        '日本中の花畑から、いちばんきれいに咲いている場所を。エリアでも、季節でも、花の名前でも。',
       monthLine: (monthEn: string, year: number) => `${monthEn} ${year} ・ Find your bloom`,
     },
     searchBar: {
@@ -158,20 +167,20 @@ export const COPY = {
       season: '時期',
       flower: '花',
       flowerPlaceholder: '何を見たい？',
-      identifyCta: '目の前の花を AI で判定する',
+      identifyCta: 'パシャっと花判定',
     },
     map: {
       eyebrow: 'Map view',
-      title: '今月見頃のマップ',
+      title: 'いま見頃の場所',
     },
     featured: {
       eyebrow: 'In bloom now',
-      title: '今月の見頃スポット',
+      title: '今月見頃の花スポット',
       empty: {
-        title: '今月見頃のスポットは準備中です',
+        title: '今月の見ごろは準備中です',
         description: 'データを順次追加しています。先に花の種類から探してみてください。',
         cta: '花の一覧を見る',
-        seeAll: '一覧から探す',
+        seeAll: 'もっと見る',
       },
     },
     flowerTypes: {
@@ -188,8 +197,7 @@ export const COPY = {
     metaDescription: '全国の花畑スポットをエリア・花の種類・見頃の時期で絞り込んで探せます。',
     eyebrow: 'Browse spots',
     title: 'スポットを探す',
-    description:
-      'エリア・時期・花の種類でフィルター。複数組み合わせ可能。URL を共有すると同じ結果が再現できます。',
+    description: 'エリア・時期・花の種類で、ぴったりの一箇所を見つけよう。',
     countSuffix: '件',
     pageProgress: (page: number, total: number) => ` / ${page} / ${total} ページ`,
     clearFilter: 'フィルターをクリア',
@@ -218,6 +226,17 @@ export const COPY = {
         list: 'リスト',
         map: 'マップ',
       },
+    },
+    activeFilters: {
+      heading: '絞り込み中',
+      removeAria: (label: string) => `${label}の絞り込みを外す`,
+      clearAll: 'すべて解除',
+    },
+    advanced: {
+      toggle: '詳細条件',
+      placeholder: '指定なし',
+      searchPlaceholder: '検索',
+      noResults: '該当なし',
     },
   },
 
@@ -319,11 +338,11 @@ export const COPY = {
         visitedAtHint: '任意。空欄でも投稿できます。',
         submitPost: '投稿する',
         submitEdit: '更新する',
-        submitting: '送信中…',
+        submitting: '送信中',
         cancel: 'キャンセル',
         deleteAction: '削除する',
         deleteConfirm: 'このレビューを削除してよろしいですか？',
-        deleting: '削除中…',
+        deleting: '削除中',
       },
       toast: {
         posted: 'レビューを投稿しました',
@@ -374,8 +393,6 @@ export const COPY = {
     eyebrow: 'By area',
     breadcrumb: {
       aria: 'パンくず',
-      areas: 'エリア',
-      home: 'トップ',
     },
     countSuffix: '件',
     spots: {
@@ -424,7 +441,7 @@ export const COPY = {
       '春夏秋冬の花を 50 音順で一覧。気になる花から見頃時期や、見られるスポットを探せます。',
     eyebrow: 'By flower',
     title: '花の種類から探す',
-    description: '気になる花から、見頃の時期と見られるスポットを探せます。',
+    description: '気になる花から、見ごろの時期と会いに行ける場所を。',
     countSuffix: '種類',
     indexAria: '50 音インデックス',
     sectionAria: (label: string) => `${label}行の花一覧`,
@@ -437,6 +454,14 @@ export const COPY = {
       title: (alias: string) => `「${alias}」に一致する花は見つかりませんでした`,
       description:
         '別名や品種名はマスターに登録されているもののみ対応しています。一覧から探してみてください。',
+    },
+    search: {
+      placeholder: '花の名前で検索',
+      submit: '検索',
+      resultHeading: (q: string, count: number) => `「${q}」の検索結果（${count}件）`,
+      noResult: (q: string) => `「${q}」に該当する花はありませんでした。`,
+      clear: '検索をクリア',
+      countSuffix: '件',
     },
   },
 
@@ -587,8 +612,8 @@ export const COPY = {
     button: {
       add: '保存する',
       remove: '保存済み',
-      adding: '追加中…',
-      removing: '解除中…',
+      adding: '追加中',
+      removing: '解除中',
       loginPrompt: 'ログインして保存',
       ariaAdd: (name: string) => `${name}をブックマークに追加`,
       ariaRemove: (name: string) => `${name}をブックマークから外す`,
@@ -623,9 +648,9 @@ export const COPY = {
     metaDescription:
       '目の前の花を撮影 / アップロードすると、AI が花の名前・見頃・特徴を判定します。',
     eyebrow: 'AI Identify',
-    title: '目の前の花を AI で判定',
+    title: 'パシャっと花判定',
     description:
-      '撮影した花の写真をアップロードすると、花の名前・特徴・関連する花畑スポットを AI がご案内します。',
+      '写真を撮るだけで、AI が名前を教えます。花言葉も、見頃の時期も、近くで会える場所まで。',
     privacy:
       '画像はサーバーで AI 判定の処理にのみ利用し、保存しません。判定結果の精度は撮影条件により異なります。',
     upload: {
@@ -635,7 +660,7 @@ export const COPY = {
       preview: 'プレビュー',
       retake: '撮り直す',
       submit: '判定する',
-      submitting: '判定中…（最大 30 秒）',
+      submitting: '判定中（最大 30 秒）',
       tips: 'コツ：花のアップを 1 種類だけフレームに収めると精度が上がります。',
     },
     rateLimit: {
@@ -698,7 +723,7 @@ export const COPY = {
       eyebrow: 'Story card',
       title: '旅のしおりを作る',
       description:
-        'AI 判定の結果と写真をもとに、SNS にシェアしやすい縦長 1080×1920 の画像をブラウザ上で生成します。',
+        'AI が判定した花と写真で、SNS に映える縦長カードをその場で生成。今日の出会いをひと枚に。',
       noData: {
         title: 'しおりに使う写真が見つかりません',
         description: 'AI 花判定からアップロードした写真が必要です。判定からやり直してください。',
@@ -717,7 +742,7 @@ export const COPY = {
         flowerLanguagePlaceholder: '例：可憐',
       },
       generate: 'しおりを生成する',
-      generating: '生成中…',
+      generating: '生成中',
       regenerate: '作り直す',
       share: 'SNS にシェア',
       download: '画像をダウンロード',
@@ -756,7 +781,7 @@ export const COPY = {
       menu: {
         bookmarksTitle: 'ブックマーク',
         bookmarksDescription: '保存したスポットの一覧。見頃の時期を逃さずチェック。',
-        reviewsTitle: '自分のレビュー',
+        reviewsTitle: 'レビュー',
         reviewsDescription: '訪れたスポットの感想を見直したり、追記できます。',
         profileTitle: 'プロフィール編集',
         profileDescription: 'ユーザー名・アバター画像を変更できます。',
@@ -779,9 +804,9 @@ export const COPY = {
       },
     },
     reviews: {
-      metaTitle: '自分のレビュー',
+      metaTitle: 'レビュー',
       eyebrow: 'My reviews',
-      title: '自分のレビュー',
+      title: 'レビュー',
       description: '投稿したレビューを見直したり、編集・削除ができます。',
       countSuffix: '件',
       visitSpot: 'スポットを開く',
@@ -808,10 +833,10 @@ export const COPY = {
       avatarHint: '5MB 以下の JPEG / PNG / WebP。アップロードと同時に保存されます。',
       avatarChange: '画像を選ぶ',
       avatarClear: 'アバターを削除',
-      avatarUploading: 'アップロード中…',
-      avatarRemoving: '削除中…',
+      avatarUploading: 'アップロード中',
+      avatarRemoving: '削除中',
       submit: '保存する',
-      submitting: '保存中…',
+      submitting: '保存中',
       success: 'プロフィールを更新しました',
       errors: {
         invalid_username: 'ユーザー名は 3〜30 文字で入力してください。',
@@ -904,7 +929,7 @@ export const COPY = {
     },
     google: {
       signIn: 'Google でログイン',
-      redirecting: 'リダイレクト中…',
+      redirecting: 'リダイレクト中',
     },
   },
 
@@ -1013,7 +1038,7 @@ export const COPY = {
         description: '基本情報・画像・関連花を入力して保存します。',
         cancel: 'キャンセル',
         submit: '保存して公開待ちにする',
-        submitting: '保存中…',
+        submitting: '保存中',
         success: 'スポットを作成しました',
       },
       edit: {
@@ -1024,7 +1049,7 @@ export const COPY = {
         publishToggleOff: '未公開',
         publishLabel: '公開フラグ',
         save: '保存する',
-        saving: '保存中…',
+        saving: '保存中',
         savedAt: (iso: string) => `最終更新: ${iso}`,
         success: '保存しました',
       },
@@ -1062,7 +1087,7 @@ export const COPY = {
         addFlower: '関連花を追加',
         removeFlower: '削除',
         uploadButton: 'アップロード',
-        uploading: 'アップロード中…',
+        uploading: 'アップロード中',
         previewAlt: (i: number) => `画像 ${i + 1} のプレビュー`,
         urlOrUploadHint: 'PC から画像をアップロード、または既存の URL を貼り付けてください。',
         errors: {
@@ -1129,14 +1154,14 @@ export const COPY = {
         description: '花の総称・別名・画像を登録します。',
         cancel: 'キャンセル',
         submit: '保存する',
-        submitting: '保存中…',
+        submitting: '保存中',
       },
       edit: {
         metaTitle: '花マスター詳細・編集',
         eyebrow: 'Edit',
         backToList: '一覧に戻る',
         save: '保存する',
-        saving: '保存中…',
+        saving: '保存中',
         savedAt: (iso: string) => `最終更新: ${iso}`,
         relatedSpotsTitle: '関連スポット',
         relatedSpotsEyebrow: 'Related',
@@ -1166,7 +1191,7 @@ export const COPY = {
         moveUp: '上へ',
         moveDown: '下へ',
         uploadButton: 'アップロード',
-        uploading: 'アップロード中…',
+        uploading: 'アップロード中',
         previewAlt: (i: number) => `画像 ${i + 1} のプレビュー`,
         urlOrUploadHint: 'PC から画像をアップロード、または既存の URL を貼り付けてください。',
         errors: {
