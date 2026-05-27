@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 
 /**
  * 単一花マスター行をリクエスト内でメモ化して返す。
@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
  * 詳細・メタ両方の用途を満たすよう SELECT は両者の和集合（updated_at まで含む）。
  */
 const fetchFlowerRow = cache(async (id: string) => {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   return supabase
     .from('flowers')
     .select(
@@ -89,7 +89,7 @@ export type FlowerDetailBundle = {
  * 並びは `name_kana NULLS LAST → name`。50 音インデックスは UI 側で `groupFlowersByKana` に流す。
  */
 export async function getFlowerList(): Promise<FlowerListItem[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: flowers, error } = await supabase
     .from('flowers')
@@ -209,7 +209,7 @@ export async function getFlowerMeta(id: string): Promise<{
   }
   if (!data) return null;
 
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: imageRow } = await supabase
     .from('images')
@@ -245,7 +245,7 @@ export async function getFlowerMeta(id: string): Promise<{
 }
 
 async function fetchAliases(flowerId: string): Promise<FlowerAlias[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('flower_aliases')
     .select('id, alias')
@@ -261,7 +261,7 @@ async function fetchAliases(flowerId: string): Promise<FlowerAlias[]> {
 }
 
 async function fetchImages(flowerId: string): Promise<FlowerImage[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('images')
     .select('id, url, caption, display_order')
@@ -283,7 +283,7 @@ async function fetchImages(flowerId: string): Promise<FlowerImage[]> {
 }
 
 async function fetchSpotsByFlower(flowerId: string): Promise<FlowerSpot[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data, error } = await supabase
     .from('spot_flowers')
@@ -387,7 +387,7 @@ export async function findFlowerIdByAlias(alias: string): Promise<string | null>
   const trimmed = alias.trim();
   if (!trimmed) return null;
 
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: aliasRow, error: aliasError } = await supabase
     .from('flower_aliases')

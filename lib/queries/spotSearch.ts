@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 import { isInBestSeason } from '@/lib/utils/seasonUtils';
 
 export const SPOTS_PAGE_SIZE = 24;
@@ -110,7 +110,7 @@ export function serializeSpotSearchParams(params: SpotSearchParams): string {
  * 全件取得 → JS フィルタ → slice の順で扱う。MVP スケールで問題ないことは想定済み。
  */
 export async function searchSpots(params: SpotSearchParams): Promise<SpotSearchPage> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const page = params.page ?? 1;
 
   // flower 名 → flower_id 解決（spot_flowers 経由で絞るため必要）
@@ -315,7 +315,7 @@ export type PrefectureGroup = {
 };
 
 export async function getPrefectureGroups(): Promise<PrefectureGroup[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('prefectures')
     .select('id, name, region, display_order')
@@ -334,7 +334,7 @@ export async function getPrefectureGroups(): Promise<PrefectureGroup[]> {
 }
 
 export async function getFlowerOptions(): Promise<{ id: string; name: string }[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('flowers')
     .select('id, name')
