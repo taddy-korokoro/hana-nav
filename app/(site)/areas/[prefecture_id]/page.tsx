@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -69,11 +70,14 @@ export default function AreaDetailPage({ params }: { params: Params }) {
 }
 
 async function AreaDetailContent({ params }: { params: Params }) {
+  // params 解決後に id ベースで全データを取得する。params は request 由来なので
+  // 上位（page 関数）で await する必要があるが、ここでは id を引数として渡せば
+  // キャッシュ可能。子関数 AreaBundle に切り出して 'use cache' する。
   const { prefecture_id } = await params;
   const id = parsePrefectureId(prefecture_id);
   if (id == null) notFound();
 
-  const detail = await getAreaDetail(id);
+  const detail = await loadAreaBundle(id);
   if (!detail) notFound();
 
   const { prefecture, spots, monthly, relatedPrefectures } = detail;
@@ -144,6 +148,18 @@ async function AreaDetailContent({ params }: { params: Params }) {
       </section>
     </>
   );
+}
+
+/**
+ * 都道府県エリアバンドルを cacheComponents の `'use cache'` で hours スケールで
+ * 共有キャッシュする。マスター更新（admin の spot/flower 編集）後はそれぞれの
+ * Server Action 側で `revalidateTag('spots' / 'flowers')` を叩いて invalidate する
+ * 設計（タグ設計は Step 5 で admin mutations に手を入れる際に合わせて確定）。
+ */
+async function loadAreaBundle(id: number) {
+  'use cache';
+  cacheLife('hours');
+  return getAreaDetail(id);
 }
 
 function AreaDetailSkeleton() {

@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { Suspense } from 'react';
 import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
@@ -34,6 +35,8 @@ export default function HomePage() {
 }
 
 async function HomeHeroAndSearch() {
+  'use cache';
+  cacheLife('hours');
   const currentMonth = tokyoMonth();
   return (
     <>
@@ -44,6 +47,8 @@ async function HomeHeroAndSearch() {
 }
 
 async function HomeContent() {
+  'use cache';
+  cacheLife('hours');
   const currentMonth = tokyoMonth();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [spots, flowers] = await Promise.all([getSeasonalSpots(24), getFeaturedFlowers(12)]);
