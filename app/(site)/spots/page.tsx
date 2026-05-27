@@ -16,10 +16,8 @@ import {
   serializeSpotSearchParams,
 } from '@/lib/queries/spotSearch';
 
-// searchParams（フィルタ群）が必須のため `prefetch: 'static'` の instant
-// validation には乗らない。`prefetch: 'runtime'` + samples で詳細に申告する
-// 方式は将来検討する（Step 5 では未対応）。
-// export const unstable_instant = { prefetch: 'static' };
+// TODO: searchParams（フィルタ群）が必須のため `prefetch: 'static'` には乗らない。
+// `prefetch: 'runtime'` + samples 化を検討する余地あり。
 
 // SEO: クエリパラメータ重複の問題を避けるため検索結果ページは noindex
 export const metadata: Metadata = {
