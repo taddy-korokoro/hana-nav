@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import { FormError, FormField, PrimaryButton } from '@/app/auth/_components/form-fields';
 import { GoogleSignInButton } from '@/app/auth/_components/google-sign-in-button';
@@ -10,12 +11,9 @@ export const metadata: Metadata = {
   title: COPY.auth.login.metaTitle,
 };
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+type LoginSearchParams = Promise<{ error?: string }>;
+
+export default function LoginPage({ searchParams }: { searchParams: LoginSearchParams }) {
   return (
     <AuthCard
       eyebrow={COPY.auth.login.eyebrow}
@@ -25,7 +23,12 @@ export default async function LoginPage({
       footerHref="/auth/signup"
       footerCta={COPY.auth.login.footerCta}
     >
-      <FormError message={error ? COPY.auth.login.errors[error] : null} />
+      {/* チケット 22 Step 1: searchParams の await は request-time data なので、
+          cacheComponents 有効化後に static shell に乗らないように Suspense の内側へ。
+          FormError は null 時に何もレンダリングしないため CLS の心配なし。 */}
+      <Suspense fallback={null}>
+        <LoginStatus searchParams={searchParams} />
+      </Suspense>
 
       <form action={login} className="mt-4 space-y-4">
         <FormField
@@ -61,4 +64,9 @@ export default async function LoginPage({
       <GoogleSignInButton />
     </AuthCard>
   );
+}
+
+async function LoginStatus({ searchParams }: { searchParams: LoginSearchParams }) {
+  const { error } = await searchParams;
+  return <FormError message={error ? COPY.auth.login.errors[error] : null} />;
 }

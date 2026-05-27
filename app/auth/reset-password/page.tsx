@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import {
   FormError,
@@ -13,12 +14,13 @@ export const metadata: Metadata = {
   title: COPY.auth.resetPassword.metaTitle,
 };
 
-export default async function ResetPasswordPage({
+type ResetPasswordSearchParams = Promise<{ error?: string; status?: string }>;
+
+export default function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; status?: string }>;
+  searchParams: ResetPasswordSearchParams;
 }) {
-  const { error, status } = await searchParams;
   return (
     <AuthCard
       eyebrow={COPY.auth.resetPassword.eyebrow}
@@ -28,8 +30,10 @@ export default async function ResetPasswordPage({
       footerHref="/auth/login"
       footerCta={COPY.auth.resetPassword.footerCta}
     >
-      <FormError message={error ? COPY.auth.resetPassword.errors[error] : null} />
-      <FormSuccess message={status ? COPY.auth.resetPassword.statuses[status] : null} />
+      {/* チケット 22 Step 1: searchParams は Suspense 内側へ。 */}
+      <Suspense fallback={null}>
+        <ResetPasswordStatus searchParams={searchParams} />
+      </Suspense>
 
       <form action={requestReset} className="mt-4 space-y-4">
         <FormField
@@ -42,5 +46,15 @@ export default async function ResetPasswordPage({
         <PrimaryButton type="submit">{COPY.auth.resetPassword.submit}</PrimaryButton>
       </form>
     </AuthCard>
+  );
+}
+
+async function ResetPasswordStatus({ searchParams }: { searchParams: ResetPasswordSearchParams }) {
+  const { error, status } = await searchParams;
+  return (
+    <>
+      <FormError message={error ? COPY.auth.resetPassword.errors[error] : null} />
+      <FormSuccess message={status ? COPY.auth.resetPassword.statuses[status] : null} />
+    </>
   );
 }
