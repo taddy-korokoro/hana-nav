@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 import { isInBestSeason } from '@/lib/utils/seasonUtils';
 import type { SpotSearchResult } from '@/lib/queries/spotSearch';
 
@@ -35,7 +35,7 @@ export type AreaDetail = {
  *  React.cache() でメモ化する」）
  */
 const fetchPrefectureRow = cache(async (id: number) => {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   return supabase
     .from('prefectures')
     .select('id, name, region, display_order')
@@ -63,7 +63,7 @@ export async function getPrefecture(id: number): Promise<Prefecture | null> {
  * `/api/prefectures` の両方から呼ばれるので一箇所に集約する。
  */
 export async function getAllPrefectures(): Promise<Prefecture[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('prefectures')
     .select('id, name, region, display_order')
@@ -95,7 +95,7 @@ export const getAreaDetail = cache(async (prefectureId: number): Promise<AreaDet
   const prefecture = await getPrefecture(prefectureId);
   if (!prefecture) return null;
 
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   type SpotRow = {
     id: string;
@@ -199,7 +199,7 @@ async function fetchSpotCovers(
   spotIds: string[],
 ): Promise<Map<string, { url: string; caption: string | null }>> {
   if (spotIds.length === 0) return new Map();
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('images')
     .select('owner_id, url, caption, display_order')
@@ -223,7 +223,7 @@ async function fetchSpotCovers(
 }
 
 async function fetchRelatedPrefectures(region: string, excludeId: number): Promise<Prefecture[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('prefectures')
     .select('id, name, region, display_order')
