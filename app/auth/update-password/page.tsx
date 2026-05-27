@@ -22,7 +22,7 @@ export default function UpdatePasswordPage({
       title={COPY.auth.updatePassword.title}
       description={COPY.auth.updatePassword.description}
     >
-      {/* チケット 22 Step 1: searchParams は Suspense 内側へ。 */}
+      {/* searchParams は request-time data なので Suspense 境界の内側に閉じ込める。 */}
       <Suspense fallback={null}>
         <UpdatePasswordStatus searchParams={searchParams} />
       </Suspense>

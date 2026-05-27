@@ -30,7 +30,7 @@ export default function ResetPasswordPage({
       footerHref="/auth/login"
       footerCta={COPY.auth.resetPassword.footerCta}
     >
-      {/* チケット 22 Step 1: searchParams は Suspense 内側へ。 */}
+      {/* searchParams は request-time data なので Suspense 境界の内側に閉じ込める。 */}
       <Suspense fallback={null}>
         <ResetPasswordStatus searchParams={searchParams} />
       </Suspense>

@@ -27,8 +27,8 @@ export default function SignupPage({ searchParams }: { searchParams: SignupSearc
       footerHref="/auth/login"
       footerCta={COPY.auth.signup.footerCta}
     >
-      {/* チケット 22 Step 1: searchParams を Suspense 内側へ。FormError/Success は null 時に
-          何も描画しないため CLS なし。 */}
+      {/* searchParams は request-time data なので Suspense 境界の内側に閉じ込める。
+          FormError/Success は null 時に何も描画しないため fallback={null} で CLS なし。 */}
       <Suspense fallback={null}>
         <SignupStatus searchParams={searchParams} />
       </Suspense>

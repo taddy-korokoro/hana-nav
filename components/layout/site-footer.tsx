@@ -49,8 +49,8 @@ export function SiteFooter() {
 
       <div className="border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-4 text-xs text-ink-faint">
-          {/* チケット 22 Step 1: 年表示は new Date() に依存するので Client Component に切り出し、
-              cacheComponents 有効化後の prerender 失敗を予防する。fallback は null で CLS を回避。 */}
+          {/* 年表示は new Date() に依存するため Client Component（葉）に切り出し、
+              cacheComponents 有効下の prerender 拒否を予防。fallback={null} は CLS 回避用。 */}
           <Suspense fallback={null}>
             <SiteFooterYear />
           </Suspense>

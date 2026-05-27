@@ -23,9 +23,9 @@ export default function LoginPage({ searchParams }: { searchParams: LoginSearchP
       footerHref="/auth/signup"
       footerCta={COPY.auth.login.footerCta}
     >
-      {/* チケット 22 Step 1: searchParams の await は request-time data なので、
-          cacheComponents 有効化後に static shell に乗らないように Suspense の内側へ。
-          FormError は null 時に何もレンダリングしないため CLS の心配なし。 */}
+      {/* searchParams は request-time data なので Suspense 境界の内側に閉じ込め、
+          cacheComponents 有効下の prerender 拒否を回避する。FormError は null 時に
+          何もレンダリングしないため fallback={null} で CLS は発生しない。 */}
       <Suspense fallback={null}>
         <LoginStatus searchParams={searchParams} />
       </Suspense>

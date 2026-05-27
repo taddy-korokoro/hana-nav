@@ -5,18 +5,16 @@ import MypageTopLoading from './loading';
 /**
  * マイページ共通レイアウト。
  *
- * チケット 22 Step 1: cacheComponents 有効化後、layout 直下で `requireUser()`
- * を await すると static shell の生成がブロックされる（cookies アクセスのため）。
- * 認証ゲートを `<MypageGate>` という子コンポーネントに切り出して Suspense の
- * 内側に閉じ込めることで、layout 自体は static として動き、認証チェックと
- * children のデータ取得は Suspense 境界の下でストリームする構造にする。
+ * 認証ゲートを `<MypageGate>` 子コンポーネントに切り出して Suspense の内側に
+ * 閉じ込めているのは、layout 直下で `requireUser()`（cookies アクセス）を await
+ * すると cacheComponents 有効下で static shell の生成がブロックされるため。
+ * layout 自体は静的シェルで、認証チェックと children のデータ取得は Suspense
+ * 境界の下でストリームする。
  *
- * 各 page も独立して `requireUser()` を呼んでいるが、これは（将来 React.cache
- * 化する余地のある）冪等な呼び出しなので問題なし。レイアウト側の Gate は
- * 「ログインしていないとそもそも下に行かない」ことを構造的に保証する。
- *
- * cacheComponents off の現状では single-render なので挙動差はないが、Step 4 で
- * cacheComponents を on にするまでの間も regression なく走り続ける。
+ * 各 page も独立して `requireUser()` を呼んでいるが、`requireUser` は
+ * `getCurrentUser`（React.cache 済み）経由なので同一リクエスト内で Auth 往復は
+ * 1 回にまとまる。layout 側の Gate は「ログインしていないとそもそも下に
+ * 行かない」ことを構造的に保証する。
  */
 export default function MypageLayout({ children }: { children: React.ReactNode }) {
   return (
