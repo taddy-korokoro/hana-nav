@@ -3,6 +3,7 @@
 import { Suspense, use, useMemo } from 'react';
 import { AffiliateBookCard } from '@/components/affiliate/AffiliateBookCard';
 import { AffiliateSectionLayout } from '@/components/affiliate/AffiliateSectionLayout';
+import { AffiliateSectionSkeleton } from '@/components/affiliate/AffiliateSectionSkeleton';
 import { getAffiliateBooksAction } from '@/components/affiliate/actions';
 import { COPY } from '@/lib/constants/copy';
 import type { AffiliateBook } from '@/lib/queries/rakuten';
@@ -53,23 +54,13 @@ function BookSectionContent({ flowerName }: { flowerName: string }) {
 
 function BookSectionSkeleton() {
   return (
-    <AffiliateSectionLayout
+    <AffiliateSectionSkeleton
       eyebrow={COPY.affiliate.books.eyebrow}
       title={COPY.affiliate.books.title}
       description={COPY.affiliate.books.description}
       fallbackUrl={COPY.affiliate.books.fallbackUrl('花')}
       empty={COPY.affiliate.books.empty}
-      isEmpty={false}
-    >
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-card border border-line bg-white p-3" aria-hidden>
-            <div className="aspect-[3/4] w-full animate-pulse rounded-md bg-surface-2" />
-            <div className="mt-3 h-3 w-3/4 animate-pulse rounded bg-surface-2" />
-            <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-surface-2" />
-          </div>
-        ))}
-      </div>
-    </AffiliateSectionLayout>
+      variant="book"
+    />
   );
 }

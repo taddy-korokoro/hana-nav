@@ -2,7 +2,10 @@ import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { AffiliateProductSection } from '@/components/affiliate/AffiliateProductSection';
+import {
+  AffiliateProductSection,
+  AffiliateProductSectionSkeleton,
+} from '@/components/affiliate/AffiliateProductSection';
 import { FlowerAttributes } from '@/components/flowers/FlowerAttributes';
 import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
@@ -171,7 +174,7 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
       </section>
 
       <div className="mt-12">
-        <Suspense fallback={null}>
+        <Suspense fallback={<AffiliateProductSectionSkeleton />}>
           <AffiliateProductSection flowerName={flower.name} />
         </Suspense>
       </div>

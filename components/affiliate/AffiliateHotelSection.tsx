@@ -1,7 +1,24 @@
 import { AffiliateHotelCard } from '@/components/affiliate/AffiliateHotelCard';
 import { AffiliateSectionLayout } from '@/components/affiliate/AffiliateSectionLayout';
+import { AffiliateSectionSkeleton } from '@/components/affiliate/AffiliateSectionSkeleton';
 import { COPY } from '@/lib/constants/copy';
 import { searchHotelsNearSpot } from '@/lib/queries/rakuten';
+
+/**
+ * Hotel セクション用 Suspense fallback。CLS を防ぐため Card と同じアスペクト比のスケルトンを並べる。
+ */
+export function AffiliateHotelSectionSkeleton() {
+  return (
+    <AffiliateSectionSkeleton
+      eyebrow={COPY.affiliate.hotels.eyebrow}
+      title={COPY.affiliate.hotels.title}
+      description={COPY.affiliate.hotels.description}
+      fallbackUrl={COPY.affiliate.hotels.fallbackUrl}
+      empty={COPY.affiliate.hotels.empty}
+      variant="hotel"
+    />
+  );
+}
 
 /**
  * スポット詳細ページに挿入する宿カード群。

@@ -3,7 +3,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { AffiliateHotelSection } from '@/components/affiliate/AffiliateHotelSection';
+import {
+  AffiliateHotelSection,
+  AffiliateHotelSectionSkeleton,
+} from '@/components/affiliate/AffiliateHotelSection';
 import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
 import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
 import { RelatedSpots } from '@/components/spots/RelatedSpots';
@@ -244,7 +247,7 @@ export default async function SpotDetailPage({
       </section>
 
       <div className="mt-12">
-        <Suspense fallback={null}>
+        <Suspense fallback={<AffiliateHotelSectionSkeleton />}>
           <AffiliateHotelSection latitude={spot.latitude} longitude={spot.longitude} />
         </Suspense>
       </div>
