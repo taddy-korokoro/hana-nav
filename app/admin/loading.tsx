@@ -1,12 +1,8 @@
 /**
- * 管理画面全体の Suspense fallback。
- *
- * チケット 22 Step 1: cacheComponents 有効化後、layout/page の uncached データ取得
- * （requireAdmin / DB クエリ）は Suspense 境界の内側にしか置けなくなる。loading.tsx
- * を置くことでルートセグメントに暗黙の Suspense 境界ができ、admin 配下の page 単位の
- * データ取得もここに吸収される。
- *
- * cacheComponents off の現状ではナビゲーション中のフォールバックとして機能する。
+ * 管理画面全体の Suspense fallback。loading.tsx を置くことでルートセグメントに
+ * 暗黙の Suspense 境界ができ、各 page のデータ取得（admin 認可 + DB クエリ）が
+ * ここに吸収される。cacheComponents 有効下では必須、off の現状でも遷移時の
+ * スケルトンとして機能する。
  */
 export default function AdminLoading() {
   return (

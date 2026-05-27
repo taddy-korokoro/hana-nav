@@ -7,14 +7,11 @@ import AdminLoading from './loading';
  * 管理画面共通レイアウト。middleware の二重防御として `requireAdmin()` を呼び、
  * 非 admin が直接アクセスした場合も `/` にリダイレクトさせる。
  *
- * チケット 22 Step 1: cacheComponents 有効化後、layout 直下で await すると
- * static shell の生成がブロックされる（cookies + DB アクセスのため）。
- * 認可ロジックを `<AdminGate>` という子コンポーネントに切り出して Suspense の
- * 内側に閉じ込めることで、AdminShell（ナビ）は static shell に乗り、認可と
- * children のデータ取得は Suspense 境界の下でストリームする構造にする。
- *
- * cacheComponents off の現状では single-render なので挙動差はないが、Step 4 で
- * cacheComponents を on にするまでの間も regression なく走り続ける。
+ * 認可ロジックを `<AdminGate>` 子コンポーネントに切り出して Suspense の内側に
+ * 閉じ込めているのは、layout 直下で cookies + DB アクセスを await すると
+ * cacheComponents 有効下で static shell の生成がブロックされるため。AdminShell
+ * （ナビ）は静的シェルに乗り、認可と children のデータ取得は Suspense 境界の
+ * 下でストリームする。
  */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
