@@ -1,10 +1,9 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { SiteFooterYear } from '@/components/layout/site-footer-year';
 import { COPY } from '@/lib/constants/copy';
-import { tokyoYmd } from '@/lib/utils/dateUtils';
 
 export function SiteFooter() {
-  const year = tokyoYmd().year;
-
   return (
     <footer className="mt-auto bg-surface-2">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-3">
@@ -50,7 +49,11 @@ export function SiteFooter() {
 
       <div className="border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-4 text-xs text-ink-faint">
-          {COPY.site.copyright(year)}
+          {/* チケット 22 Step 1: 年表示は new Date() に依存するので Client Component に切り出し、
+              cacheComponents 有効化後の prerender 失敗を予防する。fallback は null で CLS を回避。 */}
+          <Suspense fallback={null}>
+            <SiteFooterYear />
+          </Suspense>
         </div>
       </div>
     </footer>
