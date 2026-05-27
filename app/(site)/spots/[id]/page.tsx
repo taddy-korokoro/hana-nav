@@ -20,6 +20,12 @@ import { createClient } from '@/lib/supabase/server';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
+// <Link> プリフェッチを効かせる。dynamic segment [id] と ?edit パラメータが
+// あり、build 時に全 ID を列挙して samples を埋めるのは現実的でないため、
+// バリデーションは無効化してプリフェッチ挙動だけ受け取る。実 sample 列挙は
+// 将来 generateStaticParams を導入したら delete できる。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ edit?: string }>;
 
