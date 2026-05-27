@@ -2,6 +2,8 @@ import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+import { AffiliateHotelSection } from '@/components/affiliate/AffiliateHotelSection';
 import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
 import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
 import { RelatedSpots } from '@/components/spots/RelatedSpots';
@@ -240,6 +242,12 @@ export default async function SpotDetailPage({
           />
         </div>
       </section>
+
+      <div className="mt-12">
+        <Suspense fallback={null}>
+          <AffiliateHotelSection latitude={spot.latitude} longitude={spot.longitude} />
+        </Suspense>
+      </div>
 
       {relatedSpots.length > 0 && (
         <div className="mt-16">

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useSyncExternalStore } from 'react';
+import { AffiliateBookSectionClient } from '@/components/affiliate/AffiliateBookSectionClient';
 import { Button } from '@/components/ui/button';
 import { ArrowRightIcon, FlowerIcon, MapPinIcon } from '@/components/layout/icons';
 import { COPY } from '@/lib/constants/copy';
@@ -237,6 +238,8 @@ export function IdentifyResult() {
           </p>
         )}
       </section>
+
+      <AffiliateBookSectionClient flowerName={displayName} />
 
       <div className="flex flex-wrap gap-3 border-t border-line pt-6">
         <Button asChild>
