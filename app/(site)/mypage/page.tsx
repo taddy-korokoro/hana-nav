@@ -9,7 +9,6 @@ import { getMyMypageStats, getMyProfile } from '@/lib/queries/mypage';
 import { requireUser } from '@/lib/utils/requireUser';
 import { WithdrawSection } from './_components/withdraw-section';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.mypage.top.metaTitle,

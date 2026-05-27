@@ -4,7 +4,6 @@ import { FlowerEditor } from '@/components/admin/FlowerEditor';
 import { COPY } from '@/lib/constants/copy';
 import { createFlowerAction } from '../actions';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.flowers.new.metaTitle,

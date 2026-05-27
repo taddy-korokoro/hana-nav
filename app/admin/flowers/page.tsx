@@ -6,7 +6,6 @@ import { COPY } from '@/lib/constants/copy';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 import { listAdminFlowers } from '@/lib/queries/admin';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.flowers.list.metaTitle,

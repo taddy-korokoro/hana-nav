@@ -5,7 +5,6 @@ import { COPY } from '@/lib/constants/copy';
 import { listAllImages } from '@/lib/queries/admin';
 import { softDeleteImageAction } from './actions';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.images.list.metaTitle,

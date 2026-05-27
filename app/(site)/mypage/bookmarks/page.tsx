@@ -6,7 +6,6 @@ import { COPY } from '@/lib/constants/copy';
 import { getMyBookmarks } from '@/lib/queries/bookmarks';
 import { requireUser } from '@/lib/utils/requireUser';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.bookmark.list.metaTitle,

@@ -6,7 +6,6 @@ import { UserFilters } from '@/components/admin/UserFilters';
 import { COPY } from '@/lib/constants/copy';
 import { listAdminUsers } from '@/lib/queries/admin-users';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.users.list.metaTitle,
