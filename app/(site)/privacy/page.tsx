@@ -44,6 +44,10 @@ export default function PrivacyPage() {
               AI 花判定にアップロードされた画像（AI 機能の処理にのみ利用し、サーバには保存しません）
             </li>
             <li>アクセスログ、IP アドレス、ユーザーエージェント、Cookie</li>
+            <li>
+              本サービスから楽天アフィリエイトリンク（楽天市場・楽天ブックス・楽天トラベル）に遷移した際に、楽天株式会社が発行する
+              Cookie
+            </li>
             <li>匿名利用回数を制御するためにブラウザ上で保持する識別子（UUID 等）</li>
           </ul>
         </section>
@@ -70,6 +74,10 @@ export default function PrivacyPage() {
             <li>Supabase（米国／データベース・認証・ストレージ）</li>
             <li>Vercel（米国／アプリケーションホスティング）</li>
             <li>Google LLC（米国／Google 認証、Google Maps Platform、Gemini API）</li>
+            <li>
+              楽天株式会社（日本／楽天アフィリエイトプログラム、楽天ウェブサービス。アフィリエイトリンク経由で楽天サイトに遷移した場合に
+              Cookie 情報が同社に送信されます）
+            </li>
           </ul>
           <p className="mt-3">
             法令に基づく開示請求があった場合、運営者は最小限の範囲で情報を提供することがあります。
@@ -86,8 +94,36 @@ export default function PrivacyPage() {
         </section>
 
         <section>
+          <h2 className="font-serif text-xl font-bold">第 5 条（アフィリエイトプログラム）</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-6">
+            <li>
+              本サービスは、楽天株式会社が提供する「楽天アフィリエイト」プログラムに参加しています。AI
+              花判定結果、花の種類詳細、スポット詳細の各ページに、関連する書籍・商品・宿泊施設へのアフィリエイトリンクを掲載することがあります。
+            </li>
+            <li>
+              アフィリエイトリンクをクリックして楽天市場・楽天ブックス・楽天トラベル等の楽天グループサイトに遷移した場合、楽天株式会社により
+              Cookie が設定されることがあり、当該 Cookie
+              により利用者の閲覧・購入情報が同社に送信されます。
+            </li>
+            <li>
+              楽天株式会社における Cookie・個人情報の取り扱いは、同社のプライバシーポリシー（
+              <a
+                href="https://privacy.rakuten.co.jp/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand underline-offset-4 hover:underline"
+              >
+                https://privacy.rakuten.co.jp/
+              </a>
+              ）に従います。
+            </li>
+            <li>アフィリエイトリンクは、景品表示法に基づき「広告」バッジを付して明示します。</li>
+          </ol>
+        </section>
+
+        <section>
           <h2 className="font-serif text-xl font-bold">
-            第 5 条（AI 花判定における画像の取り扱い）
+            第 6 条（AI 花判定における画像の取り扱い）
           </h2>
           <p className="mt-3">
             AI 花判定にアップロードされた画像は、Gemini API
@@ -97,27 +133,27 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold">第 6 条（退会・データ削除請求）</h2>
+          <h2 className="font-serif text-xl font-bold">第 7 条（退会・データ削除請求）</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-6">
             <li>
               利用者は、マイページから自らのアカウントを退会することができます。退会時、プロフィール・ブックマーク・自身のレビュー等の情報は速やかに非表示化されます。
             </li>
             <li>
-              退会後のデータ完全削除を希望する場合は、第 7
+              退会後のデータ完全削除を希望する場合は、第 8
               条のお問い合わせ窓口までご連絡ください。法令上保管義務がある情報を除き、合理的な期間内に削除に応じます。
             </li>
           </ol>
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold">第 7 条（お問い合わせ窓口）</h2>
+          <h2 className="font-serif text-xl font-bold">第 8 条（お問い合わせ窓口）</h2>
           <p className="mt-3">
             個人情報の取り扱いに関するお問い合わせは、フッターの「お問い合わせ」リンクからご連絡ください。
           </p>
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold">第 8 条（ポリシーの改定）</h2>
+          <h2 className="font-serif text-xl font-bold">第 9 条（ポリシーの改定）</h2>
           <p className="mt-3">
             本ポリシーは、法令およびサービス内容の変更に応じて改定することがあります。重要な変更がある場合は、本サービス上で告知します。
           </p>
@@ -126,6 +162,7 @@ export default function PrivacyPage() {
         <section className="border-t border-line pt-8">
           <h2 className="font-serif text-xl font-bold">{COPY.staticPages.historyHeading}</h2>
           <ul className="mt-3 space-y-2 text-sm text-ink-muted">
+            <li>2026-05-25 楽天アフィリエイトプログラム参加に伴う条項追加</li>
             <li>2026-05-21 初版公開</li>
           </ul>
         </section>

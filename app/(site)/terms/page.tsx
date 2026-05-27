@@ -120,7 +120,22 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold">第 8 条（免責事項）</h2>
+          <h2 className="font-serif text-xl font-bold">第 8 条（外部リンク・アフィリエイト）</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-6">
+            <li>
+              本サービスは、楽天株式会社が提供する「楽天アフィリエイト」プログラムに参加しており、関連する書籍・商品・宿泊施設へのアフィリエイトリンクを掲載することがあります。
+            </li>
+            <li>
+              アフィリエイトリンク先での商品購入・宿泊予約・契約条件・配送・返品・トラブル対応等は、すべてリンク先の販売事業者と利用者との間で完結するものであり、運営者は当該取引について一切の責任を負いません。
+            </li>
+            <li>
+              本サービスから外部サイトへ遷移した場合、外部サイトでの個人情報の取り扱いは当該外部サイトの定めに従います。利用者は、外部サイトの規約・プライバシーポリシーをご自身でご確認ください。
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="font-serif text-xl font-bold">第 9 条（免責事項）</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-6">
             <li>
               運営者は、本サービスの内容、AI
@@ -136,14 +151,14 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold">第 9 条（規約の改定）</h2>
+          <h2 className="font-serif text-xl font-bold">第 10 条（規約の改定）</h2>
           <p className="mt-3">
             運営者は、必要に応じて本規約を改定することがあります。改定後の規約は、本サービス上で公開した時点から効力を生じます。
           </p>
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold">第 10 条（準拠法および管轄）</h2>
+          <h2 className="font-serif text-xl font-bold">第 11 条（準拠法および管轄）</h2>
           <p className="mt-3">
             本規約は日本法に準拠し、本サービスに関して紛争が生じた場合は、運営者の所在地を管轄する裁判所を第一審の専属的合意管轄裁判所とします。
           </p>
@@ -152,6 +167,7 @@ export default function TermsPage() {
         <section className="border-t border-line pt-8">
           <h2 className="font-serif text-xl font-bold">{COPY.staticPages.historyHeading}</h2>
           <ul className="mt-3 space-y-2 text-sm text-ink-muted">
+            <li>2026-05-25 アフィリエイトリンク条項追加に伴う条文追加</li>
             <li>2026-05-21 初版公開</li>
           </ul>
         </section>
