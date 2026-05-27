@@ -2,6 +2,10 @@ import { Suspense } from 'react';
 import { requireUser } from '@/lib/utils/requireUser';
 import MypageTopLoading from './loading';
 
+// マイページは認証必須・per-user データが中心で static shell に向かないため
+// instant validation の対象外。
+export const unstable_instant = false;
+
 /**
  * マイページ共通レイアウト。
  *
