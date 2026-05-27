@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -65,6 +66,10 @@ export async function getAiUsageStats(): Promise<{
   monthly: AiUsageMonthlyRow[];
   ranking: AiUsageRankRow[];
 }> {
+  // cacheComponents 下で new Date() を呼ぶ前に request-time シグナルを出す。
+  // 管理画面は per-request 計算が必要（ランキング・直近 N 日集計など）で、
+  // キャッシュも意図的に避けるため connection() で dynamic 評価に固定する。
+  await connection();
   const admin = createAdminClient();
 
   const now = new Date();
