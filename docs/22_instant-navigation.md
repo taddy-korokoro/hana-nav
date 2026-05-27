@@ -23,6 +23,21 @@
 
 つまりこのチケットは **キャッシュ戦略の見直しを兼ねる** ため、影響範囲が広い。08 などのチケットに混ぜると「機能実装 + キャッシュ再設計」が同じ PR に乗ってレビューしづらいので独立チケットとして切る。
 
+### 2026-05-27 追記：cacheComponents の影響範囲が当初想定より広い
+
+初回着手時（feat/22-instant-navigation ブランチ）に `cacheComponents: true` を有効化したところ、以下が判明：
+
+- **`unstable_instant` を付けていないページも含めて、全 page/layout/route handler が新ルールの対象**になる
+- 単に `force-dynamic` を撤去するだけでなく、**ほぼ全ページで「データ取得を Suspense で囲む」or「`use cache` する」refactor が必須**
+- 具体的に build エラーで詰まった箇所：
+  - `SiteFooter` の `tokyoYmd().year`（`new Date()` 呼び出し）→ prerender が拒否される。Client Component 化 + Suspense ラップで回避可能
+  - `admin/layout.tsx` の `requireAdmin()` 直 await → static shell をブロック。Suspense 内側に閉じ込める必要あり
+  - `auth/login` 等の `searchParams` 直 await → 同上
+  - `app/api/*/route.ts` の `cookies()` 経由クエリ → prerender 時に `cookies()` rejection が発生
+  - `tokyoYmd()` のような request-time data に依存するヘルパー全般
+
+この知見を踏まえ、**1 PR でやり切らず複数 PR に分割**する方針に変更（下記「段階移行プラン」参照）。
+
 ## TODO
 
 ### 0. 月次リセット前の緊急対応（着手の最初に実施）
@@ -66,26 +81,52 @@
 
 > 0-2 として検討していた `/spots` への `export const revalidate = 300` 暫定対応は、22 本体の `cacheComponents` + `use cache` で同じ効果が得られるため**スキップ**。万が一 22 本体が 6/1 を跨ぎそうな場合のみ、hotfix で先行投入する。
 
-### 設計確認
+## 段階移行プラン（2026-05-27 再設計）
 
-- [ ] `cacheComponents` 有効化に伴って影響を受けるページを棚卸し（`grep -r "force-dynamic" app/`）
-- [ ] 各ページについて「`use cache` できる範囲」と「Suspense で囲むべき動的領域」を区分
-  - 公開ページ：花マスター・スポットマスターは `use cache` + `revalidateTag` で扱える
-  - マイページ：cookies / Auth セッションが絡むので各 Server Component を Suspense でラップ
-  - 管理画面：基本は static shell に向かないので対象外（`unstable_instant = false` を明示）
+1 PR でやり切ると差分が膨大かつ regression リスクが高いため、以下の **5 段階の PR** に分けて漸進的に進める。各 PR は単独で main にマージ可能で、build が通り続けること。
 
-### 実装
+### Step 1: 共通基盤の事前修正（cacheComponents は **まだ有効化しない**）
 
-- [ ] `next.config.ts` に `experimental.cacheComponents = true` を追加
-- [ ] 各 Server Component のデータ取得を `use cache` に切り替え（`lib/queries/*` 経由のもの）
-- [ ] cookies / auth が絡む箇所は `<Suspense>` で囲む
+`cacheComponents` を on にしなくても安全にできる「下準備」だけを先に main へ。
+
+- [ ] `SiteFooter` の `tokyoYmd().year` を Client Component（`SiteFooterYear`）に切り出し（cacheComponents off でも動作するため安全）
+- [ ] `admin/layout.tsx` で `requireAdmin()` を Suspense + 子コンポーネントに分離する設計に書き換え（同上、現状でも動く）
+- [ ] `admin/loading.tsx` を新設して暗黙の Suspense 境界を用意
+- [ ] `mypage/layout.tsx` を新設し、`getCurrentUser()` ガード（マイページの認証チェック）を Suspense 内側に閉じ込める
+- [ ] auth pages（`/auth/login` 他 4 本）を `searchParams` の await を子コンポーネントに切り出して Suspense でラップ
+
+ここまでは **cacheComponents off の段階で動作確認可能**。1 PR で完結。
+
+### Step 2: 公開ページ refactor（cacheComponents off のまま）
+
+各公開ページの DB 取得を Suspense 境界の内側に押し下げ、`'use cache'` を意識した形に再構成する。`cacheComponents` を入れる前の **dry run** として効く形に整える。
+
+- [ ] `/` の `getSeasonalSpots` / `getFeaturedFlowers` を Suspense でラップ（既存の `revalidate=300` は維持）
+- [ ] `/spots` の `searchParams` 駆動のフィルタを Suspense 境界内側に
+- [ ] `/spots/[id]` の `getSpotDetail` + bookmark/review 取得を Suspense 境界内側に
+- [ ] `/flowers` / `/flowers/[id]` / `/areas/[prefecture_id]` も同様
+
+PR 単位は「1 ページ 1 PR」または「2〜3 ページまとめて」を状況で判断。
+
+### Step 3: route handler を新ルール対応
+
+`app/api/*/route.ts` のうち `cookies()` 経由で Supabase を叩いているものを、prerender 時に評価されない形に書き換える。
+
+- [ ] 各 route handler を確認し、build 時に prerender されないよう明示的に dynamic 化（cacheComponents 有効化後に互換のある書き方を確定）
+- [ ] cookies に依存しない公開クエリ（`/api/flowers` 等）は無 cookie の Supabase クライアントで叩く形に分離検討
+
+### Step 4: cacheComponents 有効化 + データ層の `'use cache'` 化
+
+- [ ] `next.config.ts` に `cacheComponents: true` を追加
+- [ ] 各 page.tsx の `export const dynamic = 'force-dynamic'` / `export const revalidate = N` を撤去（cacheComponents 有効下では non-compatible）
+- [ ] `lib/queries/*` の公開向けクエリ関数に `'use cache'` ディレクティブを追加し、`revalidateTag` のキー設計を確定
+- [ ] build を通し、Step 1〜3 の準備で残った穴を埋める
+
+### Step 5: `unstable_instant` 適用 + 検証
+
 - [ ] 対象ルート（トップ / `/spots` / `/spots/[id]` / `/flowers` / `/flowers/[id]` / `/areas/[prefecture_id]`）に `export const unstable_instant = { prefetch: 'static' }` を追加
-- [ ] 既存の `export const dynamic = 'force-dynamic'` を削除（`unstable_instant` と矛盾するため）
 - [ ] 管理画面・マイページ詳細など適用しないルートには `export const unstable_instant = false` を明示（バリデーションをスキップ）
-
-### 検証
-
-- [ ] `next.config.js` の `experimental.instantNavigationDevToolsToggle = true` を一時的に有効化し、Next.js DevTools の「Instant Navs」で挙動を目視確認
+- [ ] `experimental.instantNavigationDevToolsToggle = true` を有効化し、Next.js DevTools の「Instant Navs」で挙動を目視確認
 - [ ] `npm run build` でビルド時バリデーションが通ることを確認（エラー = 静的シェル化できない箇所）
 - [ ] `<Link>` プリフェッチ後の遷移が体感で即時になることを確認（一覧 ↔ 詳細の往復）
 
@@ -100,6 +141,10 @@
 - [ ] 公開ページのうち主要ルートが `unstable_instant` 対応で `npm run build` が通る
 - [ ] 一覧 ↔ 詳細の遷移がプリフェッチ済み URL で即座に切り替わる
 - [ ] マイページ・管理画面など対象外ルートが意図的に `unstable_instant = false` で除外されている
+
+## チケット 22a（楽天アフィリエイト）との関係
+
+22 本体は段階移行で時間がかかるため、22a（PR #40）は **22 を待たず先に main へ merge する** 方針に変更（2026-05-27）。22a の実環境検証（楽天 ID 付与・カード表示等）はチケット 22 の Step 5 以降にまとめて実施する。
 
 ## チケット 21 残項目の最終確認（リセット後）
 
