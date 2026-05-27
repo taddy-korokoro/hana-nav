@@ -3,7 +3,7 @@
  *
  * 公開ページ側のキャッシュ（loadFlowerBundle / loadAreaBundle / HomeContent 等）
  * は `cacheTag(...)` でこの schema のタグを付け、admin の Server Action が
- * `revalidateTag(...)` を叩くことで「マスター編集 → 公開ページ即時反映」を担保する。
+ * `updateTag(...)` を叩くことで「マスター編集 → 公開ページ即時反映」を担保する。
  *
  * タグの単位:
  *  - `flowers`: 花マスター全件の一覧・索引に影響する変更（追加・削除・名前変更）
@@ -15,9 +15,9 @@
  *
  * Admin Action 側は変更内容に応じて、最小限のタグを叩く（過剰 invalidation は
  * キャッシュヒット率を下げるため）。例:
- *  - flower 編集: `revalidateTag('flowers')` + `revalidateTag(\`flower:<id>\`)`
- *  - spot 公開: `revalidateTag('spots')` + `revalidateTag(\`spot:<id>\`)`
- *    + 影響する都道府県があれば `revalidateTag(\`area:<prefecture_id>\`)`
+ *  - flower 編集: `updateTag('flowers')` + `updateTag(\`flower:<id>\`)`
+ *  - spot 公開: `updateTag('spots')` + `updateTag(\`spot:<id>\`)`
+ *    + 影響する都道府県があれば `updateTag(\`area:<prefecture_id>\`)`
  */
 
 export const CACHE_TAGS = {
