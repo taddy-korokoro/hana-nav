@@ -18,8 +18,12 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // Server Component から呼ばれた場合は cookies の書き込みが禁止されている。
-            // Middleware 経由でセッション更新されているなら無視して良い。
+            // Server Component の render 中は cookies の書き込みが禁止されているため、
+            // setAll はここで握りつぶす。セッション更新の経路は呼び出し元で変わる：
+            //   - /mypage/* / /admin/* / /auth/callback: middleware が同期するので即時反映
+            //   - 公開ページ（middleware 対象外）: ここでの書き込みは破棄されるが、ログイン
+            //     ユーザーが次に保護パスへ遷移した時点で middleware が再同期する。
+            //     公開ページのレンダリングはセッション情報を必要としないので実害なし。
           }
         },
       },
