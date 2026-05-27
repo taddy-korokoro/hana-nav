@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { AreaMonthlyCalendar } from '@/components/areas/AreaMonthlyCalendar';
 import { RelatedAreas } from '@/components/areas/RelatedAreas';
 import { ArrowRightIcon } from '@/components/layout/icons';
@@ -10,11 +11,6 @@ import { COPY } from '@/lib/constants/copy';
 import { getAreaDetail, getPrefecture } from '@/lib/queries/areas';
 
 type Params = Promise<{ prefecture_id: string }>;
-
-// 中身（spots/calendar）は `revalidate` で定期更新する。週次でも十分（マスター更新が稀なため）。
-// 注：page 側で Supabase の cookies() を使うため実体は dynamic レンダリングだが、
-// CDN キャッシュ層で revalidate は機能する。
-export const revalidate = 604800; // 7 days
 
 // 47 都道府県は ID 1〜47 で固定。Supabase クライアントは cookies() 依存で
 // `generateStaticParams` から呼べないので、固定範囲で params を出力する。
@@ -56,7 +52,23 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function AreaDetailPage({ params }: { params: Params }) {
+/**
+ * エリア（都道府県）詳細ページ。
+ *
+ * チケット 22 Step 2: getAreaDetail / getPrefecture を Suspense 境界内側に
+ * 押し下げ、page 本体は sync で外枠だけを描く。
+ */
+export default function AreaDetailPage({ params }: { params: Params }) {
+  return (
+    <div className="mx-auto max-w-6xl px-6 pb-24">
+      <Suspense fallback={<AreaDetailSkeleton />}>
+        <AreaDetailContent params={params} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function AreaDetailContent({ params }: { params: Params }) {
   const { prefecture_id } = await params;
   const id = parsePrefectureId(prefecture_id);
   if (id == null) notFound();
@@ -67,7 +79,7 @@ export default async function AreaDetailPage({ params }: { params: Params }) {
   const { prefecture, spots, monthly, relatedPrefectures } = detail;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24">
+    <>
       <header className="pb-6 pt-12 md:pt-16">
         <Breadcrumb
           ariaLabel={COPY.area.breadcrumb.aria}
@@ -130,6 +142,27 @@ export default async function AreaDetailPage({ params }: { params: Params }) {
           <RelatedAreas prefectures={relatedPrefectures} />
         </div>
       </section>
+    </>
+  );
+}
+
+function AreaDetailSkeleton() {
+  return (
+    <div>
+      <div className="pb-6 pt-12 md:pt-16">
+        <div className="h-3 w-32 animate-pulse rounded bg-surface-2" />
+        <div className="mt-3 h-10 w-48 animate-pulse rounded bg-surface-2 md:h-14" />
+        <div className="mt-3 h-5 w-24 animate-pulse rounded bg-surface-2" />
+      </div>
+      <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i}>
+            <div className="aspect-[4/3] w-full animate-pulse rounded-card bg-surface-2" />
+            <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-surface-2" />
+            <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-surface-2" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
