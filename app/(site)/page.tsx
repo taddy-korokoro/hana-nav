@@ -9,6 +9,11 @@ import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 
+// <Link> プリフェッチを効かせる。ルート直下の opengraph-image.tsx が
+// loadGoogleFont（fetch）を使うため metadata 起因で validation がコケる。
+// 実 prefetch は動くので validation だけ無効化する。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 /**
  * トップページ。
  *

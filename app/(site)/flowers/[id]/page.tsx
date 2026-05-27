@@ -13,6 +13,11 @@ import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
+// <Link> プリフェッチを効かせる。dynamic segment [id] があり、build 時に全花 ID を
+// 列挙して samples を埋めるのは現実的でないため、バリデーションは無効化して
+// プリフェッチ挙動だけ受け取る。将来 generateStaticParams を導入したら delete 可能。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 type Params = Promise<{ id: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

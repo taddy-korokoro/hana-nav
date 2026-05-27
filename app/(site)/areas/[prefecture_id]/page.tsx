@@ -13,6 +13,10 @@ import { getAreaDetail, getPrefecture } from '@/lib/queries/areas';
 
 type Params = Promise<{ prefecture_id: string }>;
 
+// <Link> プリフェッチを効かせる。dynamic segment + opengraph-image があるため、
+// build 時の bulk validation は無効化する（実 prefetch 挙動は得られる）。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 // 47 都道府県は ID 1〜47 で固定。Supabase クライアントは cookies() 依存で
 // `generateStaticParams` から呼べないので、固定範囲で params を出力する。
 export function generateStaticParams() {

@@ -15,6 +15,9 @@ import {
   groupFlowersByKana,
 } from '@/lib/queries/flowers';
 
+// TODO: searchParams（alias / q）が必須のため `prefetch: 'static'` には乗らない。
+// `prefetch: 'runtime'` + samples 化を検討する余地あり。
+
 export const metadata: Metadata = {
   title: COPY.flowersList.metaTitle,
   description: COPY.flowersList.metaDescription,
