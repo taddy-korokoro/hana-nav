@@ -1,6 +1,7 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
+import { CACHE_TAGS, flowerTag, spotTag } from '@/lib/cacheTags';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 
@@ -36,13 +37,15 @@ export async function softDeleteImageAction(formData: FormData) {
   }
 
   revalidatePath('/admin/images');
+  // 公開ページの 'use cache' は cacheTag で invalidate する。管理画面は per-request
+  // なので path-based でナビ表示の鮮度だけ揃える。
   if (row.owner_type === 'spot') {
+    updateTag(spotTag(row.owner_id));
+    updateTag(CACHE_TAGS.spots);
     revalidatePath(`/admin/spots/${row.owner_id}`);
-    revalidatePath(`/spots/${row.owner_id}`);
-    revalidatePath('/spots');
   } else if (row.owner_type === 'flower') {
+    updateTag(flowerTag(row.owner_id));
+    updateTag(CACHE_TAGS.flowers);
     revalidatePath(`/admin/flowers/${row.owner_id}`);
-    revalidatePath(`/flowers/${row.owner_id}`);
-    revalidatePath('/flowers');
   }
 }
