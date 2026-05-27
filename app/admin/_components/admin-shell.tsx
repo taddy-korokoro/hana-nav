@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { logout } from '@/app/auth/logout/actions';
 import { LogoutIcon, MenuIcon } from '@/components/layout/icons';
 import { SiteLogo } from '@/components/layout/site-logo';
@@ -64,7 +64,9 @@ export function AdminShell({ children }: Props) {
                 </Link>
               </div>
               <div className="flex-1 overflow-y-auto px-3 py-3">
-                <AdminNav onNavigate={() => setOpen(false)} />
+                <Suspense fallback={null}>
+                  <AdminNav onNavigate={() => setOpen(false)} />
+                </Suspense>
               </div>
               <div className="border-t border-line p-3">
                 <Link
@@ -101,7 +103,9 @@ export function AdminShell({ children }: Props) {
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <AdminNav />
+          <Suspense fallback={null}>
+            <AdminNav />
+          </Suspense>
         </div>
         <div className="border-t border-line p-3">
           <Link

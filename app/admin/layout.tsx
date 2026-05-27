@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 import { AdminShell } from './_components/admin-shell';
@@ -24,6 +25,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 }
 
 async function AdminGate({ children }: { children: React.ReactNode }) {
+  // 本セグメント以下を build 時 prerender から除外する明示シグナル。
+  // 管理画面は service-role 経由（cookies 非依存）で DB を叩くクエリが多く、
+  // requireAdmin() の cookies 検証だけでは cacheComponents の prerender 解析に
+  // とって不十分。connection() を先に await することで子セグメントの
+  // new Date() / DB アクセスが「ランタイム評価」扱いになる。
+  await connection();
   await requireAdmin();
   return <>{children}</>;
 }
