@@ -10,6 +10,18 @@ const nextConfig: NextConfig = {
   // RFC1918 プライベート帯と Bonjour（*.local）を allow しておく。
   // dev のみで効くオプションなので本番ビルドには影響しない。
   allowedDevOrigins: ['192.168.*.*', '10.*.*.*', '*.local'],
+
+  // Cache Components を有効化。Server Component のデータ取得は `'use cache'` で
+  // 明示的にキャッシュするか、Suspense 境界の内側で動的に取得する形を強制する。
+  // page.tsx の `export const dynamic = 'force-dynamic'` / `export const revalidate`
+  // とは非互換のため、ページ側はそれらを撤去済み（Step 2 / 4 で対応）。
+  cacheComponents: true,
+
+  experimental: {
+    // dev で Next.js DevTools の「Instant Navs」トグルを使うためのフラグ。
+    // 本番ビルドには影響しない。
+    instantNavigationDevToolsToggle: true,
+  },
   images: {
     remotePatterns: [
       ...(supabaseHostname
