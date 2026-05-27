@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { tokyoMonthStartIso } from '@/lib/utils/dateUtils';
@@ -14,6 +15,9 @@ export type AdminDashboardStats = {
 };
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
+  // cacheComponents 下で new Date() / tokyo* を呼ぶ前に request-time シグナル。
+  // 管理画面の集計はキャッシュせず per-request 評価する方針。
+  await connection();
   const admin = createAdminClient();
 
   // monthStart は JST の今月 1 日 00:00。Vercel UTC ランタイムでも JST 基準で集計する。
