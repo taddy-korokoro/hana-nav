@@ -23,6 +23,10 @@ npm run format:check   # Prettier 確認のみ
 
 `.env.example` に列挙。Supabase / Gemini / Google Maps の API キーと、サイト基準 URL（`NEXT_PUBLIC_BASE_URL`）。`SUPABASE_SERVICE_ROLE_KEY` と `GEMINI_API_KEY` はサーバー側専用（Client Component から参照禁止）。
 
+### 任意（収益化）
+
+- `RAKUTEN_APPLICATION_ID` / `RAKUTEN_AFFILIATE_ID` — 楽天アフィリエイトの書籍・商品・宿カードを 3 ページ（AI 判定結果 / 花の種類詳細 / スポット詳細）に表示するために使用。サーバー専用。未設定でもアプリは動作するが、アフィリエイト枠は静かに非表示になる。詳細は `docs/22a_rakuten-affiliate.md`。
+
 ## 技術スタック
 
 - Next.js 16.2.4 (App Router) + React 19.2.4 + TypeScript
