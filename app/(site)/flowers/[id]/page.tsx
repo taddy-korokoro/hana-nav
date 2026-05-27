@@ -1,6 +1,7 @@
 import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { FlowerAttributes } from '@/components/flowers/FlowerAttributes';
 import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
@@ -10,8 +11,6 @@ import { COPY } from '@/lib/constants/copy';
 import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
-
-export const dynamic = 'force-dynamic';
 
 type Params = Promise<{ id: string }>;
 
@@ -42,7 +41,23 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function FlowerDetailPage({ params }: { params: Params }) {
+/**
+ * 花の種類詳細ページ。
+ *
+ * チケット 22 Step 2: getFlowerDetail / tokyoMonth() を Suspense 境界内側に
+ * 押し下げ、page 本体は sync で外枠 <article> だけを描く。
+ */
+export default function FlowerDetailPage({ params }: { params: Params }) {
+  return (
+    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+      <Suspense fallback={<FlowerDetailSkeleton />}>
+        <FlowerDetailContent params={params} />
+      </Suspense>
+    </article>
+  );
+}
+
+async function FlowerDetailContent({ params }: { params: Params }) {
   const { id } = await params;
   const bundle = await getFlowerDetail(id);
   if (!bundle) notFound();
@@ -56,7 +71,7 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
     isInBestSeason(flower.defaultSeasonStart, flower.defaultSeasonEnd, currentMonth);
 
   return (
-    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+    <>
       <FlowerJsonLd flower={flower} coverImageUrl={images[0]?.url ?? null} />
 
       <header className="mb-8">
@@ -167,7 +182,20 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
           <FlowerSpotsList spots={spots} />
         </div>
       </section>
-    </article>
+    </>
+  );
+}
+
+function FlowerDetailSkeleton() {
+  return (
+    <div>
+      <div className="mb-8">
+        <div className="h-3 w-32 animate-pulse rounded bg-surface-2" />
+        <div className="mt-3 h-10 w-64 animate-pulse rounded bg-surface-2 md:h-14" />
+      </div>
+      <div className="aspect-[16/9] w-full animate-pulse rounded-card-lg bg-surface-2" />
+      <div className="mt-10 h-32 animate-pulse rounded-card bg-surface-2" />
+    </div>
   );
 }
 
