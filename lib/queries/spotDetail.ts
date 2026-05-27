@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 
 export type SpotDetail = {
   id: string;
@@ -73,7 +73,7 @@ export type SpotDetailBundle = {
  * 未公開・論理削除済みの場合は `null` を返し、呼び出し側で `notFound()` させる。
  */
 export async function getSpotDetail(id: string): Promise<SpotDetailBundle | null> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: spotRow, error } = await supabase
     .from('spots')
@@ -179,7 +179,7 @@ export async function getSpotDetail(id: string): Promise<SpotDetailBundle | null
 }
 
 async function fetchImages(spotId: string): Promise<SpotImage[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('images')
     .select('id, url, caption, display_order')
@@ -201,7 +201,7 @@ async function fetchImages(spotId: string): Promise<SpotImage[]> {
 }
 
 async function fetchFlowers(spotId: string): Promise<SpotFlowerEntry[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('spot_flowers')
     .select(
@@ -258,7 +258,7 @@ async function fetchFlowers(spotId: string): Promise<SpotFlowerEntry[]> {
 async function fetchReviews(
   spotId: string,
 ): Promise<{ reviews: SpotReview[]; summary: { count: number; average: number | null } }> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   // reviews.user_id は auth.users(id) を参照しており public.profiles への FK が無いので、
   // PostgREST の埋め込み（`reviewer:profiles(...)`）は relation を解決できず失敗する。
   // images と同じく別クエリで profiles を取得して手動でマージする。
@@ -331,7 +331,7 @@ async function fetchRelatedSpots(args: {
   limit: number;
 }): Promise<RelatedSpot[]> {
   const { excludeId, prefectureId, flowerIds, limit } = args;
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const collected = new Map<string, RelatedSpot>();
 
@@ -479,7 +479,7 @@ export async function getSpotMeta(id: string): Promise<{
   bestSeasonEnd: number;
   coverImageUrl: string | null;
 } | null> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('spots')
     .select(
