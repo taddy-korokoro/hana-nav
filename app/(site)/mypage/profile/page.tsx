@@ -9,7 +9,6 @@ import { COPY } from '@/lib/constants/copy';
 import { getMyProfile } from '@/lib/queries/mypage';
 import { requireUser } from '@/lib/utils/requireUser';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.mypage.profile.metaTitle,

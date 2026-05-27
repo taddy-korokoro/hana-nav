@@ -1,5 +1,6 @@
 import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { FlowerAttributes } from '@/components/flowers/FlowerAttributes';
@@ -59,12 +60,12 @@ export default function FlowerDetailPage({ params }: { params: Params }) {
 
 async function FlowerDetailContent({ params }: { params: Params }) {
   const { id } = await params;
-  const bundle = await getFlowerDetail(id);
-  if (!bundle) notFound();
+  const cached = await loadFlowerBundle(id);
+  if (!cached) notFound();
+  const { bundle, currentMonth } = cached;
 
   const { flower, aliases, images, spots } = bundle;
   const seasonText = formatSeasonRange(flower.defaultSeasonStart, flower.defaultSeasonEnd);
-  const currentMonth = tokyoMonth();
   const inSeason =
     flower.defaultSeasonStart != null &&
     flower.defaultSeasonEnd != null &&
@@ -184,6 +185,19 @@ async function FlowerDetailContent({ params }: { params: Params }) {
       </section>
     </>
   );
+}
+
+/**
+ * 花詳細バンドルを cacheComponents の `'use cache'` で hours スケールでキャッシュ。
+ * tokyoMonth() を内側で評価することで、月の境界を跨いだ「今が見頃」表示が
+ * キャッシュ寿命の範囲で正しく切り替わる。
+ */
+async function loadFlowerBundle(id: string) {
+  'use cache';
+  cacheLife('hours');
+  const bundle = await getFlowerDetail(id);
+  if (!bundle) return null;
+  return { bundle, currentMonth: tokyoMonth() };
 }
 
 function FlowerDetailSkeleton() {

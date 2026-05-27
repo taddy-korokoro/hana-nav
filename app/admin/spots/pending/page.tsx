@@ -6,7 +6,6 @@ import { listPendingSpots } from '@/lib/queries/admin';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 import { togglePublishedAction } from '../actions';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.spots.pending.metaTitle,

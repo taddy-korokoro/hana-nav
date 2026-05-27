@@ -10,7 +10,6 @@ import { COPY } from '@/lib/constants/copy';
 import { getAdminUserDetail } from '@/lib/queries/admin-users';
 import { getCurrentUser } from '@/lib/supabase/get-user';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.users.detail.metaTitle,
