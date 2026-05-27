@@ -4,6 +4,12 @@ import { requireAdmin } from '@/lib/utils/requireAdmin';
 import { AdminShell } from './_components/admin-shell';
 import AdminLoading from './loading';
 
+// 管理画面は per-request の動的データ（cookies + DB）が支配的で static shell に
+// 向かないため instant validation の対象から外す。Step 5 ではここで一括 opt-out
+// しておき、もし将来サイドナビなど一部分を instant 化したい場合はそのセグメントで
+// 個別に上書きする方針。
+export const unstable_instant = false;
+
 /**
  * 管理画面共通レイアウト。middleware の二重防御として `requireAdmin()` を呼び、
  * 非 admin が直接アクセスした場合も `/` にリダイレクトさせる。
