@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import {
   FormError,
@@ -14,12 +15,9 @@ export const metadata: Metadata = {
   title: COPY.auth.signup.metaTitle,
 };
 
-export default async function SignupPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string; status?: string }>;
-}) {
-  const { error, status } = await searchParams;
+type SignupSearchParams = Promise<{ error?: string; status?: string }>;
+
+export default function SignupPage({ searchParams }: { searchParams: SignupSearchParams }) {
   return (
     <AuthCard
       eyebrow={COPY.auth.signup.eyebrow}
@@ -29,8 +27,11 @@ export default async function SignupPage({
       footerHref="/auth/login"
       footerCta={COPY.auth.signup.footerCta}
     >
-      <FormError message={error ? COPY.auth.signup.errors[error] : null} />
-      <FormSuccess message={status ? COPY.auth.signup.statuses[status] : null} />
+      {/* チケット 22 Step 1: searchParams を Suspense 内側へ。FormError/Success は null 時に
+          何も描画しないため CLS なし。 */}
+      <Suspense fallback={null}>
+        <SignupStatus searchParams={searchParams} />
+      </Suspense>
 
       <form action={signup} className="mt-4 space-y-4">
         <FormField
@@ -67,5 +68,15 @@ export default async function SignupPage({
 
       <GoogleSignInButton />
     </AuthCard>
+  );
+}
+
+async function SignupStatus({ searchParams }: { searchParams: SignupSearchParams }) {
+  const { error, status } = await searchParams;
+  return (
+    <>
+      <FormError message={error ? COPY.auth.signup.errors[error] : null} />
+      <FormSuccess message={status ? COPY.auth.signup.statuses[status] : null} />
+    </>
   );
 }
