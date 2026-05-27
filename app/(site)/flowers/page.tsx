@@ -15,6 +15,11 @@ import {
   groupFlowersByKana,
 } from '@/lib/queries/flowers';
 
+// searchParams（alias / q）が必須のため `prefetch: 'static'` の instant
+// validation には乗らない。`prefetch: 'runtime'` + samples で詳細に申告する
+// 方式は将来検討する（Step 5 では未対応）。
+// export const unstable_instant = { prefetch: 'static' };
+
 export const metadata: Metadata = {
   title: COPY.flowersList.metaTitle,
   description: COPY.flowersList.metaDescription,
