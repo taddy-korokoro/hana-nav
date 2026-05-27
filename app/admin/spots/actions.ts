@@ -11,7 +11,7 @@ import {
   type SpotImageInput,
   type SpotMutationInput,
 } from '@/lib/queries/admin-spot-mutations';
-import { CACHE_TAGS, spotTag } from '@/lib/cacheTags';
+import { CACHE_TAGS, areaTag, spotTag } from '@/lib/cacheTags';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 
 /**
@@ -25,7 +25,7 @@ function revalidateSpotCaches(id?: string, prefectureId?: number | null) {
   // 即時に最新値が返るよう保証する。
   updateTag(CACHE_TAGS.spots);
   if (id) updateTag(spotTag(id));
-  if (prefectureId != null) updateTag(`area:${prefectureId}`);
+  if (prefectureId != null) updateTag(areaTag(prefectureId));
 
   revalidatePath('/admin');
   revalidatePath('/admin/spots');
