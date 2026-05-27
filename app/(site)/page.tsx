@@ -1,10 +1,11 @@
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { Suspense } from 'react';
 import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { SearchBar } from '@/components/home/SearchBar';
 import { SeasonMapClient } from '@/components/home/SeasonMapClient';
+import { CACHE_TAGS } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
 import { getFeaturedFlowers, getSeasonalSpots } from '@/lib/queries/topSpots';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
@@ -54,6 +55,7 @@ async function HomeHeroAndSearch() {
 async function HomeContent() {
   'use cache';
   cacheLife('hours');
+  cacheTag(CACHE_TAGS.spots, CACHE_TAGS.flowers);
   const currentMonth = tokyoMonth();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [spots, flowers] = await Promise.all([getSeasonalSpots(24), getFeaturedFlowers(12)]);

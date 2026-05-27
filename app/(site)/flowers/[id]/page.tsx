@@ -1,6 +1,6 @@
 import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { FlowerAttributes } from '@/components/flowers/FlowerAttributes';
@@ -8,6 +8,7 @@ import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
 import { FlowerSpotsList } from '@/components/flowers/FlowerSpotsList';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { CACHE_TAGS, flowerTag } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
 import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
@@ -200,6 +201,8 @@ async function FlowerDetailContent({ params }: { params: Params }) {
 async function loadFlowerBundle(id: string) {
   'use cache';
   cacheLife('hours');
+  // 単一花の編集 + 全 spots 系の編集（関連スポット表示）で invalidate されるべき。
+  cacheTag(flowerTag(id), CACHE_TAGS.flowers, CACHE_TAGS.spots);
   const bundle = await getFlowerDetail(id);
   if (!bundle) return null;
   return { bundle, currentMonth: tokyoMonth() };
