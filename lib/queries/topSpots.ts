@@ -109,22 +109,35 @@ export type FeaturedFlower = {
 };
 
 /**
- * トップページの「花から探す」グリッド用に、花マスターを取得する。
- * 画像があれば優先、なければ呼び出し側でグラデーションプレースホルダーを表示する。
+ * トップページの「今月見頃の花」グリッド用に、花マスターを取得する。
+ * `getSeasonalSpots` と同じく、`default_season_start` / `default_season_end` を
+ * `isInBestSeason` に通して当月見頃のものだけを返す。月またぎ（例: 12〜2 月の梅）も
+ * 共通ユーティリティで吸収する。画像があれば優先、なければ呼び出し側でグラデーション
+ * プレースホルダーを表示する。
  */
 export async function getFeaturedFlowers(limit = 12): Promise<FeaturedFlower[]> {
   const supabase = createAnonClient();
+  const currentMonth = tokyoMonth();
 
   const { data: flowers, error } = await supabase
     .from('flowers')
     .select('id, name, default_season_start, default_season_end')
     .is('deleted_at', null)
-    .order('name', { ascending: true })
-    .limit(limit);
+    .order('name', { ascending: true });
 
   if (error || !flowers || flowers.length === 0) return [];
 
-  const ids = flowers.map((f) => f.id);
+  const inSeason = flowers.filter(
+    (f) =>
+      f.default_season_start != null &&
+      f.default_season_end != null &&
+      isInBestSeason(f.default_season_start, f.default_season_end, currentMonth),
+  );
+
+  if (inSeason.length === 0) return [];
+
+  const limited = inSeason.slice(0, limit);
+  const ids = limited.map((f) => f.id);
   const { data: images, error: imgError } = await supabase
     .from('images')
     .select('owner_id, url, caption, display_order')
@@ -141,7 +154,7 @@ export async function getFeaturedFlowers(limit = 12): Promise<FeaturedFlower[]> 
     }
   }
 
-  return flowers.map((f) => ({
+  return limited.map((f) => ({
     id: f.id,
     name: f.name,
     defaultSeasonStart: f.default_season_start ?? null,
