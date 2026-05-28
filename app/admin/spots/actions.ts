@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
   createSpot,
@@ -11,7 +11,27 @@ import {
   type SpotImageInput,
   type SpotMutationInput,
 } from '@/lib/queries/admin-spot-mutations';
+import { CACHE_TAGS, areaTag, spotTag } from '@/lib/cacheTags';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
+
+/**
+ * 公開ページ側の 'use cache' を invalidate する。spot の追加・編集・公開・削除
+ * いずれも spots タグ + spot:<id> + 影響する area:<prefecture_id> を一括で叩く。
+ * 管理画面側は per-request 評価のため path-based の revalidatePath で十分。
+ */
+function revalidateSpotCaches(id?: string, prefectureId?: number | null) {
+  // updateTag は Server Action 内専用の read-your-own-writes 用 API。
+  // admin の編集直後に同じセッションでページを開いたとき、cacheLife を待たず
+  // 即時に最新値が返るよう保証する。
+  updateTag(CACHE_TAGS.spots);
+  if (id) updateTag(spotTag(id));
+  if (prefectureId != null) updateTag(areaTag(prefectureId));
+
+  revalidatePath('/admin');
+  revalidatePath('/admin/spots');
+  revalidatePath('/admin/spots/pending');
+  if (id) revalidatePath(`/admin/spots/${id}`);
+}
 
 /**
  * `FormData` から `SpotMutationInput` を組み立てる共通パーサ。フォームは hidden 入力で
@@ -73,10 +93,7 @@ export async function createSpotAction(
   if (!result.ok) {
     return { error: result.error.code };
   }
-  revalidatePath('/admin');
-  revalidatePath('/admin/spots');
-  revalidatePath('/admin/spots/pending');
-  revalidatePath('/spots');
+  revalidateSpotCaches(result.id, input.prefectureId);
   redirect(`/admin/spots/${result.id}`);
 }
 
@@ -91,12 +108,7 @@ export async function updateSpotAction(
   if (!result.ok) {
     return { error: result.error.code };
   }
-  revalidatePath('/admin');
-  revalidatePath('/admin/spots');
-  revalidatePath('/admin/spots/pending');
-  revalidatePath(`/admin/spots/${spotId}`);
-  revalidatePath(`/spots/${spotId}`);
-  revalidatePath('/spots');
+  revalidateSpotCaches(spotId, input.prefectureId);
   return { error: undefined };
 }
 
@@ -106,12 +118,10 @@ export async function togglePublishedAction(formData: FormData) {
   const next = formData.get('next') === 'true';
   if (!id) return;
   await setSpotPublished(id, next);
-  revalidatePath('/admin');
-  revalidatePath('/admin/spots');
-  revalidatePath('/admin/spots/pending');
-  revalidatePath(`/admin/spots/${id}`);
-  revalidatePath(`/spots/${id}`);
-  revalidatePath('/spots');
+  // 公開状態変更は spot の prefecture を引かないと正確な area タグが出せないが、
+  // 影響範囲が広いので spots タグ全体で invalidate するだけにする（cacheLife: hours
+  // との比較で、過剰 invalidate でも問題は小さい）。
+  revalidateSpotCaches(id);
 }
 
 export async function softDeleteSpotAction(formData: FormData) {
@@ -120,10 +130,6 @@ export async function softDeleteSpotAction(formData: FormData) {
   const redirectTo = String(formData.get('redirect_to') ?? '/admin/spots');
   if (!id) return;
   await softDeleteSpot(id);
-  revalidatePath('/admin');
-  revalidatePath('/admin/spots');
-  revalidatePath('/admin/spots/pending');
-  revalidatePath(`/spots/${id}`);
-  revalidatePath('/spots');
+  revalidateSpotCaches(id);
   redirect(redirectTo);
 }
