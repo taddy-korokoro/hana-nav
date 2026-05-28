@@ -184,8 +184,8 @@ export const COPY = {
       },
     },
     flowerTypes: {
-      eyebrow: 'By flower',
-      title: '花から探す',
+      eyebrow: 'In bloom now',
+      title: '今月見頃の花',
     },
   },
 
