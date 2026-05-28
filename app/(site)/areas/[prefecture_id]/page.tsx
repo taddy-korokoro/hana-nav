@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -8,6 +8,7 @@ import { RelatedAreas } from '@/components/areas/RelatedAreas';
 import { ArrowRightIcon } from '@/components/layout/icons';
 import { SpotCard } from '@/components/spots/SpotCard';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { CACHE_TAGS, areaTag } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
 import { getAreaDetail, getPrefecture } from '@/lib/queries/areas';
 
@@ -163,6 +164,9 @@ async function AreaDetailContent({ params }: { params: Params }) {
 async function loadAreaBundle(id: number) {
   'use cache';
   cacheLife('hours');
+  // area 単体 + 一般 spots/flowers/prefectures の変更どれかで invalidate される必要がある
+  // （area には複数スポット + 月別カレンダーの花情報 + 関連エリアが含まれるため）。
+  cacheTag(areaTag(id), CACHE_TAGS.spots, CACHE_TAGS.flowers, CACHE_TAGS.prefectures);
   return getAreaDetail(id);
 }
 
