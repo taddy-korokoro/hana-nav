@@ -187,6 +187,11 @@ export const COPY = {
       eyebrow: 'In bloom now',
       title: '今月見頃の花',
     },
+    areaPicker: {
+      eyebrow: 'By region',
+      title: 'エリアから探す',
+      tabsAria: '地方ブロックを選択',
+    },
   },
 
   // -----------------------------------------------------------------------------------
