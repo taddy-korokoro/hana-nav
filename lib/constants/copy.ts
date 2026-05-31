@@ -167,7 +167,6 @@ export const COPY = {
       season: '時期',
       flower: '花',
       flowerPlaceholder: '何を見たい？',
-      identifyCta: 'パシャっと花判定',
     },
     map: {
       eyebrow: 'Map view',
