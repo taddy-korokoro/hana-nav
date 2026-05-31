@@ -4,6 +4,7 @@ import { AreaPicker } from '@/components/home/AreaPicker';
 import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
+import { IdentifyPromoSection } from '@/components/home/IdentifyPromoSection';
 import { SearchBar } from '@/components/home/SearchBar';
 import { SeasonMapClient } from '@/components/home/SeasonMapClient';
 import { CACHE_TAGS } from '@/lib/cacheTags';
@@ -102,6 +103,7 @@ async function HomeContent() {
       )}
 
       <FeaturedSpots spots={spots} currentMonth={currentMonth} />
+      <IdentifyPromoSection />
       <FlowerTypeGrid flowers={flowers} />
     </>
   );
