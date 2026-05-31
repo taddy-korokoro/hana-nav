@@ -2,8 +2,31 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { GUEST_ADMIN } from '@/lib/auth/guestAdmin';
 import { createClient } from '@/lib/supabase/server';
 import { isCurrentUserWithdrawn } from '@/lib/utils/checkWithdrawn';
+
+/**
+ * デモ用ゲスト管理者として、`lib/auth/guestAdmin.ts` の定数に保存された認証情報で
+ * `signInWithPassword` する Server Action。
+ *
+ * - 一致した user は `isGuestAdmin()` 経由で識別され、書き込み系の Server Action /
+ *   Route Handler は `requireWriteAdmin()` で 403 を返す
+ * - 認証情報を平文で git に置く判断の根拠は `lib/auth/guestAdmin.ts` 冒頭コメント参照
+ */
+export async function loginAsGuestAdmin() {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email: GUEST_ADMIN.email,
+    password: GUEST_ADMIN.password,
+  });
+  if (error) {
+    console.error('[loginAsGuestAdmin] signIn failed', error.message);
+    redirect('/auth/login?error=guest_signin_failed');
+  }
+  revalidatePath('/', 'layout');
+  redirect('/admin');
+}
 
 export async function login(formData: FormData) {
   const email = formData.get('email');

@@ -1,4 +1,6 @@
+import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
+import { isGuestAdmin } from '@/lib/auth/guestAdmin';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/lib/supabase/get-user';
 import type { User } from '@supabase/supabase-js';
@@ -35,4 +37,45 @@ export async function requireAdmin(): Promise<User> {
   }
 
   return user;
+}
+
+/**
+ * ゲストモード（採用者確認用ログイン）で書き込み操作を試みたときに throw する。
+ * Server Action から投げると、呼び出し元の error boundary（`app/admin/error.tsx`）
+ * が「閲覧専用です」を表示する。Route Handler では `requireWriteAdminOrResponse()`
+ * を使う方が JSON 403 として返せて UX 的に綺麗。
+ */
+export class GuestModeError extends Error {
+  constructor() {
+    super('ゲストモード（閲覧専用）では書き込みできません');
+    this.name = 'GuestModeError';
+  }
+}
+
+/**
+ * 書き込み系の Server Action 冒頭で `await requireAdmin()` の代わりに呼ぶ。
+ * admin ロール持ちであっても、env で識別される **ゲスト管理者**であれば throw する。
+ */
+export async function requireWriteAdmin(): Promise<User> {
+  const user = await requireAdmin();
+  if (isGuestAdmin(user)) {
+    throw new GuestModeError();
+  }
+  return user;
+}
+
+/**
+ * 書き込み系の Route Handler（POST / PATCH / DELETE）冒頭で
+ * `const block = await requireWriteAdminOrResponse(); if (block) return block;` の形で使う。
+ * 通常 admin であれば null を返し処理続行、ゲストなら 403 JSON を返す。
+ */
+export async function requireWriteAdminOrResponse(): Promise<NextResponse | null> {
+  const user = await requireAdmin();
+  if (isGuestAdmin(user)) {
+    return NextResponse.json(
+      { error: 'guest_read_only', message: 'ゲストモードでは書き込みできません' },
+      { status: 403 },
+    );
+  }
+  return null;
 }

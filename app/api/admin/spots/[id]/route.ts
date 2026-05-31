@@ -9,7 +9,7 @@ import {
   type SpotImageInput,
   type SpotMutationInput,
 } from '@/lib/queries/admin-spot-mutations';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireAdmin, requireWriteAdminOrResponse } from '@/lib/utils/requireAdmin';
 
 /**
  * 管理者向け：スポット詳細 / 更新 / 公開切替 / 論理削除 API。
@@ -30,7 +30,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
   const { id } = await params;
 
   let body: unknown;
@@ -82,7 +83,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
   const { id } = await params;
 
   const result = await softDeleteSpot(id);

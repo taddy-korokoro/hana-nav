@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { tokyoYmd } from '@/lib/utils/dateUtils';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 const BUCKET = 'images';
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -24,7 +24,7 @@ export type UploadResult =
  *   フォームが abandon された場合の孤児ファイルは MVP では清掃しない（Storage の容量影響は軽微）。
  */
 export async function uploadSpotImage(formData: FormData): Promise<UploadResult> {
-  await requireAdmin();
+  await requireWriteAdmin();
 
   const file = formData.get('file');
   if (!(file instanceof File)) {
