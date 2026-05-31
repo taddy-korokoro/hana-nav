@@ -374,12 +374,22 @@ export async function listAdminFlowers(params: AdminFlowerListParams): Promise<A
     }
   }
 
+  // 旧実装は flowers の取得後に `.in('flower_id', ids)` で flower_aliases と spot_flowers を
+  // 別クエリで引いていたが、`limit(500)` の状態だと UUID 500 個（36 文字）が GET の URL に
+  // 詰め込まれて 18KB を超え、PostgREST 側で HeadersOverflowError (UND_ERR_HEADERS_OVERFLOW)
+  // が出ていた（エラーは catch されず空配列で続行されるため、alias / spotCount は常に 0）。
+  //
+  // 対策として PostgREST のリレーション埋め込みで 1 クエリ化する。soft-delete された
+  // 子レコードは取得結果に含めたまま、アプリ層で `deleted_at == null` フィルタしてから
+  // 集計する（埋め込み側のフィルタは PostgREST のバージョン依存があるため、最も保守的に倒す）。
   let query = admin
     .from('flowers')
     .select(
       `
       id, name, name_kana,
-      default_season_start, default_season_end, updated_at
+      default_season_start, default_season_end, updated_at,
+      flower_aliases ( alias, deleted_at ),
+      spot_flowers ( flower_id, deleted_at )
     `,
     )
     .is('deleted_at', null)
@@ -408,50 +418,30 @@ export async function listAdminFlowers(params: AdminFlowerListParams): Promise<A
     default_season_start: number | null;
     default_season_end: number | null;
     updated_at: string;
+    flower_aliases: Array<{ alias: string; deleted_at: string | null }> | null;
+    spot_flowers: Array<{ flower_id: string; deleted_at: string | null }> | null;
   };
 
   const rows = (data ?? []) as Row[];
   if (rows.length === 0) return [];
 
-  const ids = rows.map((r) => r.id);
-
-  // alias / spot_flowers のカウントは別クエリでまとめて取って Map にする
-  const [aliasRes, sfRes] = await Promise.all([
-    admin
-      .from('flower_aliases')
-      .select('flower_id, alias')
-      .in('flower_id', ids)
-      .is('deleted_at', null)
-      .order('alias', { ascending: true }),
-    admin.from('spot_flowers').select('flower_id').in('flower_id', ids).is('deleted_at', null),
-  ]);
-
-  if (aliasRes.error) console.error('[listAdminFlowers] aliases', aliasRes.error);
-  if (sfRes.error) console.error('[listAdminFlowers] spot_flowers', sfRes.error);
-
-  const aliasMap = new Map<string, string[]>();
-  for (const row of aliasRes.data ?? []) {
-    const list = aliasMap.get(row.flower_id as string) ?? [];
-    list.push(row.alias as string);
-    aliasMap.set(row.flower_id as string, list);
-  }
-
-  const spotCountMap = new Map<string, number>();
-  for (const row of sfRes.data ?? []) {
-    const key = row.flower_id as string;
-    spotCountMap.set(key, (spotCountMap.get(key) ?? 0) + 1);
-  }
-
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    nameKana: r.name_kana,
-    defaultSeasonStart: r.default_season_start,
-    defaultSeasonEnd: r.default_season_end,
-    aliases: aliasMap.get(r.id) ?? [],
-    spotCount: spotCountMap.get(r.id) ?? 0,
-    updatedAt: r.updated_at,
-  }));
+  return rows.map((r) => {
+    const aliases = (r.flower_aliases ?? [])
+      .filter((a) => a.deleted_at == null)
+      .map((a) => a.alias)
+      .sort((a, b) => a.localeCompare(b, 'ja'));
+    const spotCount = (r.spot_flowers ?? []).filter((s) => s.deleted_at == null).length;
+    return {
+      id: r.id,
+      name: r.name,
+      nameKana: r.name_kana,
+      defaultSeasonStart: r.default_season_start,
+      defaultSeasonEnd: r.default_season_end,
+      aliases,
+      spotCount,
+      updatedAt: r.updated_at,
+    };
+  });
 }
 
 export type AdminFlowerDetail = {
