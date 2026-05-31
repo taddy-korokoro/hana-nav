@@ -3,14 +3,14 @@
 import { revalidatePath, updateTag } from 'next/cache';
 import { CACHE_TAGS, flowerTag, spotTag } from '@/lib/cacheTags';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * `/admin/images` で個別画像を論理削除する Server Action。
  * 親（spot / flower）の編集画面と一覧画面を両方 revalidate する。
  */
 export async function softDeleteImageAction(formData: FormData) {
-  await requireAdmin();
+  await requireWriteAdmin();
   const imageId = String(formData.get('image_id') ?? '');
   if (!imageId) return;
 

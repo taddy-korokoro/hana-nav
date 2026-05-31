@@ -12,7 +12,7 @@ import {
   type SpotMutationInput,
 } from '@/lib/queries/admin-spot-mutations';
 import { CACHE_TAGS, areaTag, spotTag } from '@/lib/cacheTags';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * 公開ページ側の 'use cache' を invalidate する。spot の追加・編集・公開・削除
@@ -87,7 +87,7 @@ export async function createSpotAction(
   _prev: FormActionState,
   formData: FormData,
 ): Promise<FormActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const input = parseSpotForm(formData);
   const result = await createSpot(input);
   if (!result.ok) {
@@ -102,7 +102,7 @@ export async function updateSpotAction(
   _prev: FormActionState,
   formData: FormData,
 ): Promise<FormActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const input = parseSpotForm(formData);
   const result = await updateSpot(spotId, input);
   if (!result.ok) {
@@ -113,7 +113,7 @@ export async function updateSpotAction(
 }
 
 export async function togglePublishedAction(formData: FormData) {
-  await requireAdmin();
+  await requireWriteAdmin();
   const id = String(formData.get('spot_id') ?? '');
   const next = formData.get('next') === 'true';
   if (!id) return;
@@ -125,7 +125,7 @@ export async function togglePublishedAction(formData: FormData) {
 }
 
 export async function softDeleteSpotAction(formData: FormData) {
-  await requireAdmin();
+  await requireWriteAdmin();
   const id = String(formData.get('spot_id') ?? '');
   const redirectTo = String(formData.get('redirect_to') ?? '/admin/spots');
   if (!id) return;
