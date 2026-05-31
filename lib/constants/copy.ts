@@ -167,7 +167,6 @@ export const COPY = {
       season: '時期',
       flower: '花',
       flowerPlaceholder: '何を見たい？',
-      identifyCta: 'パシャっと花判定',
     },
     map: {
       eyebrow: 'Map view',
@@ -191,6 +190,19 @@ export const COPY = {
       eyebrow: 'By region',
       title: 'エリアから探す',
       tabsAria: '地方ブロックを選択',
+    },
+    identifyPromo: {
+      eyebrow: 'AI assist',
+      title: '気になったあの花、写真1枚で。',
+      description:
+        '散歩中や旅先で出会った花を、AIが3秒で判定。花の名前と特徴がわかったら、そのまま見頃のスポットへ。',
+      cta: '写真で調べる',
+      note: '無料・登録不要（匿名は1日1回、ログインで1日3回まで）',
+      steps: [
+        { label: '花を撮影', sub: 'スマホで1枚' },
+        { label: 'AIが判定', sub: '3秒で名前と特徴' },
+        { label: '見頃スポットへ', sub: 'そのまま訪問先に' },
+      ] as const,
     },
   },
 
