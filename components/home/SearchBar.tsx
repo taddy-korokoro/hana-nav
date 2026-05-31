@@ -1,11 +1,5 @@
 import Link from 'next/link';
-import {
-  CalendarIcon,
-  CameraIcon,
-  FlowerIcon,
-  MapPinIcon,
-  SearchIcon,
-} from '@/components/layout/icons';
+import { CalendarIcon, FlowerIcon, MapPinIcon, SearchIcon } from '@/components/layout/icons';
 import { COPY } from '@/lib/constants/copy';
 
 /**
@@ -16,7 +10,7 @@ import { COPY } from '@/lib/constants/copy';
 export function SearchBar({ currentMonth }: { currentMonth: number }) {
   const monthLabel = COPY.common.months.ja[currentMonth] ?? '';
   return (
-    <div className="mt-8 space-y-3">
+    <div className="mt-8">
       <div className="flex flex-col gap-2 rounded-card border border-line bg-white p-2 shadow-sm sm:flex-row sm:items-stretch">
         <Link
           href="/spots"
@@ -64,17 +58,6 @@ export function SearchBar({ currentMonth }: { currentMonth: number }) {
           {COPY.common.search}
         </Link>
       </div>
-
-      <Link
-        href="/identify"
-        className="group inline-flex items-center gap-2 rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-line-strong"
-      >
-        <CameraIcon className="size-4 text-ink-muted transition group-hover:text-brand" />
-        {COPY.home.searchBar.identifyCta}
-        <span aria-hidden className="text-brand">
-          →
-        </span>
-      </Link>
     </div>
   );
 }
