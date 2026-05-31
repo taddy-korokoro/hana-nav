@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getAdminFlowerDetail } from '@/lib/queries/admin';
 import { softDeleteFlower, updateFlower } from '@/lib/queries/admin-flower-mutations';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireAdmin, requireWriteAdminOrResponse } from '@/lib/utils/requireAdmin';
 import { parseFlowerBody } from '../route';
 
 /**
@@ -19,7 +19,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
   const { id } = await params;
 
   let body: unknown;
@@ -55,7 +56,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
   const { id } = await params;
 
   const result = await softDeleteFlower(id);

@@ -7,7 +7,7 @@ import {
   type SpotImageInput,
 } from '@/lib/queries/admin-spot-mutations';
 import { listAdminSpots } from '@/lib/queries/admin';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireAdmin, requireWriteAdminOrResponse } from '@/lib/utils/requireAdmin';
 
 /**
  * 管理者向け：スポット一覧 / 新規作成 API。
@@ -41,7 +41,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
 
   let body: unknown;
   try {
