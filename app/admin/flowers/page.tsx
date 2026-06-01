@@ -1,11 +1,12 @@
+import { Search, X } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { DeleteFlowerDialog } from '@/app/admin/flowers/_components/delete-flower-dialog';
+import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 import { listAdminFlowers } from '@/lib/queries/admin';
-
 
 export const metadata: Metadata = {
   title: COPY.admin.flowers.list.metaTitle,
@@ -45,34 +46,42 @@ export default async function AdminFlowersPage({
         }
       />
 
+      {/* 検索フォームは公開側 /flowers のスタイルに揃えた一体型検索バー。
+          検索範囲は管理画面特有の alias 検索を維持する（listAdminFlowers）。 */}
       <form
         method="get"
-        className="mt-8 grid grid-cols-1 gap-3 rounded-card border border-line bg-white p-4 md:grid-cols-[2fr_auto_auto]"
+        role="search"
+        className="mt-8 flex items-center gap-2 rounded-card-lg border border-line bg-white p-2 shadow-sm transition-colors focus-within:border-line-strong"
       >
-        <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-ink-muted">{filters.q}</span>
-          <input
-            name="q"
-            defaultValue={q ?? ''}
-            placeholder={filters.qPlaceholder}
-            className="w-full rounded-card border border-line bg-white px-3 py-2 text-sm"
-          />
-        </label>
-        <div className="flex items-end gap-2">
-          <button
-            type="submit"
-            className="rounded-pill bg-ink px-4 py-2 text-sm font-medium text-white transition hover:bg-ink/85"
-          >
-            {filters.apply}
-          </button>
+        <Search className="ml-3 size-5 shrink-0 text-ink-muted" aria-hidden />
+        <input
+          type="search"
+          name="q"
+          defaultValue={q ?? ''}
+          placeholder={filters.qPlaceholder}
+          aria-label={filters.q}
+          className="w-full bg-transparent py-3 text-base outline-none placeholder:text-ink-faint"
+        />
+        <Button type="submit" size="md" className="shrink-0">
+          <Search className="size-4" aria-hidden />
+          {filters.apply}
+        </Button>
+      </form>
+
+      {q && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <span className="text-sm text-ink-muted">
+            「{q}」の検索結果 {flowers.length} 件
+          </span>
           <Link
             href="/admin/flowers"
-            className="rounded-pill border border-line bg-white px-4 py-2 text-sm text-ink-muted transition hover:border-line-strong hover:bg-surface-2 hover:text-ink"
+            className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-ink"
           >
+            <X className="size-3.5" aria-hidden />
             {filters.reset}
           </Link>
         </div>
-      </form>
+      )}
 
       <div className="mt-8 overflow-x-auto rounded-card border border-line bg-white">
         <table className="w-full min-w-[720px] table-auto text-left text-sm">
