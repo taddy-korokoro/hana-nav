@@ -12,7 +12,7 @@ import {
   type FlowerMutationInput,
 } from '@/lib/queries/admin-flower-mutations';
 import { CACHE_TAGS, flowerTag } from '@/lib/cacheTags';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * `FormData` から `FlowerMutationInput` を組み立てる共通パーサ。
@@ -90,7 +90,7 @@ export async function createFlowerAction(
   _prev: FlowerFormActionState,
   formData: FormData,
 ): Promise<FlowerFormActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const input = parseFlowerForm(formData);
   const result = await createFlower(input);
   if (!result.ok) {
@@ -105,7 +105,7 @@ export async function updateFlowerAction(
   _prev: FlowerFormActionState,
   formData: FormData,
 ): Promise<FlowerFormActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const input = parseFlowerForm(formData);
   const result = await updateFlower(flowerId, input);
   if (!result.ok) {
@@ -116,7 +116,7 @@ export async function updateFlowerAction(
 }
 
 export async function softDeleteFlowerAction(formData: FormData) {
-  await requireAdmin();
+  await requireWriteAdmin();
   const id = String(formData.get('flower_id') ?? '');
   if (!id) return;
   const result = await softDeleteFlower(id);
