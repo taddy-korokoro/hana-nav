@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { tokyoYmd } from '@/lib/utils/dateUtils';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 const BUCKET = 'images';
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -20,7 +20,7 @@ export type UploadResult =
  * クライアント側でリサイズ済み前提だが、サーバー側でも MIME / サイズ多層防御。
  */
 export async function uploadFlowerImage(formData: FormData): Promise<UploadResult> {
-  await requireAdmin();
+  await requireWriteAdmin();
 
   const file = formData.get('file');
   if (!(file instanceof File)) {

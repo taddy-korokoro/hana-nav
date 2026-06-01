@@ -892,6 +892,7 @@ export const COPY = {
         invalid_credentials: 'メールアドレスまたはパスワードが正しくありません。',
         invalid_input: '入力内容に誤りがあります。',
         auth_callback_failed: 'ログイン処理に失敗しました。もう一度お試しください。',
+        guest_signin_failed: 'ゲストログインに失敗しました。時間を置いて再度お試しください。',
       } as Record<string, string>,
     },
     signup: {

@@ -1,7 +1,9 @@
 import { connection } from 'next/server';
 import { Suspense } from 'react';
+import { isGuestAdmin } from '@/lib/auth/guestAdmin';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 import { AdminShell } from './_components/admin-shell';
+import { GuestModeBanner } from './_components/GuestModeBanner';
 import AdminLoading from './loading';
 
 // 管理画面は per-request の動的データ（cookies + DB）が支配的で static shell に
@@ -37,6 +39,36 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
   // とって不十分。connection() を先に await することで子セグメントの
   // new Date() / DB アクセスが「ランタイム評価」扱いになる。
   await connection();
-  await requireAdmin();
-  return <>{children}</>;
+  const user = await requireAdmin();
+  const isGuest = isGuestAdmin(user);
+
+  // ゲストモードでは <fieldset disabled> で children 全体を包み、配下の
+  // <button> / <input> / <Switch>（内部 <button>）/ <DialogTrigger> を一括非活性化する。
+  // Link でのナビゲーションは制御対象外なので、編集ページに遷移は可能だが、
+  // そこの save / 削除ボタンも同じ fieldset 下にあるため書き込みは UI から不可能。
+  // サーバー側でも `requireWriteAdmin()` / `requireWriteAdminOrResponse()` で二重防御済み。
+  return (
+    <>
+      {isGuest && <GuestModeBanner />}
+      {isGuest ? (
+        <fieldset
+          disabled
+          // 配下のフォーム要素のみ半透明 + cursor-not-allowed を付与し、無効状態を視覚化する。
+          // <a>（ナビゲーション）は通常表示のままにして、閲覧フローを邪魔しない。
+          className="
+            m-0 min-w-0 border-0 p-0
+            [&_button]:cursor-not-allowed [&_button]:opacity-50
+            [&_input]:cursor-not-allowed [&_input]:opacity-50
+            [&_select]:cursor-not-allowed [&_select]:opacity-50
+            [&_textarea]:cursor-not-allowed [&_textarea]:opacity-50
+            [&_[role=switch]]:cursor-not-allowed [&_[role=switch]]:opacity-50
+          "
+        >
+          {children}
+        </fieldset>
+      ) : (
+        children
+      )}
+    </>
+  );
 }

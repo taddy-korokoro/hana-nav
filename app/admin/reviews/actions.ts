@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { restoreReviewAdmin, softDeleteReviewAdmin } from '@/lib/queries/admin-reviews';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * `/admin/reviews` の論理削除 / 復元 Server Actions。
@@ -14,7 +14,7 @@ export async function softDeleteReviewAction(
   _prev: ReviewActionState,
   formData: FormData,
 ): Promise<ReviewActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const id = String(formData.get('review_id') ?? '');
   if (!id) return { error: 'invalid_input' };
 
@@ -30,7 +30,7 @@ export async function restoreReviewAction(
   _prev: ReviewActionState,
   formData: FormData,
 ): Promise<ReviewActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const id = String(formData.get('review_id') ?? '');
   if (!id) return { error: 'invalid_input' };
 
