@@ -51,21 +51,14 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
     <>
       {isGuest && <GuestModeBanner />}
       {isGuest ? (
-        <fieldset
-          disabled
-          // 配下のフォーム要素のみ半透明 + cursor-not-allowed を付与し、無効状態を視覚化する。
-          // <a>（ナビゲーション）は通常表示のままにして、閲覧フローを邪魔しない。
-          className="
-            m-0 min-w-0 border-0 p-0
-            [&_button]:cursor-not-allowed [&_button]:opacity-50
-            [&_input]:cursor-not-allowed [&_input]:opacity-50
-            [&_select]:cursor-not-allowed [&_select]:opacity-50
-            [&_textarea]:cursor-not-allowed [&_textarea]:opacity-50
-            [&_[role=switch]]:cursor-not-allowed [&_[role=switch]]:opacity-50
-          "
-        >
-          {children}
-        </fieldset>
+        // <fieldset disabled> ではなく <div data-guest-content> で包む。
+        // <fieldset disabled> は入れ子に伝播し HTML 仕様上 override 不可能なため、
+        // 読み取り系（検索バー等）の例外指定ができない。代わりに globals.css の
+        // `[data-guest-content] ...:not([data-allow-guest])` で CSS のみ無効化する。
+        // 書き込みは UI レベルでは技術的にキーボード送信できる余地が残るが、
+        // サーバー側の requireWriteAdmin / requireWriteAdminOrResponse が 403 を返すため
+        // 書き込みは絶対に通らない（層 1 が本丸、層 2 は UX 補助）。
+        <div data-guest-content>{children}</div>
       ) : (
         children
       )}
