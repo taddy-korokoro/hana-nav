@@ -485,10 +485,7 @@ export function groupFlowersByKana(flowers: FlowerListItem[]): FlowerKanaGroup[]
   }));
 }
 
-/**
- * `nameKana` を持つ任意の配列を 50 音行ラベルでグルーピングする汎用版。
- * 管理画面（`AdminFlowerRow[]`）からも使う。
- */
+/** `nameKana` を持つ任意の配列を 50 音行ラベルでグルーピングする汎用版。 */
 export function groupItemsByKana<T>(
   items: T[],
   getKana: (item: T) => string | null,
