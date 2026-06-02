@@ -374,14 +374,7 @@ export async function listAdminFlowers(params: AdminFlowerListParams): Promise<A
     }
   }
 
-  // 旧実装は flowers の取得後に `.in('flower_id', ids)` で flower_aliases と spot_flowers を
-  // 別クエリで引いていたが、`limit(500)` の状態だと UUID 500 個（36 文字）が GET の URL に
-  // 詰め込まれて 18KB を超え、PostgREST 側で HeadersOverflowError (UND_ERR_HEADERS_OVERFLOW)
-  // が出ていた（エラーは catch されず空配列で続行されるため、alias / spotCount は常に 0）。
-  //
-  // 対策として PostgREST のリレーション埋め込みで 1 クエリ化する。soft-delete された
-  // 子レコードは取得結果に含めたまま、アプリ層で `deleted_at == null` フィルタしてから
-  // 集計する（埋め込み側のフィルタは PostgREST のバージョン依存があるため、最も保守的に倒す）。
+  // URL 長を抑えるため、子テーブルは PostgREST リレーション埋め込みで 1 クエリ化している。
   let query = admin
     .from('flowers')
     .select(
@@ -389,7 +382,7 @@ export async function listAdminFlowers(params: AdminFlowerListParams): Promise<A
       id, name, name_kana,
       default_season_start, default_season_end, updated_at,
       flower_aliases ( alias, deleted_at ),
-      spot_flowers ( flower_id, deleted_at )
+      spot_flowers ( deleted_at )
     `,
     )
     .is('deleted_at', null)
@@ -419,7 +412,7 @@ export async function listAdminFlowers(params: AdminFlowerListParams): Promise<A
     default_season_end: number | null;
     updated_at: string;
     flower_aliases: Array<{ alias: string; deleted_at: string | null }> | null;
-    spot_flowers: Array<{ flower_id: string; deleted_at: string | null }> | null;
+    spot_flowers: Array<{ deleted_at: string | null }> | null;
   };
 
   const rows = (data ?? []) as Row[];
@@ -427,10 +420,10 @@ export async function listAdminFlowers(params: AdminFlowerListParams): Promise<A
 
   return rows.map((r) => {
     const aliases = (r.flower_aliases ?? [])
-      .filter((a) => a.deleted_at == null)
+      .filter((a) => a.deleted_at === null)
       .map((a) => a.alias)
       .sort((a, b) => a.localeCompare(b, 'ja'));
-    const spotCount = (r.spot_flowers ?? []).filter((s) => s.deleted_at == null).length;
+    const spotCount = (r.spot_flowers ?? []).filter((s) => s.deleted_at === null).length;
     return {
       id: r.id,
       name: r.name,

@@ -50,10 +50,7 @@ export default async function AdminFlowersPage({
         }
       />
 
-      {/* 検索フォームは公開側 /flowers のスタイルに揃えた一体型検索バー。
-          ゲストモードでも検索は読み取り操作なので使えるよう、入力・送信ボタンに
-          data-allow-guest を付与して [data-guest-content] の CSS 無効化から exempt する。
-          検索範囲は管理画面特有の alias 検索を維持（listAdminFlowers）。 */}
+      {/* 検索は読み取りなので data-allow-guest を付与してゲスト時の CSS 無効化から exempt する。 */}
       <form
         method="get"
         role="search"
@@ -90,8 +87,7 @@ export default async function AdminFlowersPage({
         </div>
       )}
 
-      {/* 50 音インデックス。検索中は隠し、未検索時のみ表示。pill をクリックすると
-          テーブル内の対応セクション行（id="kana-XX"）にアンカー遷移する。 */}
+      {/* 未検索時のみ表示する 50 音インデックス。pill クリックで対応セクション行にアンカー遷移。 */}
       {!isSearching && kanaGroups.length > 0 && (
         <nav
           aria-label={COPY.flowersList.indexAria}
