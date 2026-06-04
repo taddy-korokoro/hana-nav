@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { spotTag } from '@/lib/cacheTags';
 import { containsNgWord } from '@/lib/ng-words';
 import { createClient } from '@/lib/supabase/server';
 import { parseReviewBody } from '@/lib/utils/reviewValidator';
@@ -74,7 +75,9 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
     console.error('[PATCH /api/reviews/[id]] failed to fetch spot_id', fetchError);
   }
   if (row?.spot_id) {
-    revalidatePath(`/spots/${row.spot_id}`);
+    // スポット詳細ページの 'use cache' ブロック（loadSpotBundle、cacheLife: hours）を即時無効化する。
+    // Next.js 16 cacheComponents では profile（第 2 引数）が必須。
+    revalidateTag(spotTag(row.spot_id), 'hours');
   }
   revalidatePath('/mypage/reviews');
 
@@ -128,7 +131,9 @@ export async function DELETE(_request: Request, { params }: { params: Params }) 
   }
 
   if (existing?.spot_id) {
-    revalidatePath(`/spots/${existing.spot_id}`);
+    // スポット詳細ページの 'use cache' ブロック（loadSpotBundle、cacheLife: hours）を即時無効化する。
+    // Next.js 16 cacheComponents では profile（第 2 引数）が必須。
+    revalidateTag(spotTag(existing.spot_id), 'hours');
   }
   revalidatePath('/mypage/reviews');
   revalidatePath('/mypage');
