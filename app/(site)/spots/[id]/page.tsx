@@ -1,22 +1,20 @@
 import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
+import { BookmarkButtonIsland } from '@/components/bookmarks/BookmarkButtonIsland';
 import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
+import { SpotReviewBlockIsland } from '@/components/reviews/SpotReviewBlockIsland';
 import { RelatedSpots } from '@/components/spots/RelatedSpots';
 import { SpotFlowersList } from '@/components/spots/SpotFlowersList';
 import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
 import { SpotMapPin } from '@/components/spots/SpotMapPin';
-import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
-import { SpotReviewInteraction } from '@/components/reviews/SpotReviewInteraction';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { CACHE_TAGS, spotTag } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
-import { isBookmarked } from '@/lib/queries/bookmarks';
-import { getMyReviewForSpot } from '@/lib/queries/reviews';
 import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
-import { createClient } from '@/lib/supabase/server';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
@@ -88,31 +86,14 @@ async function SpotDetailContent({
   searchParams: SearchParams;
 }) {
   const [{ id }, { edit }] = await Promise.all([params, searchParams]);
-  const bundle = await getSpotDetail(id);
-  if (!bundle) notFound();
+  const cached = await loadSpotBundle(id);
+  if (!cached) notFound();
+  const { bundle, currentMonth } = cached;
 
   const { spot, images, flowers, reviews, reviewSummary, relatedSpots } = bundle;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [bookmarked, myReview] = user
-    ? await Promise.all([isBookmarked(user.id, spot.id), getMyReviewForSpot(user.id, spot.id)])
-    : [false, null];
-
-  const myReviewInitial = myReview
-    ? {
-        reviewId: myReview.id,
-        rating: myReview.rating,
-        comment: myReview.comment ?? '',
-        visitedAt: myReview.visitedAt ?? '',
-      }
-    : null;
-
-  const currentMonth = tokyoMonth();
   const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
+  const editIntent = edit === 'review';
 
   return (
     <>
@@ -138,13 +119,7 @@ async function SpotDetailContent({
           <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">
             {spot.name}
           </h1>
-          <BookmarkButton
-            spotId={spot.id}
-            spotName={spot.name}
-            isAuthenticated={!!user}
-            initialBookmarked={bookmarked}
-            redirectAfterLogin={`/spots/${spot.id}`}
-          />
+          <BookmarkButtonIsland spotId={spot.id} spotName={spot.name} />
         </div>
         {spot.nameKana && <p className="mt-2 text-sm text-ink-muted">{spot.nameKana}</p>}
 
@@ -256,16 +231,11 @@ async function SpotDetailContent({
           eyebrow={COPY.spotDetail.sections.reviewsEyebrow}
         />
         <div className="mt-4 space-y-6">
-          <SpotReviewInteraction
+          <SpotReviewBlockIsland
             spotId={spot.id}
-            isAuthenticated={!!user}
-            myReview={myReviewInitial}
-            defaultOpen={edit === 'review' && !!myReviewInitial}
-          />
-          <SpotReviewSection
+            editIntent={editIntent}
             reviews={reviews}
             summary={reviewSummary}
-            myReviewId={myReview?.id ?? null}
           />
         </div>
       </section>
@@ -277,6 +247,21 @@ async function SpotDetailContent({
       )}
     </>
   );
+}
+
+/**
+ * スポット詳細バンドルを cacheComponents の `'use cache'` で hours スケールでキャッシュ。
+ * tokyoMonth() を内側で評価することで、月の境界を跨いだ「今が見頃」表示が
+ * キャッシュ寿命の範囲で正しく切り替わる。
+ */
+async function loadSpotBundle(id: string) {
+  'use cache';
+  cacheLife('hours');
+  // 単一スポットの編集 + 全 spots/flowers 系の編集（関連スポット表示）で invalidate されるべき。
+  cacheTag(spotTag(id), CACHE_TAGS.spots, CACHE_TAGS.flowers);
+  const bundle = await getSpotDetail(id);
+  if (!bundle) return null;
+  return { bundle, currentMonth: tokyoMonth() };
 }
 
 function SpotDetailSkeleton() {
