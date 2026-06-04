@@ -2,9 +2,11 @@
 
 import { Eye, EyeOff } from 'lucide-react';
 import { useId, useState, type InputHTMLAttributes } from 'react';
+import { useFormStatus } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import { FormBanner } from '@/components/ui/form-banner';
+import { Spinner } from '@/components/ui/spinner';
 
 type FormFieldProps = {
   label: string;
@@ -70,14 +72,25 @@ export function FormField({ label, name, hint, required, type = 'text', ...rest 
   );
 }
 
-/** 認証フォーム共通の brand 塗り CTA ボタン。共通 Button のラッパ。 */
+/**
+ * 認証フォーム共通の brand 塗り CTA ボタン。useFormStatus で送信中は Spinner を出し disabled にする。
+ * Server Action（<form action={...}>）配下でのみ pending が拾えるので必ず form の中に置くこと。
+ */
 export function PrimaryButton({
   children,
   className,
+  disabled,
   ...rest
 }: React.ComponentProps<typeof Button>) {
+  const { pending } = useFormStatus();
   return (
-    <Button className={['w-full', className].filter(Boolean).join(' ')} {...rest}>
+    <Button
+      className={['w-full', className].filter(Boolean).join(' ')}
+      disabled={pending || disabled}
+      aria-busy={pending || undefined}
+      {...rest}
+    >
+      {pending && <Spinner size="sm" label={null} />}
       {children}
     </Button>
   );

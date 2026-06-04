@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import { FormError, FormField, PrimaryButton } from '@/app/auth/_components/form-fields';
 import { GoogleSignInButton } from '@/app/auth/_components/google-sign-in-button';
+import { GuestLoginButton } from '@/app/auth/_components/guest-login-button';
 import { isGuestLoginAvailable } from '@/lib/auth/guestAdmin';
 import { COPY } from '@/lib/constants/copy';
 import { login, loginAsGuestAdmin } from './actions';
@@ -66,12 +67,7 @@ export default function LoginPage({ searchParams }: { searchParams: LoginSearchP
 
       {isGuestLoginAvailable() && (
         <form action={loginAsGuestAdmin} className="mt-4">
-          <button
-            type="submit"
-            className="w-full rounded-card border border-line bg-surface px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:border-line-strong hover:bg-surface-2 hover:text-ink"
-          >
-            ゲストログイン（閲覧専用）
-          </button>
+          <GuestLoginButton label="ゲストログイン（閲覧専用）" />
         </form>
       )}
     </AuthCard>
