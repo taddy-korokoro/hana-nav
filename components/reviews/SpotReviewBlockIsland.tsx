@@ -54,7 +54,13 @@ export function SpotReviewBlockIsland({ spotId, editIntent, reviews, summary }: 
     fetch(`/api/me/reviews/by-spot/${spotId}`, { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { isAuthenticated: boolean; review: ApiReview | null } | null) => {
-        if (!mounted || !data) return;
+        if (!mounted) return;
+        if (!data) {
+          // res.ok=false（404 / 500 等）の場合は未ログイン扱いにフォールバックして
+          // スケルトンが永久残留しないようにする。
+          setState({ isAuthenticated: false, myReview: null });
+          return;
+        }
         const myReview: ReviewFormInitial | null = data.review
           ? {
               reviewId: data.review.id,

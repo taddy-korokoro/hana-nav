@@ -31,12 +31,17 @@ export function BookmarkButtonIsland({ spotId, spotName }: Props) {
     fetch(`/api/bookmarks/${spotId}`, { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { isAuthenticated: boolean; bookmarked: boolean } | null) => {
-        if (mounted && data) {
-          setState({
-            isAuthenticated: data.isAuthenticated,
-            bookmarked: data.bookmarked,
-          });
+        if (!mounted) return;
+        if (!data) {
+          // res.ok=false（500 等）の場合は未ログイン扱いにフォールバックして
+          // スケルトンが永久残留しないようにする。
+          setState({ isAuthenticated: false, bookmarked: false });
+          return;
         }
+        setState({
+          isAuthenticated: data.isAuthenticated,
+          bookmarked: data.bookmarked,
+        });
       })
       .catch(() => {
         if (mounted) setState({ isAuthenticated: false, bookmarked: false });
