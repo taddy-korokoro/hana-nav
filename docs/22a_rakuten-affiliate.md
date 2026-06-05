@@ -110,38 +110,41 @@ RAKUTEN_AFFILIATE_ID=      # 楽天アフィリエイト ID（サーバー専用
 
 ### 楽天側のアカウント準備
 
-- [ ] 楽天会員登録 → 楽天アフィリエイト登録（審査なし、即時）
-- [ ] 楽天ウェブサービス Application ID を発行
-- [ ] アフィリエイト ID を確認
-- [ ] `.env.local` に投入、Vercel 環境変数にも追加
+- [x] 楽天会員登録 → 楽天アフィリエイト登録（審査なし、即時）
+- [x] 楽天ウェブサービス Application ID を発行
+  - **「許可されたウェブサイト」には本番 URL（`https://hananav.site`）のみ登録**。`http://localhost:3000` は楽天ウェブサービスの規約上（公開ホスト以外不可）登録できなかったため省略。ローカル開発時は `.env.local` に Application ID を入れれば API は叩ける（許可ドメインはサーバー側の参照元チェックに使われていないため）
+  - アクセスキー（applicationSecret）は OAuth / 受発注系 API 専用で、本チケットの公開検索 API では未使用のため保存しない
+- [x] アフィリエイト ID を確認
+- [ ] `.env.local` に投入、Vercel 環境変数にも追加（Vercel 側は 22 チケットの本番デプロイ確認時にまとめて実施）
 
 ### データ取得層
 
-- [ ] `lib/rakuten/types.ts` で各 API のレスポンス型を定義
-- [ ] `lib/rakuten/client.ts` を実装（fetch ラッパ、タイムアウト 5秒、エラー時 null）
-- [ ] `lib/queries/rakuten.ts` で 3 つのクエリ関数を実装（`React.cache()` 併用）
-- [ ] `next.config.ts` の `images.remotePatterns` に楽天画像ドメインを追加（`thumbnail.image.rakuten.co.jp` / `img.travel.rakuten.co.jp` 等）
+- [x] `lib/rakuten/types.ts` で各 API のレスポンス型を定義
+- [x] `lib/rakuten/client.ts` を実装（fetch ラッパ、タイムアウト 5秒、エラー時 null）
+- [x] `lib/queries/rakuten.ts` で 3 つのクエリ関数を実装（`React.cache()` 併用）
+- [x] `next.config.ts` の `images.remotePatterns` に楽天画像ドメインを追加（`thumbnail.image.rakuten.co.jp` / `img.travel.rakuten.co.jp` 等）
 
 ### 共通コンポーネント
 
-- [ ] `<AffiliateLink>` 実装（広告バッジ強制、`rel="sponsored noopener noreferrer"`、`target="_blank"`）
-- [ ] `<AffiliateBookCard>` 実装
-- [ ] `<AffiliateProductCard>` 実装
-- [ ] `<AffiliateHotelCard>` 実装
-- [ ] `app/demo/page.tsx` にアフィリエイトコンポーネントのショーケースを追加
+- [x] `<AffiliateLink>` 実装（広告バッジ強制、`rel="sponsored noopener noreferrer"`、`target="_blank"`）
+- [x] `<AffiliateBookCard>` 実装
+- [x] `<AffiliateProductCard>` 実装
+- [x] `<AffiliateHotelCard>` 実装
+- [x] `app/demo/page.tsx` にアフィリエイトコンポーネントのショーケースを追加（`/demo/affiliate`）
 
 ### ページ組み込み
 
-- [ ] AI 判定結果ページ：`<AffiliateBookSection flowerName={...} />` を結果カード下に配置
+- [x] AI 判定結果ページ：`<AffiliateBookSection flowerName={...} />` を結果カード下に配置
   - 花名は `flower_master.name` 優先、なければ `ai_result.flower_name`
   - マスター未登録時も AI 推定名で検索する
-- [ ] 花の種類詳細ページ：`<AffiliateProductSection flowerName={flower.name} />` を「育ててみる」セクションとして配置
-- [ ] スポット詳細ページ：`<AffiliateHotelSection lat={spot.lat} lng={spot.lng} spotName={spot.name} />` を「近くの宿」セクションとして「アクセス」の下に配置
-- [ ] 各セクションを `<Suspense>` でラップしてストリーミング（楽天 API の遅延でページ全体を遅延させない）
+  - sessionStorage 由来でクライアント状態のため `AffiliateBookSectionClient` （Server Action + `use()` + Suspense）として実装
+- [x] 花の種類詳細ページ：`<AffiliateProductSection flowerName={flower.name} />` を「育ててみる」セクションとして配置
+- [x] スポット詳細ページ：`<AffiliateHotelSection lat={spot.lat} lng={spot.lng} />` を「近くの宿」セクションとして配置
+- [x] 各セクションを `<Suspense>` でラップしてストリーミング（楽天 API の遅延でページ全体を遅延させない）
 
 ### 文言・コピー
 
-- [ ] `lib/constants/copy.ts` に `affiliate` セクション追加
+- [x] `lib/constants/copy.ts` に `affiliate` セクション追加
   - セクション見出し（「もっと詳しく知る」「育ててみる」「近くの宿」）
   - 広告バッジテキスト（「広告」）
   - 空状態テキスト（「該当する商品が見つかりませんでした」）
@@ -149,12 +152,15 @@ RAKUTEN_AFFILIATE_ID=      # 楽天アフィリエイト ID（サーバー専用
 
 ### 法令対応
 
-- [ ] `app/(site)/privacy/page.tsx` に楽天アフィリエイト条項を追加
+- [x] `app/(site)/privacy/page.tsx` に楽天アフィリエイト条項を追加
   - 第 1 条（取得する情報）に「Cookie（楽天株式会社経由）」を追記
   - 第 3 条（第三者提供）に楽天株式会社を追加
-- [ ] 利用規約（`/terms`）の見直し（アフィリエイト商品購入はサービスの責任範囲外である旨）
+  - 第 5 条として「アフィリエイトプログラム」を新設
+- [x] 利用規約（`/terms`）の見直し（第 8 条「外部リンク・アフィリエイト」として、商品購入は外部事業者と利用者の取引であり運営者は責任を負わない旨を明記）
 
 ### 検証
+
+以下は 22 (`docs/22_instant-navigation.md`) のローンチ前最終確認でまとめて実施する（22a 単体では Vercel 本番アクセスが取れないため）。
 
 - [ ] ローカルで 3 箇所すべてに楽天カードが表示されること
 - [ ] 「広告」バッジが各リンク近接に出ること
@@ -166,11 +172,11 @@ RAKUTEN_AFFILIATE_ID=      # 楽天アフィリエイト ID（サーバー専用
 
 ### ドキュメント
 
-- [ ] `docs/specs/operations.md` に「収益化」セクションを追加
+- [x] `docs/specs/operations.md` に「収益化」セクションを追加
   - 楽天ウェブサービスの利用方法・無料枠の制約
   - レポート確認手順（楽天アフィリエイト管理画面）
   - 報酬受取設定（楽天キャッシュ vs 銀行振込）
-- [ ] `README.md` に環境変数の説明を追記
+- [x] `README.md` に環境変数の説明を追記
 
 ## コスト・運用
 
@@ -180,11 +186,13 @@ RAKUTEN_AFFILIATE_ID=      # 楽天アフィリエイト ID（サーバー専用
 
 ## 完了基準
 
-- [ ] AI 判定結果 / 花の種類詳細 / スポット詳細の 3 箇所で楽天カードが表示される
-- [ ] 全リンクに「広告」バッジが付き、`rel="sponsored noopener noreferrer"` で出力されている
-- [ ] 楽天 API 障害時もページが壊れない
-- [ ] プライバシーポリシーに楽天アフィリエイトの記載が追加されている
-- [ ] 本番環境で実際にアフィリエイト ID 付き URL が発火することを確認
+UI / 法令対応 / 実装は本チケットで完了する。実環境での発火確認は 22 のローンチ前最終確認に統合する。
+
+- [x] 全リンクに「広告」バッジが付き、`rel="sponsored noopener noreferrer"` で出力されている（実装・ローカル目視）
+- [x] 楽天 API 障害時もページが壊れない（実装上 `null` 返却 → フォールバックリンク表示）
+- [x] プライバシーポリシー・利用規約に楽天アフィリエイトの記載が追加されている
+- [ ] AI 判定結果 / 花の種類詳細 / スポット詳細の 3 箇所で楽天カードが表示される（→ 22 で実環境確認）
+- [ ] 本番環境で実際にアフィリエイト ID 付き URL が発火することを確認（→ 22 で実環境確認）
 
 ## 参考
 
