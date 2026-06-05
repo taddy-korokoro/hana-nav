@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { COPY } from '@/lib/constants/copy';
 import type { FlowerImage } from '@/lib/queries/flowers';
+import { STATIC_BLUR_DATA_URL } from '@/lib/utils/imagePlaceholder';
 
 type Props = {
   images: FlowerImage[];
@@ -40,6 +41,8 @@ export function FlowerImageGallery({ images, flowerName }: Props) {
           alt={active.caption ?? COPY.common.photoAlt(flowerName)}
           fill
           priority
+          placeholder="blur"
+          blurDataURL={STATIC_BLUR_DATA_URL}
           className="object-cover"
           sizes="(min-width: 768px) 360px, 100vw"
         />
