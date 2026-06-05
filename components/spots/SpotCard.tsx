@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/layout/icons';
 import { COPY } from '@/lib/constants/copy';
 import type { SpotSearchResult } from '@/lib/queries/spotSearch';
+import { STATIC_BLUR_DATA_URL } from '@/lib/utils/imagePlaceholder';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
 const PLACEHOLDER_GRADIENTS = [
@@ -24,6 +25,8 @@ export function SpotCard({ spot, index }: { spot: SpotSearchResult; index: numbe
             alt={spot.coverImageCaption ?? COPY.common.photoAlt(spot.name)}
             fill
             priority={index === 0}
+            placeholder="blur"
+            blurDataURL={STATIC_BLUR_DATA_URL}
             className="object-cover transition group-hover:scale-105"
             sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
           />

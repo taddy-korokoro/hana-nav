@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import { FormError, FormField, PrimaryButton } from '@/app/auth/_components/form-fields';
 import { GoogleSignInButton } from '@/app/auth/_components/google-sign-in-button';
+import { GuestLoginButton } from '@/app/auth/_components/guest-login-button';
+import { isGuestLoginAvailable } from '@/lib/auth/guestAdmin';
 import { COPY } from '@/lib/constants/copy';
-import { login } from './actions';
+import { login, loginAsGuestAdmin } from './actions';
 
 export const metadata: Metadata = {
   title: COPY.auth.login.metaTitle,
 };
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+type LoginSearchParams = Promise<{ error?: string }>;
+
+export default function LoginPage({ searchParams }: { searchParams: LoginSearchParams }) {
   return (
     <AuthCard
       eyebrow={COPY.auth.login.eyebrow}
@@ -25,7 +25,12 @@ export default async function LoginPage({
       footerHref="/auth/signup"
       footerCta={COPY.auth.login.footerCta}
     >
-      <FormError message={error ? COPY.auth.login.errors[error] : null} />
+      {/* searchParams は request-time data なので Suspense 境界の内側に閉じ込め、
+          cacheComponents 有効下の prerender 拒否を回避する。FormError は null 時に
+          何もレンダリングしないため fallback={null} で CLS は発生しない。 */}
+      <Suspense fallback={null}>
+        <LoginStatus searchParams={searchParams} />
+      </Suspense>
 
       <form action={login} className="mt-4 space-y-4">
         <FormField
@@ -59,6 +64,17 @@ export default async function LoginPage({
       </div>
 
       <GoogleSignInButton />
+
+      {isGuestLoginAvailable() && (
+        <form action={loginAsGuestAdmin} className="mt-4">
+          <GuestLoginButton label="ゲストログイン（閲覧専用）" />
+        </form>
+      )}
     </AuthCard>
   );
+}
+
+async function LoginStatus({ searchParams }: { searchParams: LoginSearchParams }) {
+  const { error } = await searchParams;
+  return <FormError message={error ? COPY.auth.login.errors[error] : null} />;
 }

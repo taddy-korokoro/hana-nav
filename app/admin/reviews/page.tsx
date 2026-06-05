@@ -6,7 +6,6 @@ import { ReviewModerationActions } from '@/components/admin/ReviewModerationActi
 import { COPY } from '@/lib/constants/copy';
 import { listAdminReviews } from '@/lib/queries/admin-reviews';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.reviews.list.metaTitle,

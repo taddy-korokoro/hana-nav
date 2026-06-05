@@ -1,8 +1,44 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import { isBookmarked } from '@/lib/queries/bookmarks';
 import { createClient } from '@/lib/supabase/server';
 
 type Params = Promise<{ spot_id: string }>;
+
+/**
+ * GET /api/bookmarks/[spot_id]
+ *
+ * スポット詳細ページから Client Island（BookmarkButtonIsland）が叩く。
+ * `'use cache'` 化されたスポット詳細ページからユーザー依存の状態を切り離すための専用エンドポイント。
+ *
+ * 未ログインは 401 ではなく `{ isAuthenticated: false, bookmarked: false }` を 200 で返す
+ * （Island 側で「ログイン誘導 UI」を出すため、エラー扱いにしない）。
+ */
+export async function GET(_request: Request, { params }: { params: Params }) {
+  const { spot_id: spotId } = await params;
+
+  if (!spotId) {
+    return NextResponse.json({ error: 'invalid_spot_id' }, { status: 400 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { isAuthenticated: false, bookmarked: false },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    );
+  }
+
+  const bookmarked = await isBookmarked(user.id, spotId);
+  return NextResponse.json(
+    { isAuthenticated: true, bookmarked },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
+}
 
 /**
  * DELETE /api/bookmarks/[spot_id]

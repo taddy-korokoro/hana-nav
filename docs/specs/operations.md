@@ -25,6 +25,35 @@
 
 詳細は `docs/22a_rakuten-affiliate.md`。
 
+## cacheComponents タグ schema
+
+公開ページの `'use cache'` ブロックは `cacheTag()` で下記タグを付ける。admin の Server Action は `updateTag()` で同じタグを叩き、編集直後に最新値が反映される（read-your-own-writes）。タグ定数は `lib/cacheTags.ts` で一元管理する。
+
+| タグ                   | 付与箇所                                                              | 何が変わったら invalidate するか                                       |
+| ---------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `flowers`              | `HomeContent` / `loadFlowerBundle` / `loadAreaBundle`                 | 花マスターの追加・編集・削除・別名追加（一覧・索引・関連花表示に波及） |
+| `flower:<id>`          | `loadFlowerBundle`                                                    | 単一花の詳細・画像・別名・関連スポット                                 |
+| `spots`                | `HomeContent` / `loadFlowerBundle`（関連スポット） / `loadAreaBundle` | スポットマスターの追加・公開切替・編集・削除                           |
+| `spot:<id>`            | （将来 `/spots/[id]` を `'use cache'` 化したら付与）                  | 単一スポットの詳細・画像・関連花                                       |
+| `prefectures`          | `loadAreaBundle`                                                      | 都道府県マスター（基本固定）                                           |
+| `area:<prefecture_id>` | `loadAreaBundle`                                                      | 該当都道府県の集計（spots/flowers の編集で派生的に呼ばれる）           |
+
+### Admin Action ごとの叩くタグ
+
+| Action                                                                 | updateTag 対象                                                                 |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `createFlowerAction` / `updateFlowerAction` / `softDeleteFlowerAction` | `flowers`, `flower:<id>`                                                       |
+| `createSpotAction` / `updateSpotAction`                                | `spots`, `spot:<id>`, `area:<prefecture_id>`                                   |
+| `togglePublishedAction` / `softDeleteSpotAction`                       | `spots`, `spot:<id>`（影響都道府県の引き直しを避けるため area タグはスキップ） |
+| `softDeleteImageAction`（spot owner）                                  | `spot:<owner_id>`, `spots`                                                     |
+| `softDeleteImageAction`（flower owner）                                | `flower:<owner_id>`, `flowers`                                                 |
+
+レビュー削除・ユーザー BAN は公開ページの `'use cache'` に影響を与えないため、`updateTag` は呼ばず `revalidatePath('/admin/...')` だけで完結する。
+
+### `revalidateTag` ではなく `updateTag` を使う理由
+
+Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が必須で、かつ「次のリクエストで lazy 再検証」する。一方 `updateTag` は Server Action 専用で synchronous に該当タグのキャッシュを破棄するため、admin の編集直後にユーザーがページを開いた瞬間に新しいデータが返る。本プロジェクトでは admin 編集 → 即時反映の体験を優先するため `updateTag` を使う。
+
 ## コスト管理
 
 | 対策                            | 詳細                                                                   |
@@ -48,15 +77,16 @@
 
 ### 中優先度
 
-| 懸念                           | 対策                                                                                                      |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| **AI の誤判定**                | `confidence` が低い場合は「自信なし」と明示。マスター未登録時は関連スポット非表示で運用                   |
-| **レビューの誹謗中傷**         | NG ワードフィルタ（辞書ベース、`lib/ng-words.ts`）+ 管理者画面から手動論理削除                            |
-| **地図 API コスト**            | Google Maps 無料枠 ($200/月) 超過時は Mapbox 無料枠に移行検討                                             |
-| **モバイルでの Canvas 性能**   | 端末性能で重い場合は 1080→720px に落とす分岐                                                              |
-| **画像アップロードサイズ**     | クライアント側で 2MB 以下にリサイズ                                                                       |
-| **論理削除のクエリ漏れ**       | 全クエリで `WHERE deleted_at IS NULL` を必須。Supabase のビューで「アクティブのみ」を別名公開する手も検討 |
-| **退会ユーザーのレビュー扱い** | レビューは物理削除しない。`profiles.deleted_at IS NOT NULL` の場合に「退会済ユーザー」と表示              |
+| 懸念                           | 対策                                                                                                                                                                                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AI の誤判定**                | `confidence` が低い場合は「自信なし」と明示。マスター未登録時は関連スポット非表示で運用                                                                                                                                                            |
+| **レビューの誹謗中傷**         | NG ワードフィルタ（辞書ベース、`lib/ng-words.ts`）+ 管理者画面から手動論理削除                                                                                                                                                                     |
+| **地図 API コスト**            | Google Maps 無料枠 ($200/月) 超過時は Mapbox 無料枠に移行検討                                                                                                                                                                                      |
+| **モバイルでの Canvas 性能**   | 端末性能で重い場合は 1080→720px に落とす分岐                                                                                                                                                                                                       |
+| **画像アップロードサイズ**     | クライアント側で 2MB 以下にリサイズ                                                                                                                                                                                                                |
+| **画像差し替えの反映遅延**     | `next.config.ts` の `images.minimumCacheTTL` を 30 日に設定済み。Supabase Storage 上で**同一パス**の画像を上書きすると、Image CDN が最大 30 日間古いバリアントを返す。差し替え時は新パスにアップロードして DB の `images.url` を更新する運用にする |
+| **論理削除のクエリ漏れ**       | 全クエリで `WHERE deleted_at IS NULL` を必須。Supabase のビューで「アクティブのみ」を別名公開する手も検討                                                                                                                                          |
+| **退会ユーザーのレビュー扱い** | レビューは物理削除しない。`profiles.deleted_at IS NOT NULL` の場合に「退会済ユーザー」と表示                                                                                                                                                       |
 
 ## ローンチチェックリスト
 

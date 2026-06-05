@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { AuthCard } from '@/app/auth/_components/auth-card';
 import { FormError, FormField, PrimaryButton } from '@/app/auth/_components/form-fields';
 import { COPY } from '@/lib/constants/copy';
@@ -8,19 +9,23 @@ export const metadata: Metadata = {
   title: COPY.auth.updatePassword.metaTitle,
 };
 
-export default async function UpdatePasswordPage({
+type UpdatePasswordSearchParams = Promise<{ error?: string }>;
+
+export default function UpdatePasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: UpdatePasswordSearchParams;
 }) {
-  const { error } = await searchParams;
   return (
     <AuthCard
       eyebrow={COPY.auth.updatePassword.eyebrow}
       title={COPY.auth.updatePassword.title}
       description={COPY.auth.updatePassword.description}
     >
-      <FormError message={error ? COPY.auth.updatePassword.errors[error] : null} />
+      {/* searchParams は request-time data なので Suspense 境界の内側に閉じ込める。 */}
+      <Suspense fallback={null}>
+        <UpdatePasswordStatus searchParams={searchParams} />
+      </Suspense>
 
       <form action={updatePassword} className="mt-4 space-y-4">
         <FormField
@@ -43,4 +48,13 @@ export default async function UpdatePasswordPage({
       </form>
     </AuthCard>
   );
+}
+
+async function UpdatePasswordStatus({
+  searchParams,
+}: {
+  searchParams: UpdatePasswordSearchParams;
+}) {
+  const { error } = await searchParams;
+  return <FormError message={error ? COPY.auth.updatePassword.errors[error] : null} />;
 }

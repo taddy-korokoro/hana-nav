@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import { isGuestAdmin } from '@/lib/auth/guestAdmin';
 import { getAdminUserDetail, updateUserAdmin } from '@/lib/queries/admin-users';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 
@@ -24,7 +25,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  // 自分自身を BAN / 降格しないチェック (L71-) で me.id が必要なため requireAdmin() で
+  // ユーザーを取得 → そのまま isGuestAdmin で判定する。requireWriteAdminOrResponse() を
+  // 使うと requireAdmin() が二重呼び出しされ profiles.role の SELECT が 2 回走るので避ける。
   const me = await requireAdmin();
+  if (isGuestAdmin(me)) {
+    return NextResponse.json(
+      { error: 'guest_read_only', message: 'ゲストモードでは書き込みできません' },
+      { status: 403 },
+    );
+  }
   const { id } = await params;
 
   let body: unknown;

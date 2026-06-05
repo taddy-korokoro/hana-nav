@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { CameraIcon } from '@/components/layout/icons';
 import { COPY } from '@/lib/constants/copy';
 import type { SpotImage } from '@/lib/queries/spotDetail';
+import { STATIC_BLUR_DATA_URL } from '@/lib/utils/imagePlaceholder';
 
 type Props = {
   images: SpotImage[];
@@ -39,6 +40,8 @@ export function SpotImageGallery({ images, spotName }: Props) {
           alt={active.caption ?? COPY.common.photoAlt(spotName)}
           fill
           priority
+          placeholder="blur"
+          blurDataURL={STATIC_BLUR_DATA_URL}
           className="object-cover"
           sizes="(min-width: 1024px) 960px, 100vw"
         />

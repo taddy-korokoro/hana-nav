@@ -6,7 +6,6 @@ import { COPY } from '@/lib/constants/copy';
 import { getAdminSpotDetail, listAllFlowers, listPrefectures } from '@/lib/queries/admin';
 import { updateSpotAction } from '../actions';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.spots.edit.metaTitle,

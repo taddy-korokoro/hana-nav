@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
   createFlower,
@@ -11,7 +11,8 @@ import {
   type FlowerMutationError,
   type FlowerMutationInput,
 } from '@/lib/queries/admin-flower-mutations';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { CACHE_TAGS, flowerTag } from '@/lib/cacheTags';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * `FormData` から `FlowerMutationInput` を組み立てる共通パーサ。
@@ -69,18 +70,27 @@ function toState(error: FlowerMutationError): FlowerFormActionState {
 }
 
 function revalidateFlowerPaths(id?: string) {
+  // 公開ページ側の 'use cache' ブロック（loadFlowerBundle / HomeContent / loadAreaBundle）
+  // は cacheTag で invalidate する。これにより admin で花を編集した瞬間に
+  // 公開ページの cacheLife を待たず最新値が反映される。
+  // updateTag は Server Action 内専用で「次のリクエストで確実に新データを返す」
+  // read-your-own-writes セマンティクスを持つ。revalidateTag（profile 必須・遅延）と
+  // 異なり、admin が編集直後に画面を見たときに古いキャッシュが返らない。
+  updateTag(CACHE_TAGS.flowers);
+  if (id) updateTag(flowerTag(id));
+
+  // 管理画面側は 'use cache' で囲まずに per-request 評価しているため、
+  // path-based の revalidatePath で十分（マイページ等の Suspense 配下のサーバー再評価をトリガ）。
   revalidatePath('/admin');
   revalidatePath('/admin/flowers');
   if (id) revalidatePath(`/admin/flowers/${id}`);
-  revalidatePath('/flowers');
-  if (id) revalidatePath(`/flowers/${id}`);
 }
 
 export async function createFlowerAction(
   _prev: FlowerFormActionState,
   formData: FormData,
 ): Promise<FlowerFormActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const input = parseFlowerForm(formData);
   const result = await createFlower(input);
   if (!result.ok) {
@@ -95,7 +105,7 @@ export async function updateFlowerAction(
   _prev: FlowerFormActionState,
   formData: FormData,
 ): Promise<FlowerFormActionState> {
-  await requireAdmin();
+  await requireWriteAdmin();
   const input = parseFlowerForm(formData);
   const result = await updateFlower(flowerId, input);
   if (!result.ok) {
@@ -106,7 +116,7 @@ export async function updateFlowerAction(
 }
 
 export async function softDeleteFlowerAction(formData: FormData) {
-  await requireAdmin();
+  await requireWriteAdmin();
   const id = String(formData.get('flower_id') ?? '');
   if (!id) return;
   const result = await softDeleteFlower(id);

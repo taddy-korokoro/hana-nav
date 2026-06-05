@@ -1,15 +1,16 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
+import { CACHE_TAGS, flowerTag, spotTag } from '@/lib/cacheTags';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * `/admin/images` で個別画像を論理削除する Server Action。
  * 親（spot / flower）の編集画面と一覧画面を両方 revalidate する。
  */
 export async function softDeleteImageAction(formData: FormData) {
-  await requireAdmin();
+  await requireWriteAdmin();
   const imageId = String(formData.get('image_id') ?? '');
   if (!imageId) return;
 
@@ -36,13 +37,15 @@ export async function softDeleteImageAction(formData: FormData) {
   }
 
   revalidatePath('/admin/images');
+  // 公開ページの 'use cache' は cacheTag で invalidate する。管理画面は per-request
+  // なので path-based でナビ表示の鮮度だけ揃える。
   if (row.owner_type === 'spot') {
+    updateTag(spotTag(row.owner_id));
+    updateTag(CACHE_TAGS.spots);
     revalidatePath(`/admin/spots/${row.owner_id}`);
-    revalidatePath(`/spots/${row.owner_id}`);
-    revalidatePath('/spots');
   } else if (row.owner_type === 'flower') {
+    updateTag(flowerTag(row.owner_id));
+    updateTag(CACHE_TAGS.flowers);
     revalidatePath(`/admin/flowers/${row.owner_id}`);
-    revalidatePath(`/flowers/${row.owner_id}`);
-    revalidatePath('/flowers');
   }
 }

@@ -10,6 +10,18 @@ const nextConfig: NextConfig = {
   // RFC1918 プライベート帯と Bonjour（*.local）を allow しておく。
   // dev のみで効くオプションなので本番ビルドには影響しない。
   allowedDevOrigins: ['192.168.*.*', '10.*.*.*', '*.local'],
+
+  // Cache Components を有効化。Server Component のデータ取得は `'use cache'` で
+  // 明示的にキャッシュするか、Suspense 境界の内側で動的に取得する形を強制する。
+  // page.tsx の `export const dynamic = 'force-dynamic'` / `export const revalidate`
+  // とは非互換のため、ページ側はそれらを撤去済み（Step 2 / 4 で対応）。
+  cacheComponents: true,
+
+  experimental: {
+    // dev で Next.js DevTools の「Instant Navs」トグルを使うためのフラグ。
+    // 本番ビルドには影響しない。
+    instantNavigationDevToolsToggle: true,
+  },
   images: {
     remotePatterns: [
       ...(supabaseHostname
@@ -21,26 +33,6 @@ const nextConfig: NextConfig = {
             },
           ]
         : []),
-      // チケット 11：花マスターの代表画像（暫定的に外部ホットリンク）。
-      // 本来は Supabase Storage に再アップして上の supabase 設定で済ませたい。
-      {
-        protocol: 'https' as const,
-        hostname: 'hanamap.com',
-        pathname: '/media/**',
-      },
-      // チケット 18：greensnap.jp スクレイピング由来の花マスター画像 CDN（暫定ホットリンク）。
-      // ホスト名のサブドメインは greensnap 側の都合で変わり得るため、変化時は再登録する。
-      // ワイルドカード（**.cloudfront.net）は CloudFront 全体を許可してしまうので使わない。
-      {
-        protocol: 'https' as const,
-        hostname: 'dadfpmh61h9tr.cloudfront.net',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https' as const,
-        hostname: 'd3pbyuzcd27kd.cloudfront.net',
-        pathname: '/**',
-      },
       // チケット 22a：楽天アフィリエイト導入。書籍・商品・ホテルの画像 CDN。
       // 楽天側のドメイン構成は公式に変動はほぼないが、サブドメインの揺らぎがあるためそれぞれ列挙。
       // 失敗時は <Image unoptimized /> で逃げているため、ここに追加されていなくても直接 <img> 相当で表示されること。
@@ -65,6 +57,11 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    // AVIF を優先（同品質で WebP より 20-30% 小さい）。AVIF 非対応ブラウザは webp に自動 fallback。
+    formats: ['image/avif', 'image/webp'],
+    // 画像 1 バリアントを Netlify Image CDN がキャッシュし続ける期間。
+    // Storage 上の画像は更新頻度が低い前提で 30 日にして、cold cache 率を下げる。
+    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
 };
 

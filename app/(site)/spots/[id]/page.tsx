@@ -1,5 +1,6 @@
 import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -7,24 +8,25 @@ import {
   AffiliateHotelSection,
   AffiliateHotelSectionSkeleton,
 } from '@/components/affiliate/AffiliateHotelSection';
-import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
+import { BookmarkButtonIsland } from '@/components/bookmarks/BookmarkButtonIsland';
 import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
+import { SpotReviewBlockIsland } from '@/components/reviews/SpotReviewBlockIsland';
 import { RelatedSpots } from '@/components/spots/RelatedSpots';
 import { SpotFlowersList } from '@/components/spots/SpotFlowersList';
 import { SpotImageGallery } from '@/components/spots/SpotImageGallery';
 import { SpotMapPin } from '@/components/spots/SpotMapPin';
-import { SpotReviewSection } from '@/components/spots/SpotReviewSection';
-import { SpotReviewInteraction } from '@/components/reviews/SpotReviewInteraction';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { CACHE_TAGS, spotTag } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
-import { isBookmarked } from '@/lib/queries/bookmarks';
-import { getMyReviewForSpot } from '@/lib/queries/reviews';
 import { getSpotDetail, getSpotMeta, type SpotDetail } from '@/lib/queries/spotDetail';
-import { createClient } from '@/lib/supabase/server';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
-export const dynamic = 'force-dynamic';
+// <Link> プリフェッチを効かせる。dynamic segment [id] と ?edit パラメータが
+// あり、build 時に全 ID を列挙して samples を埋めるのは現実的でないため、
+// バリデーションは無効化してプリフェッチ挙動だけ受け取る。実 sample 列挙は
+// 将来 generateStaticParams を導入したら delete できる。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ edit?: string }>;
@@ -56,7 +58,31 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function SpotDetailPage({
+/**
+ * スポット詳細ページ。
+ *
+ * チケット 22 Step 2: getSpotDetail / getUser / bookmark / myReview / tokyoMonth()
+ * を Suspense 境界内側に押し下げ、page 本体は sync で外枠 <article> だけを描く
+ * 構造にした。dynamic 段（[id]）は params の await を子コンポーネント側に
+ * 任せる形（cacheComponents 有効化後の Next.js 流儀に合わせる）。
+ */
+export default function SpotDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
+  return (
+    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+      <Suspense fallback={<SpotDetailSkeleton />}>
+        <SpotDetailContent params={params} searchParams={searchParams} />
+      </Suspense>
+    </article>
+  );
+}
+
+async function SpotDetailContent({
   params,
   searchParams,
 }: {
@@ -64,34 +90,17 @@ export default async function SpotDetailPage({
   searchParams: SearchParams;
 }) {
   const [{ id }, { edit }] = await Promise.all([params, searchParams]);
-  const bundle = await getSpotDetail(id);
-  if (!bundle) notFound();
+  const cached = await loadSpotBundle(id);
+  if (!cached) notFound();
+  const { bundle, currentMonth } = cached;
 
   const { spot, images, flowers, reviews, reviewSummary, relatedSpots } = bundle;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [bookmarked, myReview] = user
-    ? await Promise.all([isBookmarked(user.id, spot.id), getMyReviewForSpot(user.id, spot.id)])
-    : [false, null];
-
-  const myReviewInitial = myReview
-    ? {
-        reviewId: myReview.id,
-        rating: myReview.rating,
-        comment: myReview.comment ?? '',
-        visitedAt: myReview.visitedAt ?? '',
-      }
-    : null;
-
-  const currentMonth = tokyoMonth();
   const inSeason = isInBestSeason(spot.bestSeasonStart, spot.bestSeasonEnd, currentMonth);
+  const editIntent = edit === 'review';
 
   return (
-    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+    <>
       <SpotJsonLd
         spot={spot}
         coverImageUrl={images[0]?.url ?? null}
@@ -114,13 +123,7 @@ export default async function SpotDetailPage({
           <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl">
             {spot.name}
           </h1>
-          <BookmarkButton
-            spotId={spot.id}
-            spotName={spot.name}
-            isAuthenticated={!!user}
-            initialBookmarked={bookmarked}
-            redirectAfterLogin={`/spots/${spot.id}`}
-          />
+          <BookmarkButtonIsland spotId={spot.id} spotName={spot.name} />
         </div>
         {spot.nameKana && <p className="mt-2 text-sm text-ink-muted">{spot.nameKana}</p>}
 
@@ -232,16 +235,11 @@ export default async function SpotDetailPage({
           eyebrow={COPY.spotDetail.sections.reviewsEyebrow}
         />
         <div className="mt-4 space-y-6">
-          <SpotReviewInteraction
+          <SpotReviewBlockIsland
             spotId={spot.id}
-            isAuthenticated={!!user}
-            myReview={myReviewInitial}
-            defaultOpen={edit === 'review' && !!myReviewInitial}
-          />
-          <SpotReviewSection
+            editIntent={editIntent}
             reviews={reviews}
             summary={reviewSummary}
-            myReviewId={myReview?.id ?? null}
           />
         </div>
       </section>
@@ -257,7 +255,40 @@ export default async function SpotDetailPage({
           <RelatedSpots spots={relatedSpots} />
         </div>
       )}
-    </article>
+    </>
+  );
+}
+
+/**
+ * スポット詳細バンドルを cacheComponents の `'use cache'` で hours スケールでキャッシュ。
+ * tokyoMonth() を内側で評価することで、月の境界を跨いだ「今が見頃」表示が
+ * キャッシュ寿命の範囲で正しく切り替わる。
+ */
+async function loadSpotBundle(id: string) {
+  'use cache';
+  cacheLife('hours');
+  // 単一スポットの編集 + 全 spots/flowers 系の編集（関連スポット表示）で invalidate されるべき。
+  cacheTag(spotTag(id), CACHE_TAGS.spots, CACHE_TAGS.flowers);
+  const bundle = await getSpotDetail(id);
+  if (!bundle) return null;
+  return { bundle, currentMonth: tokyoMonth() };
+}
+
+function SpotDetailSkeleton() {
+  return (
+    <div>
+      <div className="mb-8">
+        <div className="h-3 w-40 animate-pulse rounded bg-surface-2" />
+        <div className="mt-3 h-10 w-full max-w-2xl animate-pulse rounded bg-surface-2 md:h-14" />
+        <div className="mt-3 h-3 w-32 animate-pulse rounded bg-surface-2" />
+      </div>
+      <div className="aspect-[16/9] w-full animate-pulse rounded-card-lg bg-surface-2" />
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 animate-pulse rounded-card bg-surface-2" />
+        ))}
+      </div>
+    </div>
   );
 }
 
