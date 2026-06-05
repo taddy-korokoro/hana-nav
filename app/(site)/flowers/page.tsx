@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { FlowerCard } from '@/components/flowers/FlowerCard';
 import { FlowerKanaIndex } from '@/components/flowers/FlowerKanaIndex';
+import { ScrollToTopButton } from '@/components/flowers/ScrollToTopButton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
@@ -63,6 +64,7 @@ export default function FlowersPage({ searchParams }: { searchParams: FlowersSea
       <Suspense fallback={<FlowersContentSkeleton />}>
         <FlowersContent searchParams={searchParams} />
       </Suspense>
+      <ScrollToTopButton />
     </div>
   );
 }
