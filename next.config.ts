@@ -33,26 +33,6 @@ const nextConfig: NextConfig = {
             },
           ]
         : []),
-      // チケット 11：花マスターの代表画像（暫定的に外部ホットリンク）。
-      // 本来は Supabase Storage に再アップして上の supabase 設定で済ませたい。
-      {
-        protocol: 'https' as const,
-        hostname: 'hanamap.com',
-        pathname: '/media/**',
-      },
-      // チケット 18：greensnap.jp スクレイピング由来の花マスター画像 CDN（暫定ホットリンク）。
-      // ホスト名のサブドメインは greensnap 側の都合で変わり得るため、変化時は再登録する。
-      // ワイルドカード（**.cloudfront.net）は CloudFront 全体を許可してしまうので使わない。
-      {
-        protocol: 'https' as const,
-        hostname: 'dadfpmh61h9tr.cloudfront.net',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https' as const,
-        hostname: 'd3pbyuzcd27kd.cloudfront.net',
-        pathname: '/**',
-      },
     ],
   },
 };
