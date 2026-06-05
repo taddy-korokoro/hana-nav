@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { FlowerCard } from '@/components/flowers/FlowerCard';
 import { FlowerKanaIndex } from '@/components/flowers/FlowerKanaIndex';
+import { ScrollToTopButton } from '@/components/flowers/ScrollToTopButton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
@@ -63,6 +64,7 @@ export default function FlowersPage({ searchParams }: { searchParams: FlowersSea
       <Suspense fallback={<FlowersContentSkeleton />}>
         <FlowersContent searchParams={searchParams} />
       </Suspense>
+      <ScrollToTopButton />
     </div>
   );
 }
@@ -176,8 +178,9 @@ async function FlowersContent({ searchParams }: { searchParams: FlowersSearchPar
                 key={group.label}
                 id={`kana-${group.label}`}
                 aria-label={COPY.flowersList.sectionAria(group.label)}
-                // anchor ジャンプ時にヘッダーで隠れないようスクロール余白を持たせる
-                className="scroll-mt-24 pt-12"
+                // anchor ジャンプ時に h2 がヘッダー直下に来るよう余白を margin 側に置く。
+                // pt-* だと section box の top（= 余白の上端）が着地位置になり h2 がさらに下にズレる。
+                className="mt-12 scroll-mt-24"
               >
                 <div className="flex items-baseline gap-3">
                   <h2 className="font-serif text-2xl font-bold tracking-tight">{group.label}</h2>
