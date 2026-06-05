@@ -33,6 +33,29 @@ const nextConfig: NextConfig = {
             },
           ]
         : []),
+      // チケット 22a：楽天アフィリエイト導入。書籍・商品・ホテルの画像 CDN。
+      // 楽天側のドメイン構成は公式に変動はほぼないが、サブドメインの揺らぎがあるためそれぞれ列挙。
+      // 失敗時は <Image unoptimized /> で逃げているため、ここに追加されていなくても直接 <img> 相当で表示されること。
+      {
+        protocol: 'https' as const,
+        hostname: 'thumbnail.image.rakuten.co.jp',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'shop.r10s.jp',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'img.travel.rakuten.co.jp',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'trvimg.r10s.jp',
+        pathname: '/**',
+      },
     ],
     // AVIF を優先（同品質で WebP より 20-30% 小さい）。AVIF 非対応ブラウザは webp に自動 fallback。
     formats: ['image/avif', 'image/webp'],

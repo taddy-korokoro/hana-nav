@@ -4,6 +4,10 @@ import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import {
+  AffiliateHotelSection,
+  AffiliateHotelSectionSkeleton,
+} from '@/components/affiliate/AffiliateHotelSection';
 import { BookmarkButtonIsland } from '@/components/bookmarks/BookmarkButtonIsland';
 import { ExternalLinkIcon, InfoIcon, MapPinIcon } from '@/components/layout/icons';
 import { SpotReviewBlockIsland } from '@/components/reviews/SpotReviewBlockIsland';
@@ -239,6 +243,12 @@ async function SpotDetailContent({
           />
         </div>
       </section>
+
+      <div className="mt-12">
+        <Suspense fallback={<AffiliateHotelSectionSkeleton />}>
+          <AffiliateHotelSection latitude={spot.latitude} longitude={spot.longitude} />
+        </Suspense>
+      </div>
 
       {relatedSpots.length > 0 && (
         <div className="mt-16">

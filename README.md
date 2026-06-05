@@ -207,3 +207,7 @@ NEXT_PUBLIC_BASE_URL=
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` と `GEMINI_API_KEY` は **Client Component から参照禁止**。Service Role を使う処理は Route Handler / Server Action / バッチスクリプト内に閉じ込めること。
+
+### 任意（収益化）
+
+- `RAKUTEN_APPLICATION_ID` / `RAKUTEN_AFFILIATE_ID` — 楽天アフィリエイトの書籍・商品・宿カードを 3 ページ（AI 判定結果 / 花の種類詳細 / スポット詳細）に表示するために使用。サーバー専用。未設定でもアプリは動作するが、アフィリエイト枠は静かに非表示になる。詳細は `docs/22a_rakuten-affiliate.md`。

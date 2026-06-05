@@ -131,22 +131,22 @@ export const COPY = {
     terms: {
       metaTitle: '利用規約',
       metaDescription:
-        'hana nav の利用規約。サービス内容・禁止事項・AI 機能の取り扱い・現地マナー・免責事項を定めています。',
+        'hana nav の利用規約。サービス内容・禁止事項・AI 機能の取り扱い・現地マナー・外部リンクの取り扱い・免責事項を定めています。',
       eyebrow: 'Terms of Service',
       title: '利用規約',
       description:
         '本規約は、hana nav（以下「本サービス」といいます）の利用条件を定めるものです。本サービスのご利用前にお読みください。',
-      lastUpdated: '2026-05-21',
+      lastUpdated: '2026-05-25',
     },
     privacy: {
       metaTitle: 'プライバシーポリシー',
       metaDescription:
-        'hana nav が取得する情報、利用目的、第三者提供、Cookie の利用、退会・データ削除請求の窓口を記載しています。',
+        'hana nav が取得する情報、利用目的、第三者提供、Cookie の利用、楽天アフィリエイトプログラム、退会・データ削除請求の窓口を記載しています。',
       eyebrow: 'Privacy Policy',
       title: 'プライバシーポリシー',
       description:
         '本ポリシーは、hana nav（以下「本サービス」といいます）における利用者の個人情報の取り扱いを定めるものです。',
-      lastUpdated: '2026-05-21',
+      lastUpdated: '2026-05-25',
     },
   },
 
@@ -773,6 +773,49 @@ export const COPY = {
         imageLoad: '画像の読み込みに失敗しました。判定からやり直してください。',
         generic: 'しおりの生成に失敗しました。時間を置いて再度お試しください。',
       } as Record<string, string>,
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
+  // アフィリエイト（楽天ウェブサービス）
+  // 設置箇所：AI 判定結果（ブックス）/ 花の種類詳細（市場）/ スポット詳細（トラベル）
+  // 「広告」バッジ文言は <AffiliateLink> から参照される（景品表示法ステマ規制対応）。
+  // -----------------------------------------------------------------------------------
+  affiliate: {
+    adBadge: '広告',
+    adBadgeAria: 'スポンサードリンク',
+    disclaimer:
+      '※当サイトは楽天アフィリエイトプログラムを利用しています。商品ページへの遷移時に楽天株式会社の Cookie が設定されることがあります。',
+    fallbackToRakutenLabel: '楽天で検索する',
+    books: {
+      eyebrow: 'Books',
+      title: 'もっと詳しく知る',
+      description: '関連する図鑑・写真集で、花の特徴や育て方を深掘りできます。',
+      empty: '該当する書籍が見つかりませんでした。',
+      fallbackUrl: (keyword: string) =>
+        `https://books.rakuten.co.jp/search?sitem=${encodeURIComponent(`${keyword} 図鑑`)}`,
+      priceLabel: (price: number) => `¥${price.toLocaleString('ja-JP')}`,
+      authorLabel: (author: string) => `著者: ${author}`,
+    },
+    products: {
+      eyebrow: 'Grow',
+      title: '育ててみる',
+      description: '種・苗・球根・園芸キットを取り寄せて、自宅で育ててみませんか。',
+      empty: '該当する商品が見つかりませんでした。',
+      fallbackUrl: (keyword: string) =>
+        `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(`${keyword} 種 苗`)}/100005/`,
+      priceLabel: (price: number) => `¥${price.toLocaleString('ja-JP')}`,
+      shopLabel: (shopName: string) => `ショップ: ${shopName}`,
+    },
+    hotels: {
+      eyebrow: 'Stay',
+      title: '近くの宿',
+      description: 'スポットから 3km 圏内の宿。前後泊で混雑を避けてゆっくり巡れます。',
+      empty: '近隣の宿情報が見つかりませんでした。',
+      fallbackUrl: 'https://travel.rakuten.co.jp/',
+      reviewSummary: (average: number, count: number) =>
+        `★ ${average.toFixed(2)}（${count.toLocaleString('ja-JP')}件）`,
+      minChargeLabel: (price: number) => `1 泊 ¥${price.toLocaleString('ja-JP')}〜`,
     },
   },
 
