@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
           ]
         : []),
     ],
+    // AVIF を優先（同品質で WebP より 20-30% 小さい）。AVIF 非対応ブラウザは webp に自動 fallback。
+    formats: ['image/avif', 'image/webp'],
+    // 画像 1 バリアントを Netlify Image CDN がキャッシュし続ける期間。
+    // Storage 上の画像は更新頻度が低い前提で 30 日にして、cold cache 率を下げる。
+    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
 };
 

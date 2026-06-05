@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { COPY } from '@/lib/constants/copy';
 import type { FlowerListItem } from '@/lib/queries/flowers';
+import { STATIC_BLUR_DATA_URL } from '@/lib/utils/imagePlaceholder';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
 
 const FLOWER_GRADIENTS = [
@@ -34,6 +35,8 @@ export function FlowerCard({ flower, index }: { flower: FlowerListItem; index: n
             alt={flower.coverImageCaption ?? COPY.common.photoAlt(flower.name)}
             fill
             priority={index === 0}
+            placeholder="blur"
+            blurDataURL={STATIC_BLUR_DATA_URL}
             className="object-cover transition group-hover:scale-105"
             sizes="(min-width: 1024px) 240px, (min-width: 640px) 33vw, 50vw"
           />
