@@ -163,4 +163,30 @@ body {
       scroll-behavior: auto !important;
     }
   }
+
+  /*
+   * ゲストモード（app/admin/layout.tsx の <div data-guest-content>）配下で、
+   * 書き込み系の form controls を CSS のみで視覚・機能ともに無効化する。
+   *
+   * - <fieldset disabled> ではなく [data-guest-content] でマークしているのは、
+   *   <fieldset disabled> が入れ子に伝播し HTML 仕様上 override できないため。
+   *   検索バー等の「読み取りなのでゲストにも使わせたい」要素は data-allow-guest を
+   *   付けて exempt できる必要があるので、属性ベースで管理する。
+   * - <a>（詳細 / 編集 / 新規作成 等の遷移リンク）は意図的に対象外。採用者が
+   *   「新規作成画面 / 編集画面の UI ってどんな感じ?」を確認できるよう、遷移は許可する設計。
+   *   遷移先のフォームの <button type="submit"> は同じマーカー配下にあるため
+   *   UI 上は無効化される（サーバー側でも requireWriteAdmin が 403 を返す二重防御）。
+   * - pointer-events を切ると hover も発火しないため、`hover:bg-...` 等の Tailwind
+   *   hover ユーティリティが反応する非対称が出ない。
+   * - サイドバーナビは AdminShell 配下で マーカー の外にあるため対象外。
+   */
+  [data-guest-content] button:not([data-allow-guest]),
+  [data-guest-content] input:not([data-allow-guest]),
+  [data-guest-content] select:not([data-allow-guest]),
+  [data-guest-content] textarea:not([data-allow-guest]),
+  [data-guest-content] [role='switch']:not([data-allow-guest]) {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }

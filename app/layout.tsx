@@ -57,20 +57,6 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} ${notoSerifJp.variable} h-full antialiased`}
     >
-      <head>
-        {/* 外部画像 CDN への preconnect で LCP 改善 */}
-        <link rel="preconnect" href="https://hanamap.com" />
-        <link
-          rel="preconnect"
-          href="https://dadfpmh61h9tr.cloudfront.net"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preconnect"
-          href="https://d3pbyuzcd27kd.cloudfront.net"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster />

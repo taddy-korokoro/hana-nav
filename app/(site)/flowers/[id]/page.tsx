@@ -1,5 +1,6 @@
 import { Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import {
@@ -11,12 +12,16 @@ import { FlowerImageGallery } from '@/components/flowers/FlowerImageGallery';
 import { FlowerSeasonChart } from '@/components/flowers/FlowerSeasonChart';
 import { FlowerSpotsList } from '@/components/flowers/FlowerSpotsList';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { CACHE_TAGS, flowerTag } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
 import { type FlowerDetail, getFlowerDetail, getFlowerMeta } from '@/lib/queries/flowers';
 import { tokyoMonth } from '@/lib/utils/dateUtils';
 import { formatSeasonRange, isInBestSeason } from '@/lib/utils/seasonUtils';
 
-export const dynamic = 'force-dynamic';
+// <Link> プリフェッチを効かせる。dynamic segment [id] があり、build 時に全花 ID を
+// 列挙して samples を埋めるのは現実的でないため、バリデーションは無効化して
+// プリフェッチ挙動だけ受け取る。将来 generateStaticParams を導入したら delete 可能。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
 
 type Params = Promise<{ id: string }>;
 
@@ -47,21 +52,37 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function FlowerDetailPage({ params }: { params: Params }) {
+/**
+ * 花の種類詳細ページ。
+ *
+ * チケット 22 Step 2: getFlowerDetail / tokyoMonth() を Suspense 境界内側に
+ * 押し下げ、page 本体は sync で外枠 <article> だけを描く。
+ */
+export default function FlowerDetailPage({ params }: { params: Params }) {
+  return (
+    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+      <Suspense fallback={<FlowerDetailSkeleton />}>
+        <FlowerDetailContent params={params} />
+      </Suspense>
+    </article>
+  );
+}
+
+async function FlowerDetailContent({ params }: { params: Params }) {
   const { id } = await params;
-  const bundle = await getFlowerDetail(id);
-  if (!bundle) notFound();
+  const cached = await loadFlowerBundle(id);
+  if (!cached) notFound();
+  const { bundle, currentMonth } = cached;
 
   const { flower, aliases, images, spots } = bundle;
   const seasonText = formatSeasonRange(flower.defaultSeasonStart, flower.defaultSeasonEnd);
-  const currentMonth = tokyoMonth();
   const inSeason =
     flower.defaultSeasonStart != null &&
     flower.defaultSeasonEnd != null &&
     isInBestSeason(flower.defaultSeasonStart, flower.defaultSeasonEnd, currentMonth);
 
   return (
-    <article className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+    <>
       <FlowerJsonLd flower={flower} coverImageUrl={images[0]?.url ?? null} />
 
       <header className="mb-8">
@@ -178,7 +199,35 @@ export default async function FlowerDetailPage({ params }: { params: Params }) {
           <AffiliateProductSection flowerName={flower.name} />
         </Suspense>
       </div>
-    </article>
+    </>
+  );
+}
+
+/**
+ * 花詳細バンドルを cacheComponents の `'use cache'` で hours スケールでキャッシュ。
+ * tokyoMonth() を内側で評価することで、月の境界を跨いだ「今が見頃」表示が
+ * キャッシュ寿命の範囲で正しく切り替わる。
+ */
+async function loadFlowerBundle(id: string) {
+  'use cache';
+  cacheLife('hours');
+  // 単一花の編集 + 全 spots 系の編集（関連スポット表示）で invalidate されるべき。
+  cacheTag(flowerTag(id), CACHE_TAGS.flowers, CACHE_TAGS.spots);
+  const bundle = await getFlowerDetail(id);
+  if (!bundle) return null;
+  return { bundle, currentMonth: tokyoMonth() };
+}
+
+function FlowerDetailSkeleton() {
+  return (
+    <div>
+      <div className="mb-8">
+        <div className="h-3 w-32 animate-pulse rounded bg-surface-2" />
+        <div className="mt-3 h-10 w-64 animate-pulse rounded bg-surface-2 md:h-14" />
+      </div>
+      <div className="aspect-[16/9] w-full animate-pulse rounded-card-lg bg-surface-2" />
+      <div className="mt-10 h-32 animate-pulse rounded-card bg-surface-2" />
+    </div>
   );
 }
 

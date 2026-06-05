@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { restoreReviewAdmin, softDeleteReviewAdmin } from '@/lib/queries/admin-reviews';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdminOrResponse } from '@/lib/utils/requireAdmin';
 
 /**
  * 管理者向け：レビュー強制論理削除 / 復元 API。
@@ -11,7 +11,8 @@ import { requireAdmin } from '@/lib/utils/requireAdmin';
  */
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
   const { id } = await params;
   const result = await softDeleteReviewAdmin(id);
   if (!result.ok) {
@@ -24,7 +25,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const block = await requireWriteAdminOrResponse();
+  if (block) return block;
   const { id } = await params;
 
   let body: unknown;

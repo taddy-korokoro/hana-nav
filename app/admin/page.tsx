@@ -5,7 +5,6 @@ import { ArrowRightIcon } from '@/components/layout/icons';
 import { COPY } from '@/lib/constants/copy';
 import { getAdminDashboardStats } from '@/lib/queries/admin';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.dashboard.metaTitle,

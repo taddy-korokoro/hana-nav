@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { spotTag } from '@/lib/cacheTags';
 import { containsNgWord } from '@/lib/ng-words';
 import { createClient } from '@/lib/supabase/server';
 import { parseReviewBody } from '@/lib/utils/reviewValidator';
@@ -68,7 +69,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'upsert_failed' }, { status: 500 });
   }
 
-  revalidatePath(`/spots/${spotId}`);
+  // スポット詳細ページの 'use cache' ブロック（loadSpotBundle、cacheLife: hours）を即時無効化する。
+  // Next.js 16 cacheComponents では profile（第 2 引数）が必須で、対象ブロックの cacheLife に合わせる。
+  revalidateTag(spotTag(spotId), 'hours');
   revalidatePath('/mypage/reviews');
   revalidatePath('/mypage');
 

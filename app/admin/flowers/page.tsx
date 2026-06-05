@@ -1,12 +1,14 @@
+import { Search, X } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Fragment } from 'react';
 import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { DeleteFlowerDialog } from '@/app/admin/flowers/_components/delete-flower-dialog';
+import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
 import { formatSeasonRange } from '@/lib/utils/seasonUtils';
-import { listAdminFlowers } from '@/lib/queries/admin';
-
-export const dynamic = 'force-dynamic';
+import { type AdminFlowerRow, listAdminFlowers } from '@/lib/queries/admin';
+import { groupItemsByKana } from '@/lib/queries/flowers';
 
 export const metadata: Metadata = {
   title: COPY.admin.flowers.list.metaTitle,
@@ -26,6 +28,8 @@ export default async function AdminFlowersPage({
   const q = sp.q?.trim() || undefined;
 
   const flowers = await listAdminFlowers({ q });
+  const isSearching = (q ?? '').length > 0;
+  const kanaGroups = isSearching ? [] : groupItemsByKana(flowers, (f) => f.nameKana);
 
   const c = COPY.admin.flowers.list;
   const filters = c.filters;
@@ -46,36 +50,64 @@ export default async function AdminFlowersPage({
         }
       />
 
+      {/* 検索は読み取りなので data-allow-guest を付与してゲスト時の CSS 無効化から exempt する。 */}
       <form
         method="get"
-        className="mt-8 grid grid-cols-1 gap-3 rounded-card border border-line bg-white p-4 md:grid-cols-[2fr_auto_auto]"
+        role="search"
+        className="mt-8 flex items-center gap-2 rounded-card-lg border border-line bg-white p-2 shadow-sm transition-colors focus-within:border-line-strong"
       >
-        <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-ink-muted">{filters.q}</span>
-          <input
-            name="q"
-            defaultValue={q ?? ''}
-            placeholder={filters.qPlaceholder}
-            className="w-full rounded-card border border-line bg-white px-3 py-2 text-sm"
-          />
-        </label>
-        <div className="flex items-end gap-2">
-          <button
-            type="submit"
-            className="rounded-pill bg-ink px-4 py-2 text-sm font-medium text-white transition hover:bg-ink/85"
-          >
-            {filters.apply}
-          </button>
+        <Search className="ml-3 size-5 shrink-0 text-ink-muted" aria-hidden />
+        <input
+          type="search"
+          name="q"
+          defaultValue={q ?? ''}
+          placeholder={filters.qPlaceholder}
+          aria-label={filters.q}
+          data-allow-guest
+          className="w-full bg-transparent py-3 text-base outline-none placeholder:text-ink-faint"
+        />
+        <Button type="submit" size="md" data-allow-guest className="shrink-0">
+          <Search className="size-4" aria-hidden />
+          {filters.apply}
+        </Button>
+      </form>
+
+      {isSearching && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <span className="text-sm text-ink-muted">
+            「{q}」の検索結果 {flowers.length} 件
+          </span>
           <Link
             href="/admin/flowers"
-            className="rounded-pill border border-line bg-white px-4 py-2 text-sm text-ink-muted transition hover:border-line-strong hover:bg-surface-2 hover:text-ink"
+            className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-ink"
           >
+            <X className="size-3.5" aria-hidden />
             {filters.reset}
           </Link>
         </div>
-      </form>
+      )}
 
-      <div className="mt-8 overflow-x-auto rounded-card border border-line bg-white">
+      {/* 未検索時のみ表示する 50 音インデックス。pill クリックで対応セクション行にアンカー遷移。 */}
+      {!isSearching && kanaGroups.length > 0 && (
+        <nav
+          aria-label={COPY.flowersList.indexAria}
+          className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1 md:-mx-6 md:px-6 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+        >
+          {kanaGroups.map((g) => (
+            <Link
+              key={g.label}
+              href={`#kana-${g.label}`}
+              data-allow-guest
+              className="shrink-0 rounded-pill border border-line bg-white px-4 py-2 text-sm transition hover:border-ink hover:bg-ink hover:text-white"
+            >
+              <span className="font-serif text-base font-semibold">{g.label}</span>
+              <span className="ml-2 text-xs text-ink-faint">{g.items.length}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      <div className="mt-6 overflow-x-auto rounded-card border border-line bg-white">
         <table className="w-full min-w-[720px] table-auto text-left text-sm">
           <thead className="bg-surface-2 text-xs uppercase tracking-wider text-ink-muted">
             <tr>
@@ -96,79 +128,95 @@ export default async function AdminFlowersPage({
                 </td>
               </tr>
             )}
-            {flowers.map((f) => {
-              const visible = f.aliases.slice(0, 3);
-              const more = f.aliases.length - visible.length;
-              return (
-                <tr key={f.id} className="border-t border-line">
-                  <td className="px-4 py-3 align-top">
-                    <Link
-                      href={`/admin/flowers/${f.id}`}
-                      className="font-medium text-ink hover:text-brand"
-                    >
-                      {f.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 align-top text-ink-muted">{f.nameKana ?? ''}</td>
-                  <td className="px-4 py-3 align-top">
-                    {visible.length === 0 ? (
-                      <span className="text-xs text-ink-faint">—</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {visible.map((a) => (
-                          <span
-                            key={a}
-                            className="rounded-pill border border-line bg-surface-2 px-2 py-0.5 text-xs text-ink-muted"
-                          >
-                            {a}
-                          </span>
-                        ))}
-                        {more > 0 && (
-                          <span className="rounded-pill border border-line bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
-                            {c.aliasMore(more)}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 align-top text-ink-muted">
-                    {f.defaultSeasonStart != null && f.defaultSeasonEnd != null
-                      ? formatSeasonRange(f.defaultSeasonStart, f.defaultSeasonEnd)
-                      : c.seasonUnset}
-                  </td>
-                  <td className="px-4 py-3 align-top text-ink-muted">
-                    {f.spotCount}
-                    {c.spotCountSuffix}
-                  </td>
-                  <td className="px-4 py-3 align-top text-xs text-ink-faint">
-                    {formatDate(f.updatedAt)}
-                  </td>
-                  <td className="px-4 py-3 align-top">
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <Link
-                        href={`/admin/flowers/${f.id}`}
-                        className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2"
+
+            {isSearching
+              ? flowers.map((f) => <FlowerRow key={f.id} f={f} />)
+              : kanaGroups.map((g) => (
+                  <Fragment key={g.label}>
+                    <tr id={`kana-${g.label}`} className="scroll-mt-24 bg-surface-2/60">
+                      <td
+                        colSpan={7}
+                        className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-ink-muted"
                       >
-                        {c.actions.edit}
-                      </Link>
-                      <DeleteFlowerDialog
-                        flowerId={f.id}
-                        flowerName={f.name}
-                        triggerLabel={c.actions.delete}
-                        title={c.actions.deleteDialogTitle}
-                        description={c.actions.deleteDialogDescription}
-                        confirmLabel={c.actions.deleteDialogConfirm}
-                        cancelLabel={c.actions.deleteDialogCancel}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                        <span className="font-serif text-sm text-ink">{g.label}</span>
+                        <span className="ml-2 text-ink-faint">{g.items.length} 件</span>
+                      </td>
+                    </tr>
+                    {g.items.map((f) => (
+                      <FlowerRow key={f.id} f={f} />
+                    ))}
+                  </Fragment>
+                ))}
           </tbody>
         </table>
       </div>
     </section>
+  );
+}
+
+function FlowerRow({ f }: { f: AdminFlowerRow }) {
+  const c = COPY.admin.flowers.list;
+  const visible = f.aliases.slice(0, 3);
+  const more = f.aliases.length - visible.length;
+  return (
+    <tr className="border-t border-line">
+      <td className="px-4 py-3 align-top">
+        <Link href={`/admin/flowers/${f.id}`} className="font-medium text-ink hover:text-brand">
+          {f.name}
+        </Link>
+      </td>
+      <td className="px-4 py-3 align-top text-ink-muted">{f.nameKana ?? ''}</td>
+      <td className="px-4 py-3 align-top">
+        {visible.length === 0 ? (
+          <span className="text-xs text-ink-faint">—</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {visible.map((a) => (
+              <span
+                key={a}
+                className="rounded-pill border border-line bg-surface-2 px-2 py-0.5 text-xs text-ink-muted"
+              >
+                {a}
+              </span>
+            ))}
+            {more > 0 && (
+              <span className="rounded-pill border border-line bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
+                {c.aliasMore(more)}
+              </span>
+            )}
+          </div>
+        )}
+      </td>
+      <td className="px-4 py-3 align-top text-ink-muted">
+        {f.defaultSeasonStart != null && f.defaultSeasonEnd != null
+          ? formatSeasonRange(f.defaultSeasonStart, f.defaultSeasonEnd)
+          : c.seasonUnset}
+      </td>
+      <td className="px-4 py-3 align-top text-ink-muted">
+        {f.spotCount}
+        {c.spotCountSuffix}
+      </td>
+      <td className="px-4 py-3 align-top text-xs text-ink-faint">{formatDate(f.updatedAt)}</td>
+      <td className="px-4 py-3 align-top">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Link
+            href={`/admin/flowers/${f.id}`}
+            className="rounded-pill border border-line bg-white px-3 py-1 text-xs transition hover:border-line-strong hover:bg-surface-2"
+          >
+            {c.actions.edit}
+          </Link>
+          <DeleteFlowerDialog
+            flowerId={f.id}
+            flowerName={f.name}
+            triggerLabel={c.actions.delete}
+            title={c.actions.deleteDialogTitle}
+            description={c.actions.deleteDialogDescription}
+            confirmLabel={c.actions.deleteDialogConfirm}
+            cancelLabel={c.actions.deleteDialogCancel}
+          />
+        </div>
+      </td>
+    </tr>
   );
 }
 

@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 
 /**
  * 単一花マスター行をリクエスト内でメモ化して返す。
@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
  * 詳細・メタ両方の用途を満たすよう SELECT は両者の和集合（updated_at まで含む）。
  */
 const fetchFlowerRow = cache(async (id: string) => {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   return supabase
     .from('flowers')
     .select(
@@ -89,7 +89,7 @@ export type FlowerDetailBundle = {
  * 並びは `name_kana NULLS LAST → name`。50 音インデックスは UI 側で `groupFlowersByKana` に流す。
  */
 export async function getFlowerList(): Promise<FlowerListItem[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: flowers, error } = await supabase
     .from('flowers')
@@ -209,7 +209,7 @@ export async function getFlowerMeta(id: string): Promise<{
   }
   if (!data) return null;
 
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: imageRow } = await supabase
     .from('images')
@@ -245,7 +245,7 @@ export async function getFlowerMeta(id: string): Promise<{
 }
 
 async function fetchAliases(flowerId: string): Promise<FlowerAlias[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('flower_aliases')
     .select('id, alias')
@@ -261,7 +261,7 @@ async function fetchAliases(flowerId: string): Promise<FlowerAlias[]> {
 }
 
 async function fetchImages(flowerId: string): Promise<FlowerImage[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('images')
     .select('id, url, caption, display_order')
@@ -283,7 +283,7 @@ async function fetchImages(flowerId: string): Promise<FlowerImage[]> {
 }
 
 async function fetchSpotsByFlower(flowerId: string): Promise<FlowerSpot[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data, error } = await supabase
     .from('spot_flowers')
@@ -387,7 +387,7 @@ export async function findFlowerIdByAlias(alias: string): Promise<string | null>
   const trimmed = alias.trim();
   if (!trimmed) return null;
 
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   const { data: aliasRow, error: aliasError } = await supabase
     .from('flower_aliases')
@@ -461,7 +461,7 @@ const KANA_RANGES: Record<Exclude<KanaGroupLabel, '他'>, [number, number]> = {
   わ: [0x308e, 0x3093], // ゎ〜ん
 };
 
-function classifyKana(nameKana: string | null): KanaGroupLabel {
+export function classifyKana(nameKana: string | null): KanaGroupLabel {
   if (!nameKana) return '他';
   // 先頭の小書き文字（ぁ・ぃ 等）も大文字側にまとめたいので codePointAt をそのまま使う
   const code = nameKana.codePointAt(0);
@@ -479,11 +479,22 @@ function classifyKana(nameKana: string | null): KanaGroupLabel {
  * 並び順は `KANA_GROUP_LABELS` のとおり。空グループは除外する。
  */
 export function groupFlowersByKana(flowers: FlowerListItem[]): FlowerKanaGroup[] {
-  const buckets = new Map<KanaGroupLabel, FlowerListItem[]>();
+  return groupItemsByKana(flowers, (f) => f.nameKana).map(({ label, items }) => ({
+    label,
+    flowers: items,
+  }));
+}
+
+/** `nameKana` を持つ任意の配列を 50 音行ラベルでグルーピングする汎用版。 */
+export function groupItemsByKana<T>(
+  items: T[],
+  getKana: (item: T) => string | null,
+): Array<{ label: KanaGroupLabel; items: T[] }> {
+  const buckets = new Map<KanaGroupLabel, T[]>();
   for (const label of KANA_GROUP_LABELS) buckets.set(label, []);
-  for (const f of flowers) buckets.get(classifyKana(f.nameKana))!.push(f);
+  for (const item of items) buckets.get(classifyKana(getKana(item)))!.push(item);
   return KANA_GROUP_LABELS.map((label) => ({
     label,
-    flowers: buckets.get(label) ?? [],
-  })).filter((g) => g.flowers.length > 0);
+    items: buckets.get(label) ?? [],
+  })).filter((g) => g.items.length > 0);
 }

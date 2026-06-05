@@ -6,7 +6,6 @@ import { AiUsageChart } from '@/components/admin/AiUsageChart';
 import { COPY } from '@/lib/constants/copy';
 import { ESTIMATED_YEN_PER_CALL, getAiUsageStats } from '@/lib/queries/admin-ai-usage';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: COPY.admin.aiUsage.metaTitle,

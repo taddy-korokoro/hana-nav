@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { updateUserAdmin } from '@/lib/queries/admin-users';
-import { requireAdmin } from '@/lib/utils/requireAdmin';
+import { requireWriteAdmin } from '@/lib/utils/requireAdmin';
 
 /**
  * `/admin/users` 系で使う Server Actions。
@@ -20,7 +20,7 @@ export async function changeRoleAction(
   _prev: UserActionState,
   formData: FormData,
 ): Promise<UserActionState> {
-  const me = await requireAdmin();
+  const me = await requireWriteAdmin();
   const userId = String(formData.get('user_id') ?? '');
   const nextRole = String(formData.get('next_role') ?? '');
 
@@ -45,7 +45,7 @@ export async function setBanAction(
   _prev: UserActionState,
   formData: FormData,
 ): Promise<UserActionState> {
-  const me = await requireAdmin();
+  const me = await requireWriteAdmin();
   const userId = String(formData.get('user_id') ?? '');
   const ban = formData.get('ban') === 'true';
 

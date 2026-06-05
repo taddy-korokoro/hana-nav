@@ -2,8 +2,10 @@ import { Search, X } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { FlowerCard } from '@/components/flowers/FlowerCard';
 import { FlowerKanaIndex } from '@/components/flowers/FlowerKanaIndex';
+import { ScrollToTopButton } from '@/components/flowers/ScrollToTopButton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { COPY } from '@/lib/constants/copy';
@@ -14,16 +16,15 @@ import {
   groupFlowersByKana,
 } from '@/lib/queries/flowers';
 
-// flowers マスターは管理画面からの編集が反映されるべきなので動的レンダリング。
-// （MVP では更新頻度は低いが、編集後すぐに反映されないと混乱を招くため）
-export const dynamic = 'force-dynamic';
+// TODO: searchParams（alias / q）が必須のため `prefetch: 'static'` には乗らない。
+// `prefetch: 'runtime'` + samples 化を検討する余地あり。
 
 export const metadata: Metadata = {
   title: COPY.flowersList.metaTitle,
   description: COPY.flowersList.metaDescription,
 };
 
-type SearchParams = Promise<{ alias?: string | string[]; q?: string | string[] }>;
+type FlowersSearchParams = Promise<{ alias?: string | string[]; q?: string | string[] }>;
 
 /** 名前またはふりがなに query（部分一致・大文字小文字非区別）を含む花だけを返す */
 function filterFlowersByKeyword(flowers: FlowerListItem[], query: string): FlowerListItem[] {
@@ -35,7 +36,40 @@ function filterFlowersByKeyword(flowers: FlowerListItem[], query: string): Flowe
   });
 }
 
-export default async function FlowersPage({ searchParams }: { searchParams: SearchParams }) {
+/**
+ * 花の種類一覧ページ。
+ *
+ * チケット 22 Step 2: searchParams / getFlowerList / findFlowerIdByAlias を
+ * Suspense 境界内側に押し下げ、page 本体は sync で静的ヘッダーだけを描く。
+ */
+export default function FlowersPage({ searchParams }: { searchParams: FlowersSearchParams }) {
+  return (
+    <div className="mx-auto max-w-6xl px-6 pb-24">
+      <section className="pb-6 pt-12 md:pt-16">
+        <Breadcrumb
+          className="mb-4"
+          items={[{ label: COPY.nav.labels.home, href: '/' }, { label: COPY.nav.labels.flowers }]}
+        />
+        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
+          {COPY.flowersList.eyebrow}
+        </p>
+        <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-5xl">
+          {COPY.flowersList.title}
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-7 text-ink-muted">
+          {COPY.flowersList.description}
+        </p>
+      </section>
+
+      <Suspense fallback={<FlowersContentSkeleton />}>
+        <FlowersContent searchParams={searchParams} />
+      </Suspense>
+      <ScrollToTopButton />
+    </div>
+  );
+}
+
+async function FlowersContent({ searchParams }: { searchParams: FlowersSearchParams }) {
   const sp = await searchParams;
   const aliasRaw = Array.isArray(sp.alias) ? sp.alias[0] : sp.alias;
   const aliasQuery = aliasRaw?.trim() ?? '';
@@ -56,23 +90,7 @@ export default async function FlowersPage({ searchParams }: { searchParams: Sear
   const groups = groupFlowersByKana(filtered);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24">
-      <section className="pb-6 pt-12 md:pt-16">
-        <Breadcrumb
-          className="mb-4"
-          items={[{ label: COPY.nav.labels.home, href: '/' }, { label: COPY.nav.labels.flowers }]}
-        />
-        <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
-          {COPY.flowersList.eyebrow}
-        </p>
-        <h1 className="mt-3 font-serif text-4xl font-bold leading-[1.25] tracking-tight md:text-5xl">
-          {COPY.flowersList.title}
-        </h1>
-        <p className="mt-3 max-w-xl text-sm leading-7 text-ink-muted">
-          {COPY.flowersList.description}
-        </p>
-      </section>
-
+    <>
       {aliasMissed && (
         <div className="mb-6 rounded-card border border-line bg-white p-5">
           <p className="font-serif text-base font-bold">
@@ -160,8 +178,9 @@ export default async function FlowersPage({ searchParams }: { searchParams: Sear
                 key={group.label}
                 id={`kana-${group.label}`}
                 aria-label={COPY.flowersList.sectionAria(group.label)}
-                // anchor ジャンプ時にヘッダーで隠れないようスクロール余白を持たせる
-                className="scroll-mt-24 pt-12"
+                // anchor ジャンプ時に h2 がヘッダー直下に来るよう余白を margin 側に置く。
+                // pt-* だと section box の top（= 余白の上端）が着地位置になり h2 がさらに下にズレる。
+                className="mt-12 scroll-mt-24"
               >
                 <div className="flex items-baseline gap-3">
                   <h2 className="font-serif text-2xl font-bold tracking-tight">{group.label}</h2>
@@ -180,6 +199,22 @@ export default async function FlowersPage({ searchParams }: { searchParams: Sear
           )}
         </>
       )}
-    </div>
+    </>
+  );
+}
+
+function FlowersContentSkeleton() {
+  return (
+    <>
+      <div className="mb-4 h-14 animate-pulse rounded-card-lg bg-surface-2" />
+      <div className="border-t border-line pt-6">
+        <div className="h-6 w-32 animate-pulse rounded bg-surface-2" />
+      </div>
+      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="aspect-square animate-pulse rounded-card bg-surface-2" />
+        ))}
+      </div>
+    </>
   );
 }
