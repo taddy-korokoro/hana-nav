@@ -97,6 +97,10 @@ export const searchBooksByFlowerName = cache(
 /**
  * 花の名前で「種・苗・球根」を商品検索する。
  * 園芸ジャンル ID（100005: 花・ガーデン・DIY）配下に絞ることでノイズを減らす。
+ *
+ * keyword は花名のみ。spec の `<花名> 種 OR 苗` 表記は API が OR 検索非対応のため、
+ * 過去実装の `<花名> 種 苗`（3 単語 AND）だとほぼ全て弾かれていた（タイトルに
+ * 種 と 苗 を両方含む商品は稀）。genreId と sort で実質的な絞り込みを担保する。
  */
 export const searchProductsByFlowerName = cache(
   async (flowerName: string): Promise<AffiliateProduct[]> => {
@@ -105,7 +109,7 @@ export const searchProductsByFlowerName = cache(
     const res = await rakutenFetch<ProductSearchApiResponse>(
       'IchibaItem/Search/20220601',
       {
-        keyword: `${flowerName} 種 苗`,
+        keyword: flowerName,
         genreId: '100005',
         hits: 4,
         imageFlag: 1,
