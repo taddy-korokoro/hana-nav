@@ -65,8 +65,10 @@ export async function listContactMessages(filter?: {
 
   const { data, error } = await query;
   if (error) {
-    console.warn('[contact] listContactMessages failed', error);
-    return [];
+    // CLAUDE.md「データ取得エラーは error.tsx で境界を作る。try/catch で握りつぶして
+    // 空配列を返す実装はしない（管理画面では特に）」に従い throw する。
+    // 受け側は app/admin/contact/error.tsx。
+    throw new Error(`[contact] listContactMessages failed: ${error.message}`);
   }
 
   return (data ?? []).map((row) => ({
@@ -95,8 +97,9 @@ export async function getContactMessageDetail(id: string): Promise<ContactMessag
     .maybeSingle();
 
   if (error) {
-    console.warn('[contact] getContactMessageDetail failed', error);
-    return null;
+    // DB エラーを null に潰すと呼び出し元の `if (!detail) notFound()` で
+    // 500 → 404 化け。error.tsx で受ける形に統一する。
+    throw new Error(`[contact] getContactMessageDetail failed: ${error.message}`);
   }
   if (!data) return null;
 
@@ -135,8 +138,7 @@ export async function listContactReplies(contactMessageId: string): Promise<Cont
     .order('sent_at', { ascending: false });
 
   if (error) {
-    console.warn('[contact] listContactReplies failed', error);
-    return [];
+    throw new Error(`[contact] listContactReplies failed: ${error.message}`);
   }
   return (data ?? []).map((row) => ({
     id: row.id,
