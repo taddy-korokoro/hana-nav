@@ -3,6 +3,10 @@ import { IdentifyUploader } from '@/components/identify/IdentifyUploader';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 
+// IdentifyUploader は Client Component。Server 側は静的シェルだが、
+// 共通レイアウトの cookies 読みを許容するため disableValidation を付ける。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 export const metadata: Metadata = {
   title: COPY.identify.metaTitle,
   description: COPY.identify.metaDescription,
