@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 
+// 完全静的だが、共通レイアウト（SiteHeader の UserNavIsland 等）が cookies を読むため
+// 他ページと同様 disableValidation を付ける。プリフェッチ自体は有効。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 const COPY_PAGE = COPY.staticPages.terms;
 
 export const metadata: Metadata = {

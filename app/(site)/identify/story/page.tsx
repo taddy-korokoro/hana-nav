@@ -3,6 +3,10 @@ import { StoryCardGenerator } from '@/components/identify/StoryCardGenerator';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { COPY } from '@/lib/constants/copy';
 
+// StoryCardGenerator は sessionStorage を読む Client Component。Server 側は静的シェルだが、
+// 共通レイアウトの cookies 読みを許容するため disableValidation を付ける。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
+
 export const metadata: Metadata = {
   title: COPY.identify.storyCard.metaTitle,
   // ユーザー写真と判定結果は sessionStorage 経由のクライアント状態のためクロールさせない。
