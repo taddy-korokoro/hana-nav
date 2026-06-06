@@ -63,11 +63,13 @@ export default async function AdminContactPage({ searchParams }: { searchParams:
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line bg-surface-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
               <tr>
-                <th className="px-4 py-3">{c.columns.received}</th>
-                <th className="px-4 py-3">{c.columns.name}</th>
-                <th className="px-4 py-3">{c.columns.category}</th>
-                <th className="px-4 py-3">{c.columns.status}</th>
-                <th className="hidden px-4 py-3 md:table-cell">{c.columns.preview}</th>
+                <th className="whitespace-nowrap px-4 py-3">{c.columns.received}</th>
+                <th className="whitespace-nowrap px-4 py-3">{c.columns.name}</th>
+                <th className="whitespace-nowrap px-4 py-3">{c.columns.category}</th>
+                <th className="whitespace-nowrap px-4 py-3">{c.columns.status}</th>
+                <th className="hidden whitespace-nowrap px-4 py-3 md:table-cell">
+                  {c.columns.preview}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -128,7 +130,7 @@ function StatusBadge({ status }: { status: ContactStatus }) {
         : 'bg-success/10 text-success';
   return (
     <span
-      className={`inline-flex items-center rounded-pill px-2.5 py-1 text-xs font-medium ${className}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-pill px-2.5 py-1 text-xs font-medium ${className}`}
     >
       {label}
     </span>
