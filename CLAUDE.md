@@ -12,7 +12,7 @@ npm run build    # プロダクションビルド
 npm run lint     # ESLint実行
 ```
 
-テストフレームワークは未設定。
+テストは **Instant Navigation の回帰検知** のみ Playwright + `@next/playwright` の `instant()` ヘルパで `e2e/` に書く（`npm run test:e2e` / UI モードは `npm run test:e2e:ui`）。ユニットテスト・コンポーネントテストは未設定。詳細は `docs/22_instant-navigation.md`。
 
 ## 重要：Next.jsバージョンについて
 
