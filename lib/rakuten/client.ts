@@ -92,6 +92,12 @@ export async function rakutenFetch<T>(
 
   // unstable_cache でキャッシュ。キーは endpoint + params の安定化文字列。
   // referer / 認証情報は cache key に含めない（同じ endpoint + params なら同じ結果が返るはず）。
+  //
+  // 注: `unstable_cache` の公式推奨はモジュールスコープで 1 度だけ定義する形だが、
+  // `revalidate` / `tags` を呼び出し側（books は 24h、products は 12h、hotels は 1h）で
+  // 動的に差し替えたいので per-call で生成する。現状の Next.js 16 は keyParts ベースの
+  // キャッシュ識別のため動作するが、将来「関数の参照同一性」を見る実装に変わったら
+  // この方針は再検討（その場合は Map<revalidate+tagsKey, cachedFn> で memoize する）。
   const cached = unstable_cache(
     async () =>
       fetchWithReferer<T>({
@@ -100,7 +106,7 @@ export async function rakutenFetch<T>(
         endpoint,
         timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       }),
-    ['rakuten', endpoint, JSON.stringify(params)],
+    ['rakuten', endpoint, stableStringify(params)],
     {
       revalidate: options.revalidate,
       tags: options.tags,
@@ -212,6 +218,16 @@ function handleResponse<T>({
   }
 
   return data;
+}
+
+/**
+ * unstable_cache の keyParts に渡すため、`params` をキー順非依存な文字列にシリアライズする。
+ * 素の `JSON.stringify(params)` だと挿入順に依存し、呼び出し元の書き方が変わるだけで
+ * キャッシュミスが発生し得るため、キーをアルファベット順に並べてから直列化する。
+ */
+function stableStringify(params: Record<string, string | number>): string {
+  const sortedKeys = Object.keys(params).sort();
+  return JSON.stringify(sortedKeys.map((key) => [key, params[key]]));
 }
 
 /**
