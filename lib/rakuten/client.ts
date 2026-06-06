@@ -1,14 +1,20 @@
 /**
  * 楽天ウェブサービス共通 fetch ラッパ。
  *
- * - サーバー専用。`RAKUTEN_APPLICATION_ID` / `RAKUTEN_AFFILIATE_ID` は Server Component /
- *   Route Handler / Server Action 以外から触らないこと（CLAUDE.md セキュリティ境界）。
+ * - サーバー専用。`RAKUTEN_APPLICATION_ID` / `RAKUTEN_ACCESS_KEY` / `RAKUTEN_AFFILIATE_ID` は
+ *   Server Component / Route Handler / Server Action 以外から触らないこと（CLAUDE.md セキュリティ境界）。
  * - 失敗時は `null` を返す。例外を上に投げない（UI 側が「広告枠を出さない」フォールバックに倒すため）。
  * - キャッシュは fetch 標準の `next: { revalidate, tags }` で制御する。1 秒 1 リクエスト
  *   の楽天側制限に当たらないよう、必ず呼び出し側で revalidate を付ける。
+ *
+ * 2026-05-14 楽天ウェブサービス API 移行に対応:
+ * - 旧ドメイン `app.rakuten.co.jp/services/api` 廃止 → 新ドメイン `openapi.rakuten.co.jp`
+ * - 認証パラメータに `accessKey` が必須化（旧来の `applicationId` のみは不可）
+ * - endpoint パスは API ごとに prefix が異なるため、呼び出し側で完全パスを渡す
+ *   （`ichibams/api/...` / `services/api/...` / `engine/api/...`）
  */
 
-const RAKUTEN_BASE_URL = 'https://app.rakuten.co.jp/services/api';
+const RAKUTEN_BASE_URL = 'https://openapi.rakuten.co.jp';
 const DEFAULT_TIMEOUT_MS = 5000;
 
 export type RakutenFetchOptions = {
@@ -22,29 +28,36 @@ export type RakutenFetchOptions = {
 
 /**
  * 楽天ウェブサービスの GET エンドポイントを叩く。
- * `applicationId` と `affiliateId` は自動付与する。
+ * `applicationId` / `accessKey` / `affiliateId` は自動付与する。
  *
- * @param endpoint 例: 'BooksTotalSearch/20170404'
- * @param params クエリパラメータ（applicationId / affiliateId は自動付与のため不要）
+ * @param endpoint API ごとの prefix を含む完全な相対パス（先頭 `/` なし）。
+ *   例: 'ichibams/api/IchibaItem/Search/20220601'
+ * @param params クエリパラメータ（applicationId / accessKey / affiliateId は自動付与のため不要）
  */
 export async function rakutenFetch<T>(
   endpoint: string,
   params: Record<string, string | number>,
   options: RakutenFetchOptions,
 ): Promise<T | null> {
-  const applicationId = process.env.RAKUTEN_APPLICATION_ID;
-  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
+  // env コピペ事故（末尾改行・前後空白）を構造的に潰すため trim する。
+  const applicationId = process.env.RAKUTEN_APPLICATION_ID?.trim();
+  const accessKey = process.env.RAKUTEN_ACCESS_KEY?.trim();
+  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID?.trim();
 
-  if (!applicationId) {
+  if (!applicationId || !accessKey) {
     // 「広告枠だけ静かに出ない」フォールバックは維持しつつ、本番でもログは残す。
     // env を設定したつもりでも scope 違い・typo・deploy 再ビルド漏れで読めていない
     // ケースが本番運用で起きるため、Functions ログから即特定できるようにする。
-    console.warn('[rakuten] RAKUTEN_APPLICATION_ID is not set. Skipping API call.', { endpoint });
+    console.warn(
+      '[rakuten] RAKUTEN_APPLICATION_ID or RAKUTEN_ACCESS_KEY is not set. Skipping API call.',
+      { endpoint, hasApplicationId: Boolean(applicationId), hasAccessKey: Boolean(accessKey) },
+    );
     return null;
   }
 
   const url = new URL(`${RAKUTEN_BASE_URL}/${endpoint}`);
   url.searchParams.set('applicationId', applicationId);
+  url.searchParams.set('accessKey', accessKey);
   url.searchParams.set('format', 'json');
   if (affiliateId) {
     url.searchParams.set('affiliateId', affiliateId);
