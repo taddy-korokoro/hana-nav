@@ -44,13 +44,14 @@
 - `app/(site)/privacy/page.tsx` — 「楽天アフィリエイトプログラム参加」の条項を追記
 - `lib/constants/copy.ts` — 各セクションの見出し・空状態・広告ラベルを追加
 - `docs/specs/operations.md` — 収益化セクションを追記
-- `.env.local` / `.env.example` — `RAKUTEN_APPLICATION_ID` / `RAKUTEN_AFFILIATE_ID` を追加
+- `.env.local` / `.env.example` — `RAKUTEN_APPLICATION_ID` / `RAKUTEN_ACCESS_KEY` / `RAKUTEN_AFFILIATE_ID` を追加
 - `README.md` — 環境変数説明を追記
 
 ## 環境変数
 
 ```bash
-RAKUTEN_APPLICATION_ID=    # 楽天ウェブサービス Application ID（サーバー専用）
+RAKUTEN_APPLICATION_ID=    # 楽天ウェブサービス アプリケーション ID（サーバー専用）
+RAKUTEN_ACCESS_KEY=        # 楽天ウェブサービス アクセスキー（2026-05-14 API 移行で必須化）
 RAKUTEN_AFFILIATE_ID=      # 楽天アフィリエイト ID（サーバー専用）
 ```
 
