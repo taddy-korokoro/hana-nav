@@ -1,10 +1,9 @@
-import { AffiliateBookCard } from '@/components/affiliate/AffiliateBookCard';
 import { AffiliateHotelCard } from '@/components/affiliate/AffiliateHotelCard';
 import { AffiliateLink } from '@/components/affiliate/AffiliateLink';
 import { AffiliateProductCard } from '@/components/affiliate/AffiliateProductCard';
 import { AffiliateSectionLayout } from '@/components/affiliate/AffiliateSectionLayout';
 import { COPY } from '@/lib/constants/copy';
-import type { AffiliateBook, AffiliateHotel, AffiliateProduct } from '@/lib/queries/rakuten';
+import type { AffiliateHotel, AffiliateProduct } from '@/lib/queries/rakuten';
 import { DemoNav } from '../_components/demo-nav';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
@@ -15,41 +14,6 @@ export const metadata = {
 
 // 楽天 API キーが無い環境でも UI を確認できるよう、ハードコードしたサンプルでショーケースする。
 // 本番の API レスポンス形は lib/rakuten/types.ts と lib/queries/rakuten.ts を参照。
-const SAMPLE_BOOKS: AffiliateBook[] = [
-  {
-    id: 'book-1',
-    title: 'はじめての花図鑑 春夏編',
-    author: '山田 花子',
-    imageUrl: '',
-    affiliateUrl: 'https://books.rakuten.co.jp/',
-    price: 2200,
-  },
-  {
-    id: 'book-2',
-    title: '花の名前がわかる本',
-    author: '田中 太郎',
-    imageUrl: '',
-    affiliateUrl: 'https://books.rakuten.co.jp/',
-    price: 1650,
-  },
-  {
-    id: 'book-3',
-    title: '日本の野草図鑑',
-    author: '佐藤 緑',
-    imageUrl: '',
-    affiliateUrl: 'https://books.rakuten.co.jp/',
-    price: 3300,
-  },
-  {
-    id: 'book-4',
-    title: 'ガーデニング入門',
-    author: '鈴木 一郎',
-    imageUrl: '',
-    affiliateUrl: 'https://books.rakuten.co.jp/',
-    price: 1980,
-  },
-];
-
 const SAMPLE_PRODUCTS: AffiliateProduct[] = [
   {
     id: 'p-1',
@@ -170,21 +134,6 @@ export default function AffiliateDemoPage() {
         </section>
 
         <AffiliateSectionLayout
-          eyebrow={COPY.affiliate.books.eyebrow}
-          title={COPY.affiliate.books.title}
-          description={COPY.affiliate.books.description}
-          fallbackUrl={COPY.affiliate.books.fallbackUrl('ネモフィラ')}
-          empty={COPY.affiliate.books.empty}
-          isEmpty={false}
-        >
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {SAMPLE_BOOKS.map((book) => (
-              <AffiliateBookCard key={book.id} book={book} />
-            ))}
-          </div>
-        </AffiliateSectionLayout>
-
-        <AffiliateSectionLayout
           eyebrow={COPY.affiliate.products.eyebrow}
           title={COPY.affiliate.products.title}
           description={COPY.affiliate.products.description}
@@ -215,11 +164,11 @@ export default function AffiliateDemoPage() {
         </AffiliateSectionLayout>
 
         <AffiliateSectionLayout
-          eyebrow={COPY.affiliate.books.eyebrow}
+          eyebrow={COPY.affiliate.products.eyebrow}
           title="空状態のフォールバック"
           description="API 障害時 / 該当なし時はカード群の代わりに楽天検索リンクを出す。"
-          fallbackUrl={COPY.affiliate.books.fallbackUrl('珍しい花')}
-          empty={COPY.affiliate.books.empty}
+          fallbackUrl={COPY.affiliate.products.fallbackUrl('珍しい花')}
+          empty={COPY.affiliate.products.empty}
           isEmpty
         >
           {null}

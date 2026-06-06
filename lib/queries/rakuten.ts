@@ -10,27 +10,13 @@
 
 import { cache } from 'react';
 import { rakutenFetch } from '@/lib/rakuten/client';
-import type {
-  BooksSearchApiResponse,
-  HotelSearchApiResponse,
-  ProductSearchApiResponse,
-} from '@/lib/rakuten/types';
+import type { HotelSearchApiResponse, ProductSearchApiResponse } from '@/lib/rakuten/types';
 
-// 24h / 12h / 1h（仕様書のキャッシュ戦略テーブルに準拠）
-const REVALIDATE_BOOKS_SECONDS = 60 * 60 * 24;
+// 12h / 1h（仕様書のキャッシュ戦略テーブルに準拠）
 const REVALIDATE_PRODUCTS_SECONDS = 60 * 60 * 12;
 const REVALIDATE_HOTELS_SECONDS = 60 * 60;
 
 // ===== 共通の UI 向け型 =====
-
-export type AffiliateBook = {
-  id: string;
-  title: string;
-  author: string;
-  imageUrl: string;
-  affiliateUrl: string;
-  price: number;
-};
 
 export type AffiliateProduct = {
   id: string;
@@ -52,51 +38,6 @@ export type AffiliateHotel = {
   address: string;
   access: string | null;
 };
-
-// ===== 楽天ブックス検索 =====
-
-/**
- * 花の名前で「図鑑 / 写真集」をブックス検索する。
- * 1 リクエストにつき発火するのは初回のみ（revalidate と React.cache の二重化）。
- */
-export const searchBooksByFlowerName = cache(
-  async (flowerName: string): Promise<AffiliateBook[]> => {
-    if (!flowerName.trim()) return [];
-
-    const res = await rakutenFetch<BooksSearchApiResponse>(
-      'services/api/BooksTotal/Search/20170404',
-      {
-        keyword: `${flowerName} 図鑑`,
-        // 書籍ジャンル（趣味・実用 > ガーデニング・フラワー）。
-        // 完全一致でなくても良いため total search 側でフィルタしすぎないようにする。
-        booksGenreId: '001005',
-        hits: 4,
-        sort: 'sales',
-      },
-      {
-        revalidate: REVALIDATE_BOOKS_SECONDS,
-        tags: [`rakuten:books:${flowerName}`],
-      },
-    );
-
-    if (!res?.Items?.length) return [];
-
-    const mapped = res.Items.map(({ Item }) => ({
-      id: Item.itemUrl,
-      title: Item.title,
-      author: Item.author,
-      imageUrl: Item.largeImageUrl,
-      affiliateUrl: Item.affiliateUrl || Item.itemUrl,
-      price: Item.itemPrice,
-    }));
-    console.info('[rakuten:books] mapped', {
-      flowerName,
-      rawCount: res.Items.length,
-      mappedCount: mapped.length,
-    });
-    return mapped;
-  },
-);
 
 // ===== 楽天市場商品検索 =====
 
