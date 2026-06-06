@@ -36,11 +36,10 @@ export async function rakutenFetch<T>(
   const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
 
   if (!applicationId) {
-    // 開発初期や Vercel 環境変数未設定時に「広告枠だけ静かに出ない」状態にする。
-    // エラー扱いするとページ全体が落ちるので、ログだけ残す。
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[rakuten] RAKUTEN_APPLICATION_ID is not set. Skipping API call.');
-    }
+    // 「広告枠だけ静かに出ない」フォールバックは維持しつつ、本番でもログは残す。
+    // env を設定したつもりでも scope 違い・typo・deploy 再ビルド漏れで読めていない
+    // ケースが本番運用で起きるため、Functions ログから即特定できるようにする。
+    console.warn('[rakuten] RAKUTEN_APPLICATION_ID is not set. Skipping API call.', { endpoint });
     return null;
   }
 
@@ -67,19 +66,20 @@ export async function rakutenFetch<T>(
     });
 
     if (!res.ok) {
-      // 400: パラメータ不正（例: 該当なし）、429: レート制限、5xx: 楽天側障害
-      // いずれも UI 側で「広告枠を出さない」に倒したいので null 返却で吸収する。
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`[rakuten] ${endpoint} responded ${res.status}`);
-      }
+      // 400: パラメータ不正（例: 該当なし）、429: レート制限、5xx: 楽天側障害。
+      // いずれも UI は「広告枠を出さない」に倒すが、Functions ログには本番でも残す。
+      // 本文先頭は楽天 API のエラーメッセージ（error_description 等）を含むため、
+      // 切り分けに有用な範囲だけ抜き出す。
+      const body = await res.text().catch(() => '');
+      console.warn(`[rakuten] ${endpoint} responded ${res.status}`, {
+        body: body.slice(0, 300),
+      });
       return null;
     }
 
     return (await res.json()) as T;
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`[rakuten] ${endpoint} failed:`, error);
-    }
+    console.warn(`[rakuten] ${endpoint} failed:`, error);
     return null;
   } finally {
     clearTimeout(timer);

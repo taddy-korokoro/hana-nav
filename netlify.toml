@@ -1,0 +1,10 @@
+# Netlify ビルド設定。Dashboard 任せにせず repo で管理する。
+# Next.js 16 + cacheComponents は Approach A（`'use cache'` を no-op として割り切る）
+# で運用しているため、Next.js Runtime はデフォルト挙動のままで足りる。
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
