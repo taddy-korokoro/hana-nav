@@ -12,6 +12,11 @@
  * - 認証パラメータに `accessKey` が必須化（旧来の `applicationId` のみは不可）
  * - endpoint パスは API ごとに prefix が異なるため、呼び出し側で完全パスを渡す
  *   （`ichibams/api/...` / `services/api/...` / `engine/api/...`）
+ *
+ * 観測性方針: 本番でも request / response の全段にログを残す。
+ * 「200 だが Items 0 件」「上位フィルタで全件落ちた」等の死角を埋めるため、
+ * 4xx/5xx だけでなく **成功時の Items 件数** と、**0 件成功時はレスポンス本文** も残す。
+ * URL は applicationId / accessKey を `***` でマスクしてから出力する。
  */
 
 const RAKUTEN_BASE_URL = 'https://openapi.rakuten.co.jp';
@@ -55,12 +60,15 @@ export async function rakutenFetch<T>(
   const referrer = process.env.NEXT_PUBLIC_BASE_URL?.trim();
 
   if (!applicationId || !accessKey) {
-    // 「広告枠だけ静かに出ない」フォールバックは維持しつつ、本番でもログは残す。
-    // env を設定したつもりでも scope 違い・typo・deploy 再ビルド漏れで読めていない
-    // ケースが本番運用で起きるため、Functions ログから即特定できるようにする。
     console.warn(
       '[rakuten] RAKUTEN_APPLICATION_ID or RAKUTEN_ACCESS_KEY is not set. Skipping API call.',
-      { endpoint, hasApplicationId: Boolean(applicationId), hasAccessKey: Boolean(accessKey) },
+      {
+        endpoint,
+        hasApplicationId: Boolean(applicationId),
+        hasAccessKey: Boolean(accessKey),
+        applicationIdLen: applicationId?.length ?? 0,
+        accessKeyLen: accessKey?.length ?? 0,
+      },
     );
     return null;
   }
@@ -75,6 +83,13 @@ export async function rakutenFetch<T>(
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value));
   }
+
+  // 送信前ログ。URL から認証情報をマスクして残す。
+  console.info(`[rakuten] → ${endpoint}`, {
+    url: maskUrl(url.toString()),
+    referrer: referrer ?? null,
+    params,
+  });
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
@@ -97,17 +112,67 @@ export async function rakutenFetch<T>(
       // 本文先頭は楽天 API のエラーメッセージ（error_description 等）を含むため、
       // 切り分けに有用な範囲だけ抜き出す。
       const body = await res.text().catch(() => '');
-      console.warn(`[rakuten] ${endpoint} responded ${res.status}`, {
-        body: body.slice(0, 300),
+      console.warn(`[rakuten] ← ${endpoint} ${res.status}`, {
+        body: body.slice(0, 1000),
       });
       return null;
     }
 
-    return (await res.json()) as T;
+    // 200 だが Items が 0 件の場合のために、一度 text で読んで件数を確認してから JSON.parse する。
+    // hits=4-5 の小さいレスポンスなので二重 parse のコストは無視できる。
+    const text = await res.text();
+    let data: T;
+    try {
+      data = JSON.parse(text) as T;
+    } catch (parseError) {
+      console.warn(`[rakuten] ← ${endpoint} ${res.status} (JSON parse failed)`, {
+        body: text.slice(0, 1000),
+        parseError,
+      });
+      return null;
+    }
+
+    const itemsCount = countItems(data);
+    if (itemsCount === 0) {
+      // 0 件成功は「該当なし」かもしれないし「我々のクエリが間違っている」かもしれない。
+      // 切り分けのため body を残す（hits 上限を絞っているのでサイズは小さい）。
+      console.warn(`[rakuten] ← ${endpoint} 200 (0 items)`, {
+        body: text.slice(0, 1500),
+      });
+    } else {
+      console.info(`[rakuten] ← ${endpoint} 200 items=${itemsCount}`);
+    }
+
+    return data;
   } catch (error) {
     console.warn(`[rakuten] ${endpoint} failed:`, error);
     return null;
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * URL クエリ文字列の applicationId / accessKey / affiliateId を `***` でマスクする。
+ * ログ出力時に認証情報を漏らさないため。
+ */
+function maskUrl(url: string): string {
+  return url
+    .replace(/applicationId=[^&]+/, 'applicationId=***')
+    .replace(/accessKey=[^&]+/, 'accessKey=***')
+    .replace(/affiliateId=[^&]+/, 'affiliateId=***');
+}
+
+/**
+ * 各 API のレスポンス形を吸収して「中身の件数」を返す。
+ * - 楽天市場 / ブックス: `Items: [...]`
+ * - 楽天トラベル: `hotels: [...]`
+ * 該当キーが無ければ `null`（=不明）を返し、ログで「件数不明」と表示できるようにする。
+ */
+function countItems(data: unknown): number | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const obj = data as Record<string, unknown>;
+  if (Array.isArray(obj.Items)) return obj.Items.length;
+  if (Array.isArray(obj.hotels)) return obj.hotels.length;
+  return null;
 }

@@ -81,7 +81,7 @@ export const searchBooksByFlowerName = cache(
 
     if (!res?.Items?.length) return [];
 
-    return res.Items.map(({ Item }) => ({
+    const mapped = res.Items.map(({ Item }) => ({
       id: Item.itemUrl,
       title: Item.title,
       author: Item.author,
@@ -89,6 +89,12 @@ export const searchBooksByFlowerName = cache(
       affiliateUrl: Item.affiliateUrl || Item.itemUrl,
       price: Item.itemPrice,
     }));
+    console.info('[rakuten:books] mapped', {
+      flowerName,
+      rawCount: res.Items.length,
+      mappedCount: mapped.length,
+    });
+    return mapped;
   },
 );
 
@@ -123,14 +129,26 @@ export const searchProductsByFlowerName = cache(
 
     if (!res?.Items?.length) return [];
 
-    return res.Items.map(({ Item }) => ({
+    const mapped = res.Items.map(({ Item }) => ({
       id: Item.itemUrl,
       title: Item.itemName,
       shopName: Item.shopName,
       imageUrl: Item.mediumImageUrls[0]?.imageUrl ?? '',
       affiliateUrl: Item.affiliateUrl || Item.itemUrl,
       price: Item.itemPrice,
-    })).filter((item) => item.imageUrl);
+    }));
+    const filtered = mapped.filter((item) => item.imageUrl);
+    // 「rawCount は来ているのに filteredCount が 0」のケースを切り分けるために残す。
+    // imageUrl 抽出ミス（新 API でレスポンス構造が変わっている等）の検出に効く。
+    console.info('[rakuten:products] mapped', {
+      flowerName,
+      rawCount: res.Items.length,
+      mappedCount: mapped.length,
+      filteredCount: filtered.length,
+      sampleFirstItemKeys: res.Items[0]?.Item ? Object.keys(res.Items[0].Item) : null,
+      sampleFirstImageUrls: res.Items[0]?.Item?.mediumImageUrls ?? null,
+    });
+    return filtered;
   },
 );
 
@@ -182,6 +200,12 @@ export const searchHotelsNearSpot = cache(
         access: basic.access ?? null,
       });
     }
+    console.info('[rakuten:hotels] mapped', {
+      latitude,
+      longitude,
+      rawCount: res.hotels.length,
+      mappedCount: hotels.length,
+    });
     return hotels;
   },
 );
