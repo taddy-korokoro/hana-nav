@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { softDeleteContactAction, updateContactStatusAction } from '@/app/admin/contact/actions';
+import { ContactReplyForm } from '@/app/admin/contact/_components/ContactReplyForm';
 import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { COPY } from '@/lib/constants/copy';
-import { CONTACT_STATUSES, getContactMessageDetail } from '@/lib/queries/contact';
+import {
+  CONTACT_STATUSES,
+  getContactMessageDetail,
+  listContactReplies,
+} from '@/lib/queries/contact';
 import { requireAdmin } from '@/lib/utils/requireAdmin';
 
 export const metadata: Metadata = {
@@ -19,6 +24,7 @@ export default async function AdminContactDetailPage({ params }: { params: Param
   const { id } = await params;
   const detail = await getContactMessageDetail(id);
   if (!detail) notFound();
+  const replies = await listContactReplies(detail.id);
 
   const c = COPY.admin.contact.detail;
   const categoryLabels = COPY.admin.contact.categoryLabels;
@@ -60,6 +66,38 @@ export default async function AdminContactDetailPage({ params }: { params: Param
       <article className="mt-8 rounded-card border border-line bg-white p-5">
         <p className="whitespace-pre-line text-sm leading-7 text-ink">{detail.message}</p>
       </article>
+
+      <section className="mt-8 rounded-card border border-line bg-white p-5">
+        <h2 className="text-sm font-medium text-ink">{c.replySection}</h2>
+
+        <div className="mt-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">
+            {c.replyHistoryTitle}
+          </p>
+          {replies.length === 0 ? (
+            <p className="mt-2 text-xs text-ink-muted">{c.replyHistoryEmpty}</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {replies.map((r) => (
+                <li key={r.id} className="rounded-card border border-line bg-surface-2 p-4 text-sm">
+                  <p className="font-medium text-ink">{r.subject}</p>
+                  <p className="mt-1 text-xs text-ink-faint">
+                    {c.replySentLabel}: {formatDateTime(r.sentAt)}
+                  </p>
+                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-ink">{r.body}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="mt-6 border-t border-line pt-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">
+            {c.replyFormTitle}
+          </p>
+          <ContactReplyForm contactMessageId={detail.id} />
+        </div>
+      </section>
 
       <section className="mt-8 rounded-card border border-line bg-white p-5">
         <h2 className="text-sm font-medium text-ink">{c.statusSection}</h2>
