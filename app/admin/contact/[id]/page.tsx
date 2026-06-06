@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { softDeleteContactAction, updateContactStatusAction } from '@/app/admin/contact/actions';
+import { updateContactStatusAction } from '@/app/admin/contact/actions';
 import { ContactReplyForm } from '@/app/admin/contact/_components/ContactReplyForm';
 import { AdminPageHeader } from '@/app/admin/_components/admin-page-header';
 import { COPY } from '@/lib/constants/copy';
@@ -101,16 +101,19 @@ export default async function AdminContactDetailPage({ params }: { params: Param
 
       <section className="mt-8 rounded-card border border-line bg-white p-5">
         <h2 className="text-sm font-medium text-ink">{c.statusSection}</h2>
-        <form action={updateContactStatusAction} className="mt-3 flex flex-wrap items-end gap-3">
+        <form
+          action={updateContactStatusAction}
+          className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
           <input type="hidden" name="id" value={detail.id} />
-          <label className="text-sm">
+          <label className="block text-sm sm:flex-1 sm:max-w-xs">
             <span className="mb-1 block text-xs font-medium text-ink-muted">
               {COPY.admin.contact.list.columns.status}
             </span>
             <select
               name="status"
               defaultValue={detail.status}
-              className="rounded-card border border-line bg-white px-3 py-2 text-sm"
+              className="block w-full rounded-card border border-line bg-white px-3 py-2 text-sm"
             >
               {CONTACT_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -121,22 +124,9 @@ export default async function AdminContactDetailPage({ params }: { params: Param
           </label>
           <button
             type="submit"
-            className="rounded-card bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
+            className="w-full rounded-card bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover sm:w-auto"
           >
             {c.statusUpdate}
-          </button>
-        </form>
-      </section>
-
-      <section className="mt-6 rounded-card border border-danger/30 bg-white p-5">
-        <h2 className="text-sm font-medium text-danger">{c.deleteSection}</h2>
-        <form action={softDeleteContactAction} className="mt-3">
-          <input type="hidden" name="id" value={detail.id} />
-          <button
-            type="submit"
-            className="rounded-card border border-danger/40 bg-white px-4 py-2 text-sm font-medium text-danger hover:bg-danger/5"
-          >
-            {c.delete}
           </button>
         </form>
       </section>
