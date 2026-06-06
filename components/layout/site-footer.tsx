@@ -39,9 +39,9 @@ export function SiteFooter() {
               </li>
             ))}
             <li>
-              <a href={`mailto:${COPY.site.contactEmail}`} className="text-ink hover:text-brand">
+              <Link href="/contact" className="text-ink hover:text-brand">
                 {COPY.footer.contact}
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>

@@ -211,3 +211,7 @@ NEXT_PUBLIC_BASE_URL=
 ### 任意（収益化）
 
 - `RAKUTEN_APPLICATION_ID` / `RAKUTEN_ACCESS_KEY` / `RAKUTEN_AFFILIATE_ID` — 楽天アフィリエイトの商品・宿カードを 2 ページ（花の種類詳細 / スポット詳細）に表示するために使用。サーバー専用。**2026-05-14 の楽天 API 移行で `accessKey` が必須化**された点に注意。未設定でもアプリは動作し、アフィリエイト枠は静かに非表示になる。詳細は `docs/22a_rakuten-affiliate.md`。
+
+### 任意（お問い合わせ通知メール）
+
+- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `CONTACT_NOTIFICATION_TO` — `/contact` フォーム送信時に運用宛通知メールを送るための SMTP 設定。Supabase の Custom SMTP に使っている Gmail SMTP をそのまま流用。未設定でもフォーム自体は動作し、DB 保存はされる（通知メールだけ送信されない）。サーバー専用。
