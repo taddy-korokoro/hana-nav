@@ -48,7 +48,7 @@ export default async function AdminContactPage({ searchParams }: { searchParams:
         </label>
         <button
           type="submit"
-          className="rounded-card border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-surface-2"
+          className="w-full rounded-card border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-surface-2 md:w-auto"
         >
           適用
         </button>
