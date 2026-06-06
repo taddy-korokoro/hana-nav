@@ -102,3 +102,42 @@ export async function sendContactNotification(
     return { ok: false, reason: 'send_failed' };
   }
 }
+
+export type SendContactReplyInput = {
+  to: string;
+  subject: string;
+  body: string;
+};
+
+/**
+ * 管理者からお問い合わせユーザー宛に返信メールを送る。
+ * From は SMTP_USER（運用 Gmail）。Reply-To も同じ Gmail にして、ユーザーが
+ * メーラーで返信を打ち返すと運用宛に届く動線を作る（noreply ではあるが運用が読んでいる前提）。
+ */
+export async function sendContactReply(input: SendContactReplyInput): Promise<SendResult> {
+  const from = process.env.SMTP_USER?.trim();
+  if (!from) {
+    console.warn('[mailer] SMTP_USER is not set. Skipping reply.');
+    return { ok: false, reason: 'env_missing' };
+  }
+
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.warn('[mailer] SMTP_* env is not fully set. Skipping reply.');
+    return { ok: false, reason: 'env_missing' };
+  }
+
+  try {
+    await transporter.sendMail({
+      from: `"hana nav" <${from}>`,
+      replyTo: from,
+      to: input.to,
+      subject: input.subject,
+      text: input.body,
+    });
+    return { ok: true };
+  } catch (error) {
+    console.warn('[mailer] sendContactReply failed', { error });
+    return { ok: false, reason: 'send_failed' };
+  }
+}

@@ -24,7 +24,7 @@ import {
 } from '@/lib/queries/contact';
 import { getCurrentUser } from '@/lib/supabase/get-user';
 
-const MIN_MESSAGE_LENGTH = 10;
+const MIN_MESSAGE_LENGTH = 1;
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_NAME_LENGTH = 80;
 const MAX_REFERENCE_URL_LENGTH = 500;

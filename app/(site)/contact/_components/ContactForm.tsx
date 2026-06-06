@@ -150,7 +150,7 @@ export function ContactForm({ defaultName, defaultEmail, emailLocked }: Props) {
           name="message"
           required
           rows={8}
-          minLength={10}
+          minLength={1}
           maxLength={MAX_MESSAGE_LENGTH}
           onChange={(e) => setMessageLength(e.target.value.length)}
           placeholder={COPY.contact.fields.messagePlaceholder}

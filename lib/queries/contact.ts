@@ -114,6 +114,39 @@ export async function getContactMessageDetail(id: string): Promise<ContactMessag
   };
 }
 
+export type ContactReply = {
+  id: string;
+  subject: string;
+  body: string;
+  sentAt: string;
+  adminId: string | null;
+};
+
+/**
+ * 指定のお問い合わせへの返信履歴を新しい順に返す（管理画面詳細用）。
+ */
+export async function listContactReplies(contactMessageId: string): Promise<ContactReply[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('contact_replies')
+    .select('id, subject, body, sent_at, admin_id')
+    .eq('contact_message_id', contactMessageId)
+    .is('deleted_at', null)
+    .order('sent_at', { ascending: false });
+
+  if (error) {
+    console.warn('[contact] listContactReplies failed', error);
+    return [];
+  }
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    subject: row.subject,
+    body: row.body,
+    sentAt: row.sent_at,
+    adminId: row.admin_id,
+  }));
+}
+
 /**
  * 指定 user_id（ログイン）or email（匿名）の **直近 24 時間** 送信数を返す。
  * レート制限判定（1 日 3 件まで）用。
