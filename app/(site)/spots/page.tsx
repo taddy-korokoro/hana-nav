@@ -16,8 +16,10 @@ import {
   serializeSpotSearchParams,
 } from '@/lib/queries/spotSearch';
 
-// TODO: searchParams（フィルタ群）が必須のため `prefetch: 'static'` には乗らない。
-// `prefetch: 'runtime'` + samples 化を検討する余地あり。
+// searchParams 駆動なので本来は `prefetch: 'runtime'` + samples 設計が正攻法だが、
+// MVP では他ページに揃えて disableValidation で簡易対応する。
+// Lighthouse 計測で「兄弟ルートから遷移時に遅い」事象が出たら samples 化に切替（再着手チケット）。
+export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true };
 
 // SEO: クエリパラメータ重複の問題を避けるため検索結果ページは noindex
 export const metadata: Metadata = {
