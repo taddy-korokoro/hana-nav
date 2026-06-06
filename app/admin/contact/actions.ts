@@ -41,27 +41,6 @@ export async function updateContactStatusAction(formData: FormData): Promise<voi
   revalidatePath(`/admin/contact/${id}`);
 }
 
-export async function softDeleteContactAction(formData: FormData): Promise<void> {
-  await requireWriteAdmin();
-
-  const id = (formData.get('id') as string | null)?.trim();
-  if (!id) return;
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from('contact_messages')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id)
-    .is('deleted_at', null);
-
-  if (error) {
-    console.warn('[admin/contact] softDeleteContactAction failed', error);
-    return;
-  }
-
-  revalidatePath('/admin/contact');
-}
-
 function isContactStatus(value: string): value is ContactStatus {
   return (CONTACT_STATUSES as readonly string[]).includes(value);
 }
