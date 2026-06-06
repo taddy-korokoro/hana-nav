@@ -6,7 +6,7 @@ import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { IdentifyPromoSection } from '@/components/home/IdentifyPromoSection';
 import { SearchBar } from '@/components/home/SearchBar';
-import { SeasonMapClient } from '@/components/home/SeasonMapClient';
+import { SeasonMapLazy } from '@/components/home/SeasonMapLazy';
 import { CACHE_TAGS } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
 import { getPrefectureGroups } from '@/lib/queries/spotSearch';
@@ -83,7 +83,7 @@ async function HomeContent() {
             </div>
           </div>
           <div className="mt-6">
-            <SeasonMapClient spots={spotsWithCoords} apiKey={apiKey} />
+            <SeasonMapLazy spots={spotsWithCoords} apiKey={apiKey} />
           </div>
         </section>
       )}
