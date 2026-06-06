@@ -73,6 +73,12 @@ export async function sendContactNotification(
     return { ok: false, reason: 'env_missing' };
   }
 
+  // 管理画面リンクは sitemap / OGP 等で既に使っている NEXT_PUBLIC_BASE_URL を再利用。
+  // env を増やさず本番固定の直書きも避ける。Preview Deploy では引き続き本番 URL を
+  // 指してしまう制約は残るが、MVP 用途では許容範囲とする。
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.trim() ?? '';
+  const adminLink = baseUrl ? `${baseUrl}/admin/contact/${input.contactId}` : null;
+
   const subject = `[hana nav] お問い合わせ受信: ${input.categoryLabel}`;
   const text = [
     `カテゴリ: ${input.categoryLabel}`,
@@ -85,7 +91,7 @@ export async function sendContactNotification(
     '',
     '----',
     `Contact ID: ${input.contactId}`,
-    `Admin: https://hananav.site/admin/contact/${input.contactId}`,
+    adminLink ? `Admin: ${adminLink}` : null,
   ]
     .filter((line) => line !== null)
     .join('\n');
