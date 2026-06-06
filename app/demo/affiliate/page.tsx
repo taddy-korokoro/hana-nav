@@ -91,7 +91,7 @@ export default function AffiliateDemoPage() {
             アフィリエイトコンポーネント
           </h1>
           <p className="max-w-2xl text-sm leading-7 text-ink-muted">
-            楽天アフィリエイト（ブックス / 市場 / トラベル）の 3
+            楽天アフィリエイト（市場 / トラベル）の 2
             セクション。「広告」バッジ・空状態フォールバック・包括的な ※注意書きの 3
             要素が景品表示法対応のキモ。
           </p>
