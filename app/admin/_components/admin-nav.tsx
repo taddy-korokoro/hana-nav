@@ -5,6 +5,7 @@ import {
   Clock,
   Flower2,
   Image as ImageIcon,
+  Inbox,
   LayoutDashboard,
   MapPin,
   MessageSquare,
@@ -30,6 +31,7 @@ const ITEMS: NavItem[] = [
   { href: '/admin/images', label: COPY.admin.nav.images, icon: ImageIcon },
   { href: '/admin/users', label: COPY.admin.nav.users, icon: Users },
   { href: '/admin/reviews', label: COPY.admin.nav.reviews, icon: MessageSquare },
+  { href: '/admin/contact', label: COPY.admin.nav.contact, icon: Inbox },
   { href: '/admin/ai-usage', label: COPY.admin.nav.aiUsage, icon: Activity },
 ];
 
@@ -43,6 +45,7 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/admin/images') return pathname.startsWith('/admin/images');
   if (href === '/admin/users') return pathname.startsWith('/admin/users');
   if (href === '/admin/reviews') return pathname.startsWith('/admin/reviews');
+  if (href === '/admin/contact') return pathname.startsWith('/admin/contact');
   if (href === '/admin/ai-usage') return pathname.startsWith('/admin/ai-usage');
   return pathname === href;
 }

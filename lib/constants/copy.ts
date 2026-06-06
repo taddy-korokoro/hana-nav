@@ -810,6 +810,55 @@ export const COPY = {
   },
 
   // -----------------------------------------------------------------------------------
+  // お問い合わせ（/contact, /contact/thanks）
+  // -----------------------------------------------------------------------------------
+  contact: {
+    metaTitle: 'お問い合わせ',
+    metaDescription: 'hana nav へのお問い合わせ・ご要望・不具合報告はこちらから。',
+    eyebrow: 'Contact',
+    title: 'お問い合わせ',
+    description:
+      'ご質問・ご要望・不具合報告など、お気軽にお寄せください。通常 3 営業日以内に返信いたします。',
+    fields: {
+      nameLabel: 'お名前',
+      namePlaceholder: '山田 花子',
+      emailLabel: 'メールアドレス',
+      emailPlaceholder: 'example@example.com',
+      emailHelpForLoggedIn: 'ログイン中のメールアドレスを使用します',
+      categoryLabel: 'カテゴリ',
+      categoryOptions: {
+        INQUIRY: 'お問い合わせ',
+        FEATURE_REQUEST: 'ご要望',
+        BUG_REPORT: '不具合報告',
+        OTHER: 'その他',
+      } as Record<string, string>,
+      referenceUrlLabel: '関連 URL（任意）',
+      referenceUrlPlaceholder: 'https://hananav.site/spots/...',
+      referenceUrlHelp: '不具合があったページなどがあれば貼り付けてください',
+      messageLabel: 'お問い合わせ内容',
+      messagePlaceholder: 'できるだけ具体的にご記入ください。',
+      consentLabel: (privacyLabel: string) => `${privacyLabel}に同意します`,
+      requiredMark: '必須',
+      counter: (current: number, max: number) =>
+        `${current.toLocaleString('ja-JP')} / ${max.toLocaleString('ja-JP')}`,
+    },
+    submit: '送信する',
+    submitting: '送信中…',
+    formError: {
+      generic: '送信に失敗しました。しばらくしてから再度お試しください。',
+    },
+    thanks: {
+      metaTitle: '送信完了',
+      eyebrow: 'Thanks',
+      title: 'お問い合わせを受け付けました',
+      description:
+        'お送りいただいた内容は確認後、通常 3 営業日以内に返信いたします。今しばらくお待ちください。',
+      referenceLabel: 'お問い合わせ番号',
+      backToTop: 'トップへ戻る',
+    },
+  },
+
+  // -----------------------------------------------------------------------------------
   // マイページ（/mypage, /mypage/profile）
   // -----------------------------------------------------------------------------------
   mypage: {
@@ -996,6 +1045,7 @@ export const COPY = {
       images: '画像管理',
       users: 'ユーザー',
       reviews: 'レビュー',
+      contact: 'お問い合わせ',
       aiUsage: 'AI 利用ログ',
       backToSite: 'サイトに戻る',
       openMenu: 'メニューを開く',
@@ -1449,6 +1499,64 @@ export const COPY = {
           invalid_input: '入力が不正です。',
         } as Record<string, string>,
       },
+    },
+    contact: {
+      list: {
+        metaTitle: 'お問い合わせ管理',
+        eyebrow: 'Contact',
+        title: 'お問い合わせ一覧',
+        description: 'サイトに届いたお問い合わせ・ご要望・不具合報告を確認します。',
+        filterStatus: 'ステータス',
+        filterStatusAll: '全て',
+        empty: '該当するお問い合わせはありません。',
+        columns: {
+          received: '受信日時',
+          name: '送信者',
+          category: 'カテゴリ',
+          status: 'ステータス',
+          preview: '本文プレビュー',
+        },
+      },
+      detail: {
+        metaTitle: 'お問い合わせ詳細',
+        eyebrow: 'Contact',
+        backToList: '一覧に戻る',
+        meta: {
+          received: '受信日時',
+          updated: '最終更新',
+          email: 'メール',
+          referenceUrl: '関連 URL',
+          userId: 'ユーザー ID',
+          anonymous: '匿名',
+        },
+        statusSection: 'ステータス',
+        statusUpdate: 'ステータスを変更',
+        statusUpdateConfirm: 'ステータスを変更してよろしいですか?',
+        replySection: '返信',
+        replyHistoryTitle: '送信済み返信',
+        replyHistoryEmpty: 'まだ返信していません。',
+        replyFormTitle: '新しい返信を送信',
+        replySubjectLabel: '件名',
+        replySubjectDefault: 'Re: hana nav へのお問い合わせの件',
+        replyBodyLabel: '本文',
+        replyBodyHelp: '入力した本文がそのまま問い合わせユーザー宛にメール送信されます。',
+        replySend: '返信を送信',
+        replySending: '送信中…',
+        replySuccess:
+          '返信メールを送信しました。履歴に記録され、ステータスは「対応中」に更新されます。',
+        replySentLabel: '送信日時',
+      },
+      categoryLabels: {
+        INQUIRY: 'お問い合わせ',
+        FEATURE_REQUEST: 'ご要望',
+        BUG_REPORT: '不具合報告',
+        OTHER: 'その他',
+      } as Record<string, string>,
+      statusLabels: {
+        NEW: '未対応',
+        IN_PROGRESS: '対応中',
+        RESOLVED: '解決済み',
+      } as Record<string, string>,
     },
     aiUsage: {
       metaTitle: 'AI 利用ログ',

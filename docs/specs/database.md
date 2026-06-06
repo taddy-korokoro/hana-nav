@@ -586,3 +586,49 @@ CREATE POLICY "Users can view own usage"
   ON ai_usage_logs FOR SELECT
   USING (auth.uid() = user_id AND deleted_at IS NULL);
 ```
+
+### `contact_messages`
+
+`/contact` フォームから送信されたお問い合わせの受信箱。匿名ユーザーも送信可能（`user_id NULL`）。管理画面（`/admin/contact`）でのみ閲覧・status 切替・論理削除を行う。INSERT は Server Action から Service Role 経由で行うため、public/anon の INSERT ポリシーは置かない。
+
+```sql
+CREATE TABLE contact_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,  -- 匿名は NULL
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  category TEXT NOT NULL
+    CHECK (category IN ('INQUIRY', 'FEATURE_REQUEST', 'BUG_REPORT', 'OTHER')),
+  message TEXT NOT NULL,
+  reference_url TEXT,
+  status TEXT NOT NULL DEFAULT 'NEW'
+    CHECK (status IN ('NEW', 'IN_PROGRESS', 'RESOLVED')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE INDEX contact_messages_status_created_at_idx
+  ON contact_messages (status, created_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX contact_messages_user_created_at_idx
+  ON contact_messages (user_id, created_at DESC) WHERE deleted_at IS NULL;
+
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+-- 管理者のみ SELECT / UPDATE 可能。deleted_at フィルタは SELECT に含めず、アプリ層で .is('deleted_at', null)。
+CREATE POLICY "Admins can view all contact_messages"
+  ON contact_messages FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+        AND profiles.role = 'admin'
+        AND profiles.deleted_at IS NULL
+    )
+  );
+CREATE POLICY "Admins can update contact_messages"
+  ON contact_messages FOR UPDATE
+  USING (...同上)
+  WITH CHECK (...同上);
+```
+
+レート制限はテーブル自身に COUNT を投げて判定（直近 24 時間で `user_id` または `email` ベースに最大 3 件）。spam 対策は honeypot フィールド + NG ワード（`lib/ng-words.ts`）でカバーする。
