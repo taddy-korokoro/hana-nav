@@ -15,6 +15,18 @@ import type { AffiliateBook } from '@/lib/queries/rakuten';
 const ACTION_TIMEOUT_MS = 10_000;
 
 /**
+ * 同じ flowerName での Server Action 二重発火を抑止するためのモジュールスコープ
+ * Promise キャッシュ。`useMemo` はコンポーネントの unmount で揮発するため、
+ * Suspense の再評価 / streaming retry / ErrorBoundary catch 後の親再マウントが
+ * 起きると Server Action が連発される。Rakuten API の 1 秒 1 リクエスト制限に
+ * 抵触して 429 が連鎖する原因にもなる。
+ *
+ * Map スコープは tab 単位（モジュール初期化時に新規）なので、ブラウザを閉じる /
+ * ハードリロードで自動的に破棄される。
+ */
+const booksPromiseCache = new Map<string, Promise<AffiliateBook[]>>();
+
+/**
  * AI 判定結果ページ専用の Client ラッパ。
  *
  * 花名が sessionStorage（クライアント側）にしか無いため Server Component には組み込めない。
@@ -37,9 +49,10 @@ export function AffiliateBookSectionClient({ flowerName }: { flowerName: string 
 }
 
 function BookSectionContent({ flowerName }: { flowerName: string }) {
-  // useMemo で promise を flowerName に紐付けて安定化。
-  // 同じ flowerName の再レンダリングで同じ promise を返すことで use() が無限ループを起こさない。
-  const promise = useMemo(() => raceWithTimeout(getAffiliateBooksAction(flowerName)), [flowerName]);
+  // useMemo は unmount で揮発するため、モジュールスコープの Map で dedup する。
+  // 既に同じ flowerName の Promise があればそれを返す → Server Action は
+  // ブラウザセッション中に同じ花名で 1 回しか発火しない。
+  const promise = useMemo(() => getOrCreateBooksPromise(flowerName), [flowerName]);
   const books = use<AffiliateBook[]>(promise);
 
   return (
@@ -118,4 +131,22 @@ function raceWithTimeout<T>(promise: Promise<T>): Promise<T> {
       setTimeout(() => reject(new Error('Server Action timeout')), ACTION_TIMEOUT_MS),
     ),
   ]);
+}
+
+/**
+ * flowerName をキーに Server Action の Promise をモジュールスコープでキャッシュする。
+ * - 同じ花名なら何度 useMemo が再評価されても同じ Promise を返す（dedup）
+ * - rejected の Promise はキャッシュから消し、次回再アクセスで再試行できる状態にする
+ *   （永久に「該当なし」固定にならないよう、リトライ余地を残す）
+ */
+function getOrCreateBooksPromise(flowerName: string): Promise<AffiliateBook[]> {
+  const cached = booksPromiseCache.get(flowerName);
+  if (cached) return cached;
+
+  const created = raceWithTimeout(getAffiliateBooksAction(flowerName));
+  booksPromiseCache.set(flowerName, created);
+  created.catch(() => {
+    booksPromiseCache.delete(flowerName);
+  });
+  return created;
 }
