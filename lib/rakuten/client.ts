@@ -136,7 +136,13 @@ function fetchWithReferer<T>({
     const headers: Record<string, string> = {
       Accept: 'application/json',
     };
-    if (referer) headers.Referer = referer;
+    if (referer) {
+      // Rakuten API は HTTP `Referer` 必須（先のスクリーンショットの「許可された Web サイト」と突合）。
+      // Origin ヘッダも併用送出: 一部の API ゲートウェイは Referer ではなく Origin で検証する
+      // 仕様のため、両方乗せて取りこぼしを防ぐ。Origin は origin のみ（hananav.site）なので情報漏えい無し。
+      headers.Referer = referer;
+      headers.Origin = referer;
+    }
 
     // 送信前ログ。URL から認証情報をマスクして残す。
     console.info(`[rakuten] → ${endpoint}`, {
@@ -168,6 +174,14 @@ function fetchWithReferer<T>({
         });
       },
     );
+
+    // Node がソケットに書き出す直前のヘッダを確認するための診断ログ。
+    // `headerKeys` が `headers` の入力キーで、こちらは Node 内部が正規化した
+    // 実際の outgoing headers。Referer が消えていれば node:https の挙動異常、
+    // 残っているのに Rakuten が REFERRER_MISSING を返すなら Netlify Functions の
+    // outbound proxy 段で strip されている可能性が高い。
+    console.info(`[rakuten] → ${endpoint} outgoingHeaders`, req.getHeaders());
+
     req.on('error', (error) => {
       console.warn(`[rakuten] ${endpoint} request error:`, error);
       resolve(null);
