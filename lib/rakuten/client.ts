@@ -48,7 +48,11 @@ export async function rakutenFetch<T>(
   // 楽天 Dashboard の「許可された Web サイト」と一致させるため
   // 本番 URL（hananav.site）を Referer として明示する。Books / Ichiba には
   // 無害なので endpoint で分岐せず常に付与。
-  const referer = process.env.NEXT_PUBLIC_BASE_URL?.trim();
+  //
+  // ⚠️ `Referer` は Fetch 標準で "forbidden header name" に分類されており、
+  // `headers: { Referer }` を渡しても undici は silent strip して送出しない。
+  // 必ず `RequestInit.referrer` を使う。
+  const referrer = process.env.NEXT_PUBLIC_BASE_URL?.trim();
 
   if (!applicationId || !accessKey) {
     // 「広告枠だけ静かに出ない」フォールバックは維持しつつ、本番でもログは残す。
@@ -78,7 +82,9 @@ export async function rakutenFetch<T>(
   try {
     const res = await fetch(url.toString(), {
       signal: controller.signal,
-      headers: referer ? { Referer: referer } : undefined,
+      // referrerPolicy: 'unsafe-url' でクロスオリジン宛にも完全 URL を送出。
+      // referrer 自体は origin のみ（https://hananav.site）なので機密漏えいの問題は無い。
+      ...(referrer ? { referrer, referrerPolicy: 'unsafe-url' as const } : {}),
       next: {
         revalidate: options.revalidate,
         tags: options.tags,
