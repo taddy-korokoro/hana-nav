@@ -48,14 +48,7 @@ export function ContactForm({ defaultName, defaultEmail, emailLocked }: Props) {
         </div>
       )}
 
-      <Field
-        id="name"
-        name="name"
-        label={COPY.contact.fields.nameLabel}
-        required
-        defaultValue={defaultName ?? ''}
-        error={state.errors?.name}
-      >
+      <Field id="name" label={COPY.contact.fields.nameLabel} required error={state.errors?.name}>
         <input
           id="name"
           name="name"
@@ -71,10 +64,8 @@ export function ContactForm({ defaultName, defaultEmail, emailLocked }: Props) {
 
       <Field
         id="email"
-        name="email"
         label={COPY.contact.fields.emailLabel}
         required
-        defaultValue={defaultEmail ?? ''}
         error={state.errors?.email}
         help={emailLocked ? COPY.contact.fields.emailHelpForLoggedIn : undefined}
       >
@@ -93,7 +84,6 @@ export function ContactForm({ defaultName, defaultEmail, emailLocked }: Props) {
 
       <Field
         id="category"
-        name="category"
         label={COPY.contact.fields.categoryLabel}
         required
         error={state.errors?.category}
@@ -120,7 +110,6 @@ export function ContactForm({ defaultName, defaultEmail, emailLocked }: Props) {
       {showReferenceUrl && (
         <Field
           id="reference_url"
-          name="reference_url"
           label={COPY.contact.fields.referenceUrlLabel}
           error={state.errors?.reference_url}
           help={COPY.contact.fields.referenceUrlHelp}
@@ -139,7 +128,6 @@ export function ContactForm({ defaultName, defaultEmail, emailLocked }: Props) {
 
       <Field
         id="message"
-        name="message"
         label={COPY.contact.fields.messageLabel}
         required
         error={state.errors?.message}
@@ -212,13 +200,11 @@ function Field({
   children,
 }: {
   id: string;
-  name: string;
   label: string;
   required?: boolean;
   error?: string;
   help?: string;
   counter?: string;
-  defaultValue?: string;
   children: React.ReactNode;
 }) {
   return (
