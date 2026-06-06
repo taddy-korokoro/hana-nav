@@ -4,15 +4,22 @@
  * - サーバー専用。Server Action / Route Handler / バッチ以外から触らない。
  * - 失敗時は throw せずに `{ ok: false }` を返す。呼び出し側で DB 保存と分離して、
  *   メール失敗時もユーザーへの成功表示は維持する（受信履歴は admin 画面で確認できる前提）。
- * - SMTP_* と CONTACT_NOTIFICATION_TO のどれかが欠けていれば `{ ok: false }` を返し
- *   `console.warn` で原因を残す。
  *
- * 環境変数:
- *   SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS
- *   CONTACT_NOTIFICATION_TO   通知の送信先（運用 Gmail）
+ * 環境変数（必要最小限の 2 つ）:
+ *   - SMTP_USER  例: hananav.noreply@gmail.com
+ *   - SMTP_PASS  Gmail アプリパスワード（Supabase Custom SMTP と同じ）
+ *
+ * 設計判断:
+ *   - SMTP ホスト・ポートは Gmail 固定（`smtp.gmail.com:587`）なので env ではなく定数化。
+ *     Resend / SendGrid 等への移行時はこのファイルを書き換える。
+ *   - お問い合わせ通知の宛先は `SMTP_USER` 自身（運用 Gmail に自己宛で送る）に固定する。
+ *     別宛先に転送したくなったら envに `CONTACT_NOTIFICATION_TO` を復活させる想定。
  */
 
 import nodemailer from 'nodemailer';
+
+const SMTP_HOST = 'smtp.gmail.com';
+const SMTP_PORT = 587;
 
 type SendResult = { ok: true } | { ok: false; reason: string };
 
@@ -20,18 +27,16 @@ let cachedTransporter: nodemailer.Transporter | null = null;
 
 function getTransporter(): nodemailer.Transporter | null {
   if (cachedTransporter) return cachedTransporter;
-  const host = process.env.SMTP_HOST?.trim();
-  const port = process.env.SMTP_PORT?.trim();
   const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS?.trim();
 
-  if (!host || !port || !user || !pass) {
+  if (!user || !pass) {
     return null;
   }
 
   cachedTransporter = nodemailer.createTransport({
-    host,
-    port: Number(port),
+    host: SMTP_HOST,
+    port: SMTP_PORT,
     secure: false, // 587 は STARTTLS（secure=false で OK、自動でアップグレード）
     auth: { user, pass },
   });
@@ -49,26 +54,22 @@ export type SendContactNotificationInput = {
 };
 
 /**
- * 運用 Gmail（`CONTACT_NOTIFICATION_TO`）宛にお問い合わせ通知を送る。
+ * 運用 Gmail（`SMTP_USER` 自身宛）にお問い合わせ通知を送る。
  * 件名・本文は plain text のみ（HTML は使わない：font 崩れ・spam 判定の回避）。
  */
 export async function sendContactNotification(
   input: SendContactNotificationInput,
 ): Promise<SendResult> {
-  const to = process.env.CONTACT_NOTIFICATION_TO?.trim();
   const from = process.env.SMTP_USER?.trim();
 
-  if (!to || !from) {
-    console.warn('[mailer] CONTACT_NOTIFICATION_TO or SMTP_USER is not set. Skipping.', {
-      hasTo: Boolean(to),
-      hasFrom: Boolean(from),
-    });
+  if (!from) {
+    console.warn('[mailer] SMTP_USER is not set. Skipping notification.');
     return { ok: false, reason: 'env_missing' };
   }
 
   const transporter = getTransporter();
   if (!transporter) {
-    console.warn('[mailer] SMTP_* env is not fully set. Skipping.');
+    console.warn('[mailer] SMTP_USER or SMTP_PASS is not set. Skipping notification.');
     return { ok: false, reason: 'env_missing' };
   }
 
@@ -92,13 +93,13 @@ export async function sendContactNotification(
   try {
     await transporter.sendMail({
       from: `"hana nav" <${from}>`,
-      to,
+      to: from, // 自己宛
       subject,
       text,
     });
     return { ok: true };
   } catch (error) {
-    console.warn('[mailer] sendMail failed', { error });
+    console.warn('[mailer] sendContactNotification failed', { error });
     return { ok: false, reason: 'send_failed' };
   }
 }
@@ -123,7 +124,7 @@ export async function sendContactReply(input: SendContactReplyInput): Promise<Se
 
   const transporter = getTransporter();
   if (!transporter) {
-    console.warn('[mailer] SMTP_* env is not fully set. Skipping reply.');
+    console.warn('[mailer] SMTP_USER or SMTP_PASS is not set. Skipping reply.');
     return { ok: false, reason: 'env_missing' };
   }
 

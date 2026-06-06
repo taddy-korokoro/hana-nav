@@ -214,4 +214,4 @@ NEXT_PUBLIC_BASE_URL=
 
 ### 任意（お問い合わせ通知メール）
 
-- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `CONTACT_NOTIFICATION_TO` — `/contact` フォーム送信時に運用宛通知メールを送るための SMTP 設定。Supabase の Custom SMTP に使っている Gmail SMTP をそのまま流用。未設定でもフォーム自体は動作し、DB 保存はされる（通知メールだけ送信されない）。サーバー専用。
+- `SMTP_USER` / `SMTP_PASS` — `/contact` フォーム送信時の通知メール、および `/admin/contact` からの返信メールに使う Gmail 認証情報。Supabase の Custom SMTP に使っているアプリパスワードをそのまま流用。SMTP ホスト・ポート（`smtp.gmail.com:587`）と通知の宛先（`SMTP_USER` 自身宛）は `lib/email/mailer.ts` で定数化しているため env は 2 つだけ。未設定でもフォーム自体は動作し DB 保存はされるが、メール送信はスキップされる。サーバー専用。
