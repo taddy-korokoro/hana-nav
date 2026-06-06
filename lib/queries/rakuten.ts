@@ -64,7 +64,7 @@ export const searchBooksByFlowerName = cache(
     if (!flowerName.trim()) return [];
 
     const res = await rakutenFetch<BooksSearchApiResponse>(
-      'BooksTotalSearch/20170404',
+      'services/api/BooksTotal/Search/20170404',
       {
         keyword: `${flowerName} 図鑑`,
         // 書籍ジャンル（趣味・実用 > ガーデニング・フラワー）。
@@ -107,7 +107,7 @@ export const searchProductsByFlowerName = cache(
     if (!flowerName.trim()) return [];
 
     const res = await rakutenFetch<ProductSearchApiResponse>(
-      'IchibaItem/Search/20220601',
+      'ichibams/api/IchibaItem/Search/20220601',
       {
         keyword: flowerName,
         genreId: '100005',
@@ -145,7 +145,7 @@ export const searchHotelsNearSpot = cache(
     const { latitude, longitude } = params;
 
     const res = await rakutenFetch<HotelSearchApiResponse>(
-      'Travel/SimpleHotelSearch/20170426',
+      'engine/api/Travel/SimpleHotelSearch/20170426',
       {
         latitude,
         longitude,
