@@ -43,6 +43,12 @@ export async function rakutenFetch<T>(
   const applicationId = process.env.RAKUTEN_APPLICATION_ID?.trim();
   const accessKey = process.env.RAKUTEN_ACCESS_KEY?.trim();
   const affiliateId = process.env.RAKUTEN_AFFILIATE_ID?.trim();
+  // 楽天トラベル API は Referer ヘッダ必須で、未送出時は
+  // 403 REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING が返る。
+  // 楽天 Dashboard の「許可された Web サイト」と一致させるため
+  // 本番 URL（hananav.site）を Referer として明示する。Books / Ichiba には
+  // 無害なので endpoint で分岐せず常に付与。
+  const referer = process.env.NEXT_PUBLIC_BASE_URL?.trim();
 
   if (!applicationId || !accessKey) {
     // 「広告枠だけ静かに出ない」フォールバックは維持しつつ、本番でもログは残す。
@@ -72,6 +78,7 @@ export async function rakutenFetch<T>(
   try {
     const res = await fetch(url.toString(), {
       signal: controller.signal,
+      headers: referer ? { Referer: referer } : undefined,
       next: {
         revalidate: options.revalidate,
         tags: options.tags,
