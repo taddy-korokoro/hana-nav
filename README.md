@@ -210,4 +210,4 @@ NEXT_PUBLIC_BASE_URL=
 
 ### 任意（収益化）
 
-- `RAKUTEN_APPLICATION_ID` / `RAKUTEN_AFFILIATE_ID` — 楽天アフィリエイトの書籍・商品・宿カードを 3 ページ（AI 判定結果 / 花の種類詳細 / スポット詳細）に表示するために使用。サーバー専用。未設定でもアプリは動作するが、アフィリエイト枠は静かに非表示になる。詳細は `docs/22a_rakuten-affiliate.md`。
+- `RAKUTEN_APPLICATION_ID` / `RAKUTEN_ACCESS_KEY` / `RAKUTEN_AFFILIATE_ID` — 楽天アフィリエイトの書籍・商品・宿カードを 3 ページ（AI 判定結果 / 花の種類詳細 / スポット詳細）に表示するために使用。サーバー専用。**2026-05-14 の楽天 API 移行で `accessKey` が必須化**された点に注意。未設定でもアプリは動作し、アフィリエイト枠は静かに非表示になる。詳細は `docs/22a_rakuten-affiliate.md`。
