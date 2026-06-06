@@ -787,16 +787,6 @@ export const COPY = {
     disclaimer:
       '※当サイトは楽天アフィリエイトプログラムを利用しています。商品ページへの遷移時に楽天株式会社の Cookie が設定されることがあります。',
     fallbackToRakutenLabel: '楽天で検索する',
-    books: {
-      eyebrow: 'Books',
-      title: 'もっと詳しく知る',
-      description: '関連する図鑑・写真集で、花の特徴や育て方を深掘りできます。',
-      empty: '該当する書籍が見つかりませんでした。',
-      fallbackUrl: (keyword: string) =>
-        `https://books.rakuten.co.jp/search?sitem=${encodeURIComponent(`${keyword} 図鑑`)}`,
-      priceLabel: (price: number) => `¥${price.toLocaleString('ja-JP')}`,
-      authorLabel: (author: string) => `著者: ${author}`,
-    },
     products: {
       eyebrow: 'Grow',
       title: '育ててみる',
