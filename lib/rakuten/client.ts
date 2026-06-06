@@ -139,9 +139,12 @@ function fetchWithReferer<T>({
     if (referer) {
       // Rakuten API は HTTP `Referer` 必須（先のスクリーンショットの「許可された Web サイト」と突合）。
       // Origin ヘッダも併用送出: 一部の API ゲートウェイは Referer ではなく Origin で検証する
-      // 仕様のため、両方乗せて取りこぼしを防ぐ。Origin は origin のみ（hananav.site）なので情報漏えい無し。
+      // 仕様のため、両方乗せて取りこぼしを防ぐ。
+      // Origin は RFC 6454 で `scheme "://" host [ ":" port ]` のみ許容（path/末尾スラッシュ不可）
+      // なので、`new URL(referer).origin` で origin 部分のみ確実に切り出す。
+      // `NEXT_PUBLIC_BASE_URL` が将来 `https://hananav.site/` 等に変わってもこの正規化で吸収する。
       headers.Referer = referer;
-      headers.Origin = referer;
+      headers.Origin = new URL(referer).origin;
     }
 
     // 送信前ログ。URL から認証情報をマスクして残す。
