@@ -2,32 +2,11 @@
  * 楽天ウェブサービスのレスポンス型。
  *
  * 公式ドキュメント:
- *   - 楽天ブックス検索:   https://webservice.rakuten.co.jp/documentation/books-total-search
  *   - 楽天市場商品検索:   https://webservice.rakuten.co.jp/documentation/ichiba-item-search
  *   - 楽天トラベル空室:   https://webservice.rakuten.co.jp/documentation/vacant-hotel-search
  *
  * レスポンスは項目数が多いため、UI で使う最小限のフィールドのみ拾う。
  */
-
-// ===== 楽天ブックス検索 =====
-
-export type RakutenBookItem = {
-  title: string;
-  author: string;
-  publisherName: string;
-  itemUrl: string;
-  affiliateUrl: string;
-  /** 200 × 200 程度のサムネイル。`thumbnail.image.rakuten.co.jp` ドメイン */
-  largeImageUrl: string;
-  /** 通常は税込価格（円） */
-  itemPrice: number;
-};
-
-type BooksApiResponseItem = { Item: RakutenBookItem };
-
-export type BooksSearchApiResponse = {
-  Items?: BooksApiResponseItem[];
-};
 
 // ===== 楽天市場商品検索 =====
 
