@@ -163,6 +163,19 @@ export function IdentifyUploader() {
             : prev,
         );
       }
+
+      // ナビゲーション前にローカル state を全リセットしておく。
+      // `/identify` は `unstable_instant: 'static'` でルーターキャッシュに
+      // 乗るため、別ページから戻ってきた時に同じ Client Component インスタンス
+      // が再利用される。リセットしないと「アップロード画像が残ったまま」
+      // 「ボタンが判定中のまま」の状態で表示されてしまう。
+      setPreviewUrl(null);
+      setSelectedFile(null);
+      setSubmitting(false);
+      setErrorKey(null);
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
+
       router.push('/identify/result');
     } catch (error) {
       console.error('[IdentifyUploader] failed', error);
