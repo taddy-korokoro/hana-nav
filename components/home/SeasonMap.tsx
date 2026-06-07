@@ -118,7 +118,9 @@ function ClusteredMarkers({ spots }: { spots: SeasonalSpot[] }) {
           onCloseClick={() => setActiveId(null)}
           pixelOffset={[0, -34]}
         >
-          <div className="min-w-[200px] max-w-[240px] p-1">
+          {/* pr-6: 上余白を詰めるため close button (24px) を絶対配置にしているので
+              右端で重なるのを避ける */}
+          <div className="min-w-[200px] max-w-[240px] p-1 pr-6">
             <p className="font-serif text-base font-semibold text-ink">{active.name}</p>
             <p className="mt-1 text-xs text-ink-muted">
               {active.prefectureName}

@@ -189,4 +189,20 @@ body {
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  /* Google Maps InfoWindow（SeasonMap のピンクリック時カード）の上余白を詰める。
+     close button 行 (.gm-style-iw-chr) はデフォルトで 30〜40px 高さを取って
+     コンテンツを下に押し下げてしまうので、高さを 0 にして close button を
+     コンテンツに重ねる絶対配置に切り替える。コンテンツ側で右上に避ける padding を
+     確保しているので overlap しない。 */
+  .gm-style-iw-chr {
+    min-height: 0 !important;
+    height: 0 !important;
+  }
+  .gm-style-iw-chr > button {
+    position: absolute !important;
+    top: 4px !important;
+    right: 4px !important;
+    margin: 0 !important;
+  }
 }

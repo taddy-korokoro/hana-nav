@@ -156,17 +156,10 @@ export const COPY = {
   home: {
     hero: {
       eyebrow: 'Find your bloom',
-      title: 'いま、咲きごろ。',
+      title: '次の週末、満開の花畑へ',
       description:
-        '日本中の花畑から、いちばんきれいに咲いている場所を。エリアでも、季節でも、花の名前でも。',
+        '全国の花畑スポットを、見頃の月・エリア・花の種類で検索。気になる花は写真から AI が判定します。',
       monthLine: (monthEn: string, year: number) => `${monthEn} ${year} ・ Find your bloom`,
-    },
-    searchBar: {
-      area: 'エリア',
-      areaPlaceholder: 'どこで見たい？',
-      season: '時期',
-      flower: '花',
-      flowerPlaceholder: '何を見たい？',
     },
     map: {
       eyebrow: 'Map view',
