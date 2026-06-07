@@ -169,12 +169,12 @@ export function IdentifyUploader() {
       // 乗るため、別ページから戻ってきた時に同じ Client Component インスタンス
       // が再利用される。リセットしないと「アップロード画像が残ったまま」
       // 「ボタンが判定中のまま」の状態で表示されてしまう。
-      setPreviewUrl(null);
-      setSelectedFile(null);
+      // handleReset は previewUrl / selectedFile / errorKey / file input をクリア
+      // するが submitting は触らない（retake ボタンが disabled={submitting} で
+      // submitting=true 中に呼ばれない前提のため）。ここでは追加で submitting も
+      // 落として、再訪後の handleSubmit ガード `if (submitting) return` を回避する。
+      handleReset();
       setSubmitting(false);
-      setErrorKey(null);
-      if (cameraInputRef.current) cameraInputRef.current.value = '';
-      if (fileInputRef.current) fileInputRef.current.value = '';
 
       router.push('/identify/result');
     } catch (error) {
