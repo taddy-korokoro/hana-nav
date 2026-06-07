@@ -112,7 +112,6 @@ function HomeHeroSkeleton() {
       <div className="mt-4 h-12 w-full max-w-md animate-pulse rounded bg-surface-2 md:h-16" />
       <div className="mt-4 h-4 w-full max-w-xl animate-pulse rounded bg-surface-2" />
       <div className="mt-2 h-4 w-2/3 max-w-xl animate-pulse rounded bg-surface-2" />
-      <div className="mt-8 h-16 w-full animate-pulse rounded-card bg-surface-2" />
     </section>
   );
 }
