@@ -37,9 +37,9 @@ export function FlowerCard({
       href={`/flowers/${flower.id}`}
       // priority カード以外は content-visibility:auto で「画面外なら描画スキップ」
       // を効かせ、600+ カードの初期描画コストとレイアウトコストを抑える。
-      // contain-intrinsic-size でカード概算高さ（モバイル 2 列で約 240px）を予約しておけば
-      // 50 音 index からの anchor ジャンプ位置もズレない。
-      className={`group block ${priority ? '' : '[content-visibility:auto] [contain-intrinsic-size:240px]'}`}
+      // 幅は grid-cols-* が決めるので block-size（高さ）のみ予約すれば 50 音 index
+      // からの anchor ジャンプ位置もズレない（モバイル 2 列で約 240px を見込み）。
+      className={`group block ${priority ? '' : '[content-visibility:auto] [contain-intrinsic-block-size:240px]'}`}
     >
       <div
         className={`relative aspect-[4/3] overflow-hidden rounded-card bg-gradient-to-br ${
