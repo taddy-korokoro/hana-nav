@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react';
 import type { Metadata } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
@@ -8,6 +9,7 @@ import { FlowerKanaIndex } from '@/components/flowers/FlowerKanaIndex';
 import { ScrollToTopButton } from '@/components/flowers/ScrollToTopButton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { CACHE_TAGS } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
 import {
   type FlowerListItem,
@@ -81,11 +83,11 @@ async function FlowersContent({ searchParams }: { searchParams: FlowersSearchPar
   // AI 判定や外部リンクから `?alias=ソメイヨシノ` で来た場合は flower_aliases を引いて
   // 該当があれば詳細ページへリダイレクト。無ければ一覧上部に「該当なし」のバナーを出す。
   if (aliasQuery) {
-    const id = await findFlowerIdByAlias(aliasQuery);
+    const id = await loadCachedFlowerIdByAlias(aliasQuery);
     if (id) redirect(`/flowers/${id}`);
   }
 
-  const flowers = await getFlowerList();
+  const flowers = await loadCachedFlowerList();
   const aliasMissed = aliasQuery.length > 0;
   const isSearching = keyword.length > 0;
   const filtered = isSearching ? filterFlowersByKeyword(flowers, keyword) : flowers;
@@ -170,12 +172,14 @@ async function FlowersContent({ searchParams }: { searchParams: FlowersSearchPar
             <section aria-label={COPY.flowersList.search.resultHeading(keyword, filtered.length)}>
               <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {filtered.map((flower, i) => (
-                  <FlowerCard key={flower.id} flower={flower} index={i} />
+                  <FlowerCard key={flower.id} flower={flower} index={i} priority={i === 0} />
                 ))}
               </div>
             </section>
           ) : (
-            groups.map((group) => (
+            // priority は「全グループ通して最初の 1 枚」だけ true にする。
+            // groupIndex === 0 && i === 0 が真になるのはリスト全体で 1 枚のみ。
+            groups.map((group, groupIndex) => (
               <section
                 key={group.label}
                 id={`kana-${group.label}`}
@@ -193,7 +197,12 @@ async function FlowersContent({ searchParams }: { searchParams: FlowersSearchPar
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                   {group.flowers.map((flower, i) => (
-                    <FlowerCard key={flower.id} flower={flower} index={i} />
+                    <FlowerCard
+                      key={flower.id}
+                      flower={flower}
+                      index={i}
+                      priority={groupIndex === 0 && i === 0}
+                    />
                   ))}
                 </div>
               </section>
@@ -203,6 +212,31 @@ async function FlowersContent({ searchParams }: { searchParams: FlowersSearchPar
       )}
     </>
   );
+}
+
+/**
+ * 花マスター一覧（600+ 件 + 代表画像）を cacheComponents の `'use cache'` で
+ * hours スケールでキャッシュ。searchParams (`alias` / `q`) に依存しない静的データ
+ * なので、cache 命中時 TTFB が 100ms 台に落ちる。admin の `updateTag('flowers')`
+ * で即時 invalidate される。
+ */
+async function loadCachedFlowerList(): Promise<FlowerListItem[]> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.flowers);
+  return getFlowerList();
+}
+
+/**
+ * `?alias=ソメイヨシノ` 等で来た時の alias → flower_id 解決もキャッシュ化する。
+ * 別名マスター (`flower_aliases`) は admin の花編集で `updateTag('flowers')` 経由で
+ * 一括 invalidate されるので、別タグは不要。
+ */
+async function loadCachedFlowerIdByAlias(alias: string): Promise<string | null> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.flowers);
+  return findFlowerIdByAlias(alias);
 }
 
 function FlowersContentSkeleton() {
