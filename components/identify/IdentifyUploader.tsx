@@ -163,6 +163,19 @@ export function IdentifyUploader() {
             : prev,
         );
       }
+
+      // ナビゲーション前にローカル state を全リセットしておく。
+      // `/identify` は `unstable_instant: 'static'` でルーターキャッシュに
+      // 乗るため、別ページから戻ってきた時に同じ Client Component インスタンス
+      // が再利用される。リセットしないと「アップロード画像が残ったまま」
+      // 「ボタンが判定中のまま」の状態で表示されてしまう。
+      // handleReset は previewUrl / selectedFile / errorKey / file input をクリア
+      // するが submitting は触らない（retake ボタンが disabled={submitting} で
+      // submitting=true 中に呼ばれない前提のため）。ここでは追加で submitting も
+      // 落として、再訪後の handleSubmit ガード `if (submitting) return` を回避する。
+      handleReset();
+      setSubmitting(false);
+
       router.push('/identify/result');
     } catch (error) {
       console.error('[IdentifyUploader] failed', error);
