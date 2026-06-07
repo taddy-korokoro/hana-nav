@@ -20,10 +20,27 @@ const FLOWER_GRADIENTS = [
   'from-purple-300 to-indigo-200',
 ];
 
-export function FlowerCard({ flower, index }: { flower: FlowerListItem; index: number }) {
+export function FlowerCard({
+  flower,
+  index,
+  priority = false,
+}: {
+  flower: FlowerListItem;
+  index: number;
+  // LCP 候補の 1 枚目だけ true を渡す。グループ化レンダリングでは `i === 0` が
+  // 各グループで再起動してしまうので、呼び出し側で「全体での 1 枚目」を判定して渡す。
+  priority?: boolean;
+}) {
   const seasonText = formatSeasonRange(flower.defaultSeasonStart, flower.defaultSeasonEnd);
   return (
-    <Link href={`/flowers/${flower.id}`} className="group block">
+    <Link
+      href={`/flowers/${flower.id}`}
+      // priority カード以外は content-visibility:auto で「画面外なら描画スキップ」
+      // を効かせ、600+ カードの初期描画コストとレイアウトコストを抑える。
+      // 幅は grid-cols-* が決めるので block-size（高さ）のみ予約すれば 50 音 index
+      // からの anchor ジャンプ位置もズレない（モバイル 2 列で約 240px を見込み）。
+      className={`group block ${priority ? '' : '[content-visibility:auto] [contain-intrinsic-block-size:240px]'}`}
+    >
       <div
         className={`relative aspect-[4/3] overflow-hidden rounded-card bg-gradient-to-br ${
           FLOWER_GRADIENTS[index % FLOWER_GRADIENTS.length]
@@ -34,7 +51,7 @@ export function FlowerCard({ flower, index }: { flower: FlowerListItem; index: n
             src={flower.coverImageUrl}
             alt={flower.coverImageCaption ?? COPY.common.photoAlt(flower.name)}
             fill
-            priority={index === 0}
+            priority={priority}
             placeholder="blur"
             blurDataURL={STATIC_BLUR_DATA_URL}
             className="object-cover transition group-hover:scale-105"
