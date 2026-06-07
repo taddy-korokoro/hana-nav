@@ -12,7 +12,7 @@ import { COPY } from '@/lib/constants/copy';
 export function IdentifyPromoSection() {
   const copy = COPY.home.identifyPromo;
   return (
-    <section className="pt-16">
+    <section className="pt-10 md:pt-12">
       <div className="overflow-hidden rounded-card-lg border border-line bg-gradient-to-br from-brand-soft via-white to-surface-2">
         <div className="grid gap-10 p-8 md:grid-cols-[1.1fr_1fr] md:gap-12 md:p-12">
           <div className="flex flex-col justify-center">
