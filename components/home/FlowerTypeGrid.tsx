@@ -24,7 +24,7 @@ export function FlowerTypeGrid({ flowers }: { flowers: FeaturedFlower[] }) {
   if (flowers.length === 0) return null;
 
   return (
-    <section className="pt-16">
+    <section className="pt-10 md:pt-12">
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
