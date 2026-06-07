@@ -5,7 +5,6 @@ import { FeaturedSpots } from '@/components/home/FeaturedSpots';
 import { FlowerTypeGrid } from '@/components/home/FlowerTypeGrid';
 import { HeroSection } from '@/components/home/HeroSection';
 import { IdentifyPromoSection } from '@/components/home/IdentifyPromoSection';
-import { SearchBar } from '@/components/home/SearchBar';
 import { SeasonMapLazy } from '@/components/home/SeasonMapLazy';
 import { CACHE_TAGS } from '@/lib/cacheTags';
 import { COPY } from '@/lib/constants/copy';
@@ -47,12 +46,7 @@ async function HomeHeroAndSearch() {
   'use cache';
   cacheLife('hours');
   const currentMonth = tokyoMonth();
-  return (
-    <>
-      <HeroSection currentMonth={currentMonth} />
-      <SearchBar currentMonth={currentMonth} />
-    </>
-  );
+  return <HeroSection currentMonth={currentMonth} />;
 }
 
 async function HomeContent() {
@@ -71,7 +65,9 @@ async function HomeContent() {
   return (
     <>
       {apiKey && spotsWithCoords.length > 0 && (
-        <section className="pt-16">
+        // 直下に「今月見頃のスポット」一覧（FeaturedSpots）があり情報重複するため、
+        // モバイルでは section 全体を非表示にする。地図は md 以上のみ。
+        <section className="hidden md:block md:pt-12">
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
@@ -89,7 +85,7 @@ async function HomeContent() {
       )}
 
       {prefectureGroups.length > 0 && (
-        <section className="pt-16">
+        <section className="pt-10 md:pt-12">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.25em] text-brand">
               {COPY.home.areaPicker.eyebrow}
@@ -111,7 +107,7 @@ async function HomeContent() {
 
 function HomeHeroSkeleton() {
   return (
-    <section className="pb-10 pt-12 md:pb-16 md:pt-20">
+    <section className="pb-2 pt-12 md:pb-4 md:pt-20">
       <div className="h-3 w-40 animate-pulse rounded bg-surface-2" />
       <div className="mt-4 h-12 w-full max-w-md animate-pulse rounded bg-surface-2 md:h-16" />
       <div className="mt-4 h-4 w-full max-w-xl animate-pulse rounded bg-surface-2" />
@@ -123,7 +119,7 @@ function HomeHeroSkeleton() {
 
 function HomeContentSkeleton() {
   return (
-    <section className="pt-16">
+    <section className="pt-10 md:pt-12">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i}>

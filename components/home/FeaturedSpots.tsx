@@ -24,7 +24,7 @@ export function FeaturedSpots({
 }) {
   if (spots.length === 0) {
     return (
-      <section className="pt-16">
+      <section className="pt-10 md:pt-12">
         <SectionHeader
           eyebrow={COPY.home.featured.eyebrow}
           title={COPY.home.featured.title}
@@ -47,7 +47,7 @@ export function FeaturedSpots({
   }
 
   return (
-    <section className="pt-16">
+    <section className="pt-10 md:pt-12">
       <SectionHeader
         eyebrow={COPY.home.featured.eyebrow}
         title={COPY.home.featured.title}
