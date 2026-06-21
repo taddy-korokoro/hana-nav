@@ -86,3 +86,4 @@
 - [specs/database.md](./specs/database.md) — spots / images / spot_flowers / reviews
 - [specs/seo.md](./specs/seo.md) — 構造化データ（JSON-LD）
 - [specs/operations.md](./specs/operations.md) — オーバーツーリズム対策
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — generateMetadata / notFound() / Server Component データ取得

@@ -107,3 +107,4 @@
 
 - [specs/ai-identify.md](./specs/ai-identify.md)
 - [specs/operations.md](./specs/operations.md) — コスト管理 / Gemini API コスト爆発リスク
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Route Handler / Server 秘密の取り扱い

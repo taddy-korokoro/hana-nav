@@ -72,3 +72,4 @@
 
 - [specs/story-card.md](./specs/story-card.md)
 - [specs/operations.md](./specs/operations.md) — モバイルでの Canvas 性能リスク
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Client Component の境界 / 画像の `<img>` 直書き例外

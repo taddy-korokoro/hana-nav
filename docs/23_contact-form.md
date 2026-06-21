@@ -94,3 +94,8 @@ SMTP_PASS=                            # Gmail アプリパスワード（Supabas
 - [x] フッターと admin nav の動線追加
 - [x] env を必要最小限の 2 つに削減
 - [ ] **B 案アップグレード**：Gmail API ポーリングでユーザー返信を `contact_replies` に取り込む（流量増加後に着手）
+
+## 参考
+
+- [specs/database.md](./specs/database.md) — contact_messages / contact_replies
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / Route Handler の使い分け

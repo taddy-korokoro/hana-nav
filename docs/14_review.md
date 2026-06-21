@@ -73,3 +73,4 @@
 
 - [specs/database.md](./specs/database.md) — reviews
 - [specs/operations.md](./specs/operations.md) — レビューの誹謗中傷リスク
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / revalidatePath

@@ -74,3 +74,4 @@
 
 - [specs/pages.md](./specs/pages.md) — 公開ページ一覧
 - [specs/database.md](./specs/database.md) — flowers / flower_aliases
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — generateMetadata / generateStaticParams

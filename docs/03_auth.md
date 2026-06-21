@@ -86,5 +86,6 @@
 
 ## 参考
 
-- CLAUDE.md「Supabase Auth（App Router）実装ルール」（middleware / updateSession の完全コード含む）
+- [specs/supabase-auth.md](./specs/supabase-auth.md) — middleware / updateSession の完全コード・DO/DON'T
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Component / Server Action / Route Handler の使い分け
 - <https://supabase.com/docs/guides/auth/server-side/nextjs>

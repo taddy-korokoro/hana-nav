@@ -84,3 +84,5 @@
 
 - [specs/pages.md](./specs/pages.md) — 管理者専用ページ
 - [specs/database.md](./specs/database.md) — profiles / reviews / ai_usage_logs
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / 動的レンダリング
+- [specs/supabase-auth.md](./specs/supabase-auth.md) — admin ロールチェック / Service Role の境界

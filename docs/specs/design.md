@@ -239,7 +239,7 @@ UI 実装で **避ける**こと。インスタ寄せや派手系に流れがち
 
 - ラベルは `text-ink-muted` の英字風（`uppercase tracking-[0.2em]`）。eyebrow より字間は狭め
 - チップ自体はパターン 5 を踏襲、選択状態は `bg-brand-soft text-brand border-brand`
-- フィルター状態は **URL `searchParams` に保持**（CLAUDE.md「9. URL 検索パラメータを状態として活用」）
+- フィルター状態は **URL `searchParams` に保持**（[`nextjs-conventions.md`](./nextjs-conventions.md)「9. URL 検索パラメータを状態として活用」）
 
 ### 9. 件数表示
 

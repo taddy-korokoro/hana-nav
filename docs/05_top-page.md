@@ -72,3 +72,4 @@ DB 側に `spots_latitude(spots)` / `spots_longitude(spots)` の computed column
 
 - [specs/pages.md](./specs/pages.md) — 公開ページ一覧
 - [specs/database.md](./specs/database.md) — spots / 月またぎ見頃判定クエリ / `spots_latitude` / `spots_longitude`
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Component でのデータ取得 / metadata

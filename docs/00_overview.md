@@ -2,7 +2,7 @@
 
 hana nav MVP の開発チケット。番号順に依存関係を組んでいる。各チケット内の TODO を `[ ]` → `[x]` で進捗管理する。
 
-詳細仕様は `docs/specs/` を正とする。チケットは **やることリスト** であり、設計の二重管理は避ける。共通規約（Next.js App Router・Supabase Auth・論理削除・整合性）は `CLAUDE.md` 参照。
+詳細仕様は `docs/specs/` を正とする。チケットは **やることリスト** であり、設計の二重管理は避ける。共通規約は `CLAUDE.md`（論理削除・整合性・コスト境界などの最小ルール）と `docs/specs/nextjs-conventions.md` / `docs/specs/supabase-auth.md`（詳細・コード雛形）に分けて格納。
 
 ## チケット一覧
 

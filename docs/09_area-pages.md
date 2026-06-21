@@ -40,3 +40,4 @@
 
 - [specs/pages.md](./specs/pages.md) — 公開ページ一覧
 - [specs/database.md](./specs/database.md) — prefectures
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — generateStaticParams / Server Component データ取得
