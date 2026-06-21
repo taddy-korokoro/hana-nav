@@ -196,6 +196,7 @@ MVP では一覧 ↔ 詳細の代表 2 ルート（`/spots → /spots/[id]` と 
 
 ## 参考
 
-- [CLAUDE.md](../CLAUDE.md) 冒頭「重要：Next.jsバージョンについて」のヒント
+- [CLAUDE.md](../CLAUDE.md) 冒頭「重要：技術スタックのバージョン」のヒント
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server / Client 境界 / Link プリフェッチ
 - `node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md`
 - `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/02-route-segment-config/instant.md`

@@ -58,3 +58,4 @@
 
 - [specs/database.md](./specs/database.md) — bookmarks
 - [specs/api.md](./specs/api.md) — ユーザー向け API
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / revalidatePath

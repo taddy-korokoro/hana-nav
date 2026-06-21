@@ -152,3 +152,4 @@ curl -s http://localhost:3000/sitemap.xml | grep -oE "/flowers/[0-9a-f-]+" | hea
 ## 参考
 
 - [specs/seo.md](./specs/seo.md)
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — generateMetadata / Metadata Files（sitemap.ts / robots.ts / opengraph-image.tsx）

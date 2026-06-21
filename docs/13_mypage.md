@@ -64,3 +64,5 @@
 
 - [specs/pages.md](./specs/pages.md) — ログインユーザー専用ページ
 - [specs/database.md](./specs/database.md) — profiles
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / 動的レンダリング
+- [specs/supabase-auth.md](./specs/supabase-auth.md) — getUser() / Server Action でのログイン状態取得

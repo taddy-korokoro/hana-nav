@@ -203,4 +203,5 @@ UI / 法令対応 / 実装は本チケットで完了する。実環境での発
 - [消費者庁ステルスマーケティング規制](https://www.caa.go.jp/policies/policy/representation/fair_labeling/stealth_marketing/)
 - [specs/operations.md](./specs/operations.md) — 収益化セクション（本チケットで追記）
 - [specs/ai-identify.md](./specs/ai-identify.md) — AI 判定結果 UI
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Route Handler / Server 側の API キー取り扱い
 - [11](./11_ai-identify.md) / [07](./07_spot-detail.md) / [08](./08_flower-pages.md)

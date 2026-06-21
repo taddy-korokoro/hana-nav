@@ -79,3 +79,5 @@
 
 - [specs/database.md](./specs/database.md) — flowers / flower_aliases / images
 - [specs/pages.md](./specs/pages.md) — 管理者専用ページ
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / revalidatePath
+- [specs/supabase-auth.md](./specs/supabase-auth.md) — admin ロールチェック

@@ -65,4 +65,4 @@
 ## 参考
 
 - [specs/tech-stack.md](./specs/tech-stack.md) — ディレクトリ構成
-- CLAUDE.md「Next.js App Router ベストプラクティス」
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Components / Client 境界の押し下げ / Link・Image 規約

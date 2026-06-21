@@ -270,4 +270,5 @@
 
 - [specs/design.md](./specs/design.md) — 本チケットで大幅更新
 - [pages.md](./specs/pages.md) — パンくずを置く対象ルートの一覧
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Client 境界の押し下げ / Link・Image 規約
 - 監査結果（2026-05-24 壁打ち時の Explore 結果） — チケット作成時の根拠

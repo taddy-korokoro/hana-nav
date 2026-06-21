@@ -83,3 +83,5 @@
 - [specs/pages.md](./specs/pages.md) — 管理者専用ページ
 - [specs/api.md](./specs/api.md) — 管理者向け API
 - [specs/database.md](./specs/database.md) — spots / images / spot_flowers
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — Server Action / error.tsx で握りつぶし禁止
+- [specs/supabase-auth.md](./specs/supabase-auth.md) — admin ロールチェック

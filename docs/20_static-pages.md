@@ -53,3 +53,4 @@
 
 - [specs/pages.md](./specs/pages.md) — 公開ページ一覧
 - [specs/operations.md](./specs/operations.md) — ローンチチェックリスト
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — generateMetadata / 静的レンダリング

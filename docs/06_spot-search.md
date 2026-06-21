@@ -87,4 +87,4 @@
 
 - [specs/pages.md](./specs/pages.md) — 公開ページ一覧
 - [specs/database.md](./specs/database.md) — spots / spot_flowers
-- CLAUDE.md「Next.js App Router ベストプラクティス - URL検索パラメータを状態として活用」
+- [specs/nextjs-conventions.md](./specs/nextjs-conventions.md) — URL 検索パラメータを状態として活用 / Client 境界を末端に
