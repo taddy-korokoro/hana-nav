@@ -62,7 +62,7 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 | **画像圧縮**                    | クライアントで max-width: 1024px、JPEG 品質 0.8 にリサイズしてから送信 |
 | **同一画像キャッシュ**          | SHA-256 ハッシュをキーに 24 時間キャッシュして重複呼び出しをゼロ化     |
 | **Google Cloud 月予算アラート** | ¥5,000 超でメール通知（必須）                                          |
-| **Vercel Spend Management**     | 設定必須                                                               |
+| **Netlify Usage notifications** | Bandwidth / Build minutes / Functions invocations の閾値アラートを設定 |
 | **Supabase DB サイズ監視**      | 無料枠 500MB。画像は Storage ではなく外部 URL 参照で節約               |
 
 ## 技術的懸念点
@@ -71,7 +71,7 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 
 | 懸念                             | リスク                 | 対策                                                                                             |
 | -------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| **Gemini API コスト爆発**        | バズって $1,000 超請求 | レート制限 + Google Cloud 月予算アラート (¥5,000) + Vercel Spend Management                      |
+| **Gemini API コスト爆発**        | バズって $1,000 超請求 | レート制限 + Google Cloud 月予算アラート (¥5,000) + Netlify Usage notifications                  |
 | **Supabase 無料枠（500MB）超過** | 突然のサービス停止     | DB は軽量データのみ。画像は Storage ではなく外部 URL 参照                                        |
 | **images テーブル整合性**        | 孤立画像発生           | A: アプリ層の共通バリデータ + B: DB トリガーで親存在検証（2 層防御）+ 運用ルールで物理削除を禁止 |
 
@@ -93,9 +93,9 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 ### コスト・監視
 
 - [ ] Google Cloud コンソールで月予算アラート設定（¥5,000 超でメール通知）
-- [ ] Vercel Spend Management 設定
+- [ ] Netlify Usage notifications 設定（Bandwidth / Build minutes / Functions invocations）
 - [ ] Supabase Dashboard で DB サイズ監視を確認
-- [ ] エラーログ収集設定（Vercel Logs / Sentry）
+- [ ] エラーログ収集設定（Netlify Functions Logs / Sentry）
 - [ ] 緊急時の API キー無効化手順をドキュメント化
 
 ### セキュリティ・権限
@@ -110,7 +110,7 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 - [ ] Google Search Console にサイトマップ（`/sitemap.xml`）を送信
 - [ ] OGP 画像（`/og-default.png`、1200×630px）を配置
 - [ ] robots.txt で `/admin/`, `/api/`, `/auth/`, `/mypage/` がブロックされていることを確認
-- [ ] HTTPS で配信されていることを確認（本番 URL は `https://hananav.site`。Vercel が自動発行する Let's Encrypt 証明書を使用）
+- [ ] HTTPS で配信されていることを確認（本番 URL は `https://hananav.site`。Netlify が自動発行する Let's Encrypt 証明書を使用）
 
 ### コンテンツ
 
@@ -130,8 +130,8 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 1. <https://aistudio.google.com/app/apikey> を開く
 2. 該当 API キーの **Delete** をクリック → 即座に無効化
 3. 新しいキーを発行（必要であれば）
-4. Vercel Dashboard > Project Settings > Environment Variables で `GEMINI_API_KEY` を更新
-5. Production を **Redeploy**（既存ビルドは古い値で固められているため）
+4. Netlify Dashboard > Site configuration > Environment variables で `GEMINI_API_KEY` を更新
+5. Production を **Trigger deploy > Clear cache and deploy site**（既存ビルドは古い値で固められているため）
 
 ### Google Maps API キー（`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`）
 
@@ -140,7 +140,7 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 1. <https://console.cloud.google.com/apis/credentials> を開く
 2. 該当キーを開いて **DELETE KEY**
 3. 新キー発行 → HTTP リファラー制限を本番 URL に設定（`https://hananav.site/*` / `https://www.hananav.site/*` / `http://localhost:3000/*` のみ）
-4. Vercel に新キーを登録 → Redeploy
+4. Netlify に新キーを登録 → Redeploy
 
 リファラー制限を最初から設定していれば、流出してもリファラー以外からは使えないので即時無効化は不要。
 
@@ -151,7 +151,7 @@ Next.js 16 `cacheComponents` の `revalidateTag` は第 2 引数（profile）が
 1. <https://supabase.com/dashboard> > 該当プロジェクト > Project Settings > API
 2. **Service Role Key** の **Reveal** で旧キーをコピー（バックアップ用）
 3. プロジェクト直下の **JWT Secret** を **Regenerate JWT Secret**（service role key とともに anon key も再発行される）
-4. Vercel Environment Variables の `NEXT_PUBLIC_SUPABASE_ANON_KEY` と `SUPABASE_SERVICE_ROLE_KEY` を新値に更新
+4. Netlify Environment variables の `NEXT_PUBLIC_SUPABASE_ANON_KEY` と `SUPABASE_SERVICE_ROLE_KEY` を新値に更新
 5. Production を **Redeploy**
 6. 既存ユーザーの JWT は失効するので、全員再ログインが必要（事前に告知できない場合は受け入れる）
 
