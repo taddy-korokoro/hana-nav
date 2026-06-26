@@ -57,102 +57,106 @@
 
 ### 2-1. 全体フロー（ユーザー向け）
 
-トップを起点に各ユーザー導線が左→右に伸びるレイアウト。
+> どの画面からでもナビゲーションバー経由でトップへ戻れる。
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'step'}}}%%
 flowchart LR
-    TOP[トップ]
+    subgraph sg1["ユーザー向けフロー"]
+        direction LR
+        TOP[トップ]
 
-    TOP --> SPOTS[スポット検索]
-    SPOTS --> SPOT_DETAIL[スポット詳細]
+        TOP --> SPOTS[スポット検索]
+        SPOTS --> SPOT_DETAIL[スポット詳細]
 
-    TOP --> AREA[エリア別一覧]
-    AREA --> SPOT_DETAIL2[スポット詳細]
+        TOP --> AREA[エリア別一覧]
+        AREA --> SPOT_DETAIL2[スポット詳細]
 
-    TOP --> FLOWERS[花の種類一覧]
-    FLOWERS --> FLOWER_DETAIL[花の詳細]
-    FLOWER_DETAIL --> SPOT_DETAIL3[スポット詳細]
+        TOP --> FLOWERS[花の種類一覧]
+        FLOWERS --> FLOWER_DETAIL[花の詳細]
+        FLOWER_DETAIL --> SPOT_DETAIL3[スポット詳細]
 
-    TOP --> IDENTIFY[AI 花判定]
-    IDENTIFY --> RESULT[AI 判定結果]
-    RESULT --> STORY[旅のしおり生成]
+        TOP --> IDENTIFY[AI 花判定]
+        IDENTIFY --> RESULT[AI 判定結果]
+        RESULT --> STORY[旅のしおり生成]
 
-    TOP --> LOGIN[ログイン]
-    LOGIN --> MYPAGE[マイページ]
-    MYPAGE --> BOOKMARKS[ブックマーク一覧]
-    MYPAGE --> PROFILE[プロフィール編集]
-    MYPAGE --> REVIEWS[レビュー一覧]
+        TOP --> LOGIN[ログイン]
+        LOGIN --> MYPAGE[マイページ]
+        MYPAGE --> BOOKMARKS[ブックマーク一覧]
 
-    TOP --> SIGNUP[会員登録]
-    SIGNUP --> SIGNUP_DONE[会員登録完了]
+        TOP --> LOGIN2[ログイン]
+        LOGIN2 --> MYPAGE2[マイページ]
+        MYPAGE2 --> PROFILE[プロフィール編集]
 
-    TOP --> TERMS[利用規約]
-    TOP --> PRIVACY[プライバシーポリシー]
+        TOP --> LOGIN3[ログイン]
+        LOGIN3 --> MYPAGE3[マイページ]
+        MYPAGE3 --> REVIEWS[レビュー一覧]
+
+        TOP --> SIGNUP[会員登録]
+        SIGNUP --> SIGNUP_DONE[会員登録完了]
+
+        TOP --> TERMS[利用規約]
+        TOP --> PRIVACY[プライバシーポリシー]
+    end
 ```
 
 ### 2-2. 認証フロー
 
+> ログイン済み状態から任意のタイミングでログアウト可能。パスワード更新後はログイン画面に遷移する。
+
 ```mermaid
+%%{init: {'flowchart': {'curve': 'step'}}}%%
 flowchart LR
-    UNAUTH([未ログイン])
-
-    UNAUTH -->|ログインを選択| LOGIN[ログイン]
-    UNAUTH -->|新規登録を選択| SIGNUP[会員登録]
-
-    LOGIN -->|Email 認証| AUTHED([ログイン済み])
-    LOGIN -->|Google でログイン| CALLBACK[OAuth コールバック]
-    LOGIN -->|パスワードを忘れた| RESET[パスワードリセット申請]
-    LOGIN -->|アカウント未所持| SIGNUP
-
-    SIGNUP -->|メール確認後| AUTHED
-    SIGNUP -->|Google で登録| CALLBACK
-    CALLBACK -->|OAuth 完了| AUTHED
-
-    RESET --> UPDATE[パスワード更新]
-    UPDATE -->|設定完了| LOGIN
-
-    AUTHED -->|ログアウト| UNAUTH
+    subgraph sg2["認証フロー"]
+        direction LR
+        A1[未ログイン] --> A2[ログイン] -->|Email 認証| A3[ログイン済み]
+        B1[未ログイン] --> B2[ログイン] -->|Google ログイン| B3[OAuth コールバック] --> B4[ログイン済み]
+        C1[未ログイン] --> C2[ログイン] -->|パスワードを忘れた| C3[リセット申請] --> C4[パスワード更新]
+        D1[未ログイン] --> D2[会員登録] -->|メール確認後| D3[ログイン済み]
+        E1[未ログイン] --> E2[会員登録] -->|Google 登録| E3[OAuth コールバック] --> E4[ログイン済み]
+    end
 ```
 
 ### 2-3. 認証必須ページのリダイレクト
 
+> 認証・権限確認後は元のページへリダイレクトされる。
+
 ```mermaid
+%%{init: {'flowchart': {'curve': 'step'}}}%%
 flowchart LR
-    UNAUTH([未ログイン])
-
-    UNAUTH -->|直接アクセス| PROTECT[認証必須ページ]
-    PROTECT -->|Middleware リダイレクト| LOGIN[ログイン]
-    LOGIN -->|認証成功| AUTHED([ログイン済み])
-    AUTHED -->|元ページへ| PROTECT
-
-    UNAUTH -->|直接アクセス| ADMIN_PROTECT[管理者専用ページ]
-    ADMIN_PROTECT -->|Middleware リダイレクト| LOGIN
-    LOGIN -->|admin 認証成功| ADMIN([admin ロール])
-    ADMIN -->|元ページへ| ADMIN_PROTECT
+    subgraph sg3["リダイレクト"]
+        direction LR
+        A1[未ログイン] -->|直接アクセス| A2[認証必須ページ] -->|Middleware リダイレクト| A3[ログイン] -->|認証成功| A4[ログイン済み] --> A5[元ページ（認証必須）]
+        B1[未ログイン] -->|直接アクセス| B2[管理者専用ページ] -->|Middleware リダイレクト| B3[ログイン] -->|admin 認証成功| B4[admin ロール] --> B5[元ページ（管理者専用）]
+    end
 ```
 
 ### 2-4. 管理者フロー
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'step'}}}%%
 flowchart LR
-    ADMIN[管理ダッシュボード]
+    subgraph sg4["管理者フロー"]
+        direction LR
+        ADMIN[管理ダッシュボード]
 
-    ADMIN --> SPOTS_LIST[スポット一覧]
-    SPOTS_LIST --> SPOTS_NEW[スポット新規作成]
-    SPOTS_LIST --> SPOTS_EDIT[スポット詳細・編集]
+        ADMIN --> SPOTS_LIST[スポット一覧]
+        SPOTS_LIST --> SPOTS_NEW[スポット新規作成]
+        SPOTS_LIST --> SPOTS_EDIT[スポット詳細・編集]
 
-    ADMIN --> SPOTS_PENDING[公開待ちスポット]
-    SPOTS_PENDING --> SPOTS_EDIT
+        ADMIN --> SPOTS_PENDING[公開待ちスポット]
+        SPOTS_PENDING --> SPOTS_EDIT2[スポット詳細・編集]
 
-    ADMIN --> FLOWERS_LIST[花マスター一覧]
-    FLOWERS_LIST --> FLOWERS_EDIT[花マスター編集]
-    FLOWERS_EDIT --> IMAGES[画像管理]
+        ADMIN --> FLOWERS_LIST[花マスター一覧]
+        FLOWERS_LIST --> FLOWERS_EDIT[花マスター編集]
+        FLOWERS_EDIT --> IMAGES[画像管理]
 
-    ADMIN --> USERS[ユーザー一覧]
-    USERS --> USERS_DETAIL[ユーザー詳細]
-    USERS_DETAIL --> REVIEWS[レビュー管理]
+        ADMIN --> USERS[ユーザー一覧]
+        USERS --> USERS_DETAIL[ユーザー詳細]
+        USERS_DETAIL --> REVIEWS[レビュー管理]
 
-    ADMIN --> AI_USAGE[AI 利用ログ]
+        ADMIN --> AI_USAGE[AI 利用ログ]
+    end
 ```
 
 ---
@@ -181,7 +185,7 @@ flowchart LR
 | AI 判定 → しおり生成 → SNS シェア    | 2-1（SC-07→SC-08→SC-09）             |
 | 未ログイン → ログイン → マイページ   | 2-2 + 2-3                            |
 | スポット詳細 → ブックマーク          | 2-3（SC-03→SC-13）                   |
-| 管理者：公開待ちスポットを公開       | 2-5（SPOTS_PENDING→SPOTS_EDIT→公開） |
+| 管理者：公開待ちスポットを公開       | 2-4（SPOTS_PENDING→SPOTS_EDIT→公開） |
 
 ---
 
