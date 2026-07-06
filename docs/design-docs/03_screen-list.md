@@ -100,34 +100,34 @@
 
 ## 4. 画面ごとのコンポーネント・アクション対応
 
-| 画面 ID | Page ファイル                        | 主要 Client Component                      | Server Action / Route Handler                  |
-| ------- | ------------------------------------ | ------------------------------------------ | ---------------------------------------------- |
-| SC-01   | `app/page.tsx`                       | 地図ピン、花カルーセル                     | -                                              |
-| SC-02   | `app/spots/page.tsx`                 | フィルタフォーム（URL 更新）               | `GET /api/spots`                               |
-| SC-03   | `app/spots/[id]/page.tsx`            | 画像スライダー、地図ピン、レビューフォーム | `POST /api/bookmarks`, `POST /api/reviews`     |
-| SC-04   | `app/areas/[prefecture_id]/page.tsx` | -                                          | -                                              |
-| SC-05   | `app/flowers/page.tsx`               | -                                          | -                                              |
-| SC-06   | `app/flowers/[id]/page.tsx`          | 楽天商品カード（Client fetch）             | `GET /api/flowers/[id]`                        |
-| SC-07   | `app/identify/page.tsx`              | カメラ / ファイル選択、プレビュー          | `POST /api/ai/identify-flower`                 |
-| SC-08   | `app/identify/result/page.tsx`       | 判定結果カード                             | -                                              |
-| SC-09   | `app/identify/story/page.tsx`        | `StoryCardGenerator`（Canvas API）         | -（クライアント完結）                          |
-| SC-10   | `app/auth/login/page.tsx`            | ログインフォーム                           | `app/auth/login/actions.ts`                    |
-| SC-11   | `app/auth/signup/page.tsx`           | 登録フォーム                               | `app/auth/signup/actions.ts`                   |
-| SC-12   | `app/mypage/page.tsx`                | -                                          | -                                              |
-| SC-13   | `app/mypage/bookmarks/page.tsx`      | ブックマーク削除ボタン                     | `DELETE /api/bookmarks/[spot_id]`              |
-| SC-14   | `app/mypage/profile/page.tsx`        | アバターアップロード                       | `app/mypage/profile/actions.ts`                |
-| SC-15   | `app/admin/page.tsx`                 | 統計カード                                 | -                                              |
-| SC-AD1  | `app/admin/spots/page.tsx`           | -                                          | -                                              |
-| SC-AD2  | `app/admin/spots/new/page.tsx`       | スポット入力フォーム                       | `createSpotAction`                             |
-| SC-AD3  | `app/admin/spots/pending/page.tsx`   | -                                          | `togglePublishedAction`                        |
-| SC-AD4  | `app/admin/spots/[id]/page.tsx`      | 画像アップロード                           | `updateSpotAction`, `softDeleteSpotAction`     |
-| SC-AD5  | `app/admin/flowers/page.tsx`         | -                                          | `createFlowerAction`                           |
-| SC-AD6  | `app/admin/flowers/[id]/page.tsx`    | 画像アップロード                           | `updateFlowerAction`, `softDeleteFlowerAction` |
-| SC-AD7  | `app/admin/users/page.tsx`           | -                                          | -                                              |
-| SC-AD8  | `app/admin/users/[id]/page.tsx`      | -                                          | `banUserAction`                                |
-| SC-AD9  | `app/admin/reviews/page.tsx`         | -                                          | `softDeleteReviewAction`                       |
-| SC-AD10 | `app/admin/ai-usage/page.tsx`        | 利用グラフ                                 | -                                              |
-| SC-AD11 | `app/admin/images/page.tsx`          | 画像グリッド                               | `softDeleteImageAction`                        |
+| 画面 ID | Page ファイル                               | 主要 Client Component                      | Server Action / Route Handler                  |
+| ------- | ------------------------------------------- | ------------------------------------------ | ---------------------------------------------- |
+| SC-01   | `app/(site)/page.tsx`                       | 地図ピン、花カルーセル                     | -                                              |
+| SC-02   | `app/(site)/spots/page.tsx`                 | フィルタフォーム（URL 更新）               | `GET /api/spots`                               |
+| SC-03   | `app/(site)/spots/[id]/page.tsx`            | 画像スライダー、地図ピン、レビューフォーム | `POST /api/bookmarks`, `POST /api/reviews`     |
+| SC-04   | `app/(site)/areas/[prefecture_id]/page.tsx` | -                                          | -                                              |
+| SC-05   | `app/(site)/flowers/page.tsx`               | -                                          | -                                              |
+| SC-06   | `app/(site)/flowers/[id]/page.tsx`          | 楽天商品カード（Client fetch）             | `GET /api/flowers/[id]`                        |
+| SC-07   | `app/(site)/identify/page.tsx`              | カメラ / ファイル選択、プレビュー          | `POST /api/ai/identify-flower`                 |
+| SC-08   | `app/(site)/identify/result/page.tsx`       | 判定結果カード                             | -                                              |
+| SC-09   | `app/(site)/identify/story/page.tsx`        | `StoryCardGenerator`（Canvas API）         | -（クライアント完結）                          |
+| SC-10   | `app/auth/login/page.tsx`                   | ログインフォーム                           | `app/auth/login/actions.ts`                    |
+| SC-11   | `app/auth/signup/page.tsx`                  | 登録フォーム                               | `app/auth/signup/actions.ts`                   |
+| SC-12   | `app/(site)/mypage/page.tsx`                | -                                          | -                                              |
+| SC-13   | `app/(site)/mypage/bookmarks/page.tsx`      | ブックマーク削除ボタン                     | `DELETE /api/bookmarks/[spot_id]`              |
+| SC-14   | `app/(site)/mypage/profile/page.tsx`        | アバターアップロード                       | `app/(site)/mypage/profile/actions.ts`         |
+| SC-15   | `app/admin/page.tsx`                        | 統計カード                                 | -                                              |
+| SC-AD1  | `app/admin/spots/page.tsx`                  | -                                          | -                                              |
+| SC-AD2  | `app/admin/spots/new/page.tsx`              | スポット入力フォーム                       | `createSpotAction`                             |
+| SC-AD3  | `app/admin/spots/pending/page.tsx`          | -                                          | `togglePublishedAction`                        |
+| SC-AD4  | `app/admin/spots/[id]/page.tsx`             | 画像アップロード                           | `updateSpotAction`, `softDeleteSpotAction`     |
+| SC-AD5  | `app/admin/flowers/page.tsx`                | -                                          | `createFlowerAction`                           |
+| SC-AD6  | `app/admin/flowers/[id]/page.tsx`           | 画像アップロード                           | `updateFlowerAction`, `softDeleteFlowerAction` |
+| SC-AD7  | `app/admin/users/page.tsx`                  | -                                          | -                                              |
+| SC-AD8  | `app/admin/users/[id]/page.tsx`             | -                                          | `setBanAction`                                 |
+| SC-AD9  | `app/admin/reviews/page.tsx`                | -                                          | `softDeleteReviewAction`                       |
+| SC-AD10 | `app/admin/ai-usage/page.tsx`               | 利用グラフ                                 | -                                              |
+| SC-AD11 | `app/admin/images/page.tsx`                 | 画像グリッド                               | `softDeleteImageAction`                        |
 
 ---
 
