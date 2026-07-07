@@ -34,7 +34,7 @@
 | AI           | Google Gemini API（`gemini-2.5-flash`）                              | マスタと 3 段階フォールバックでマッチング、再現率と精度を両立       |
 | 地図         | Google Maps JavaScript API                                           | 月予算アラート + ピンの私有地ボカし運用                             |
 | 画像合成     | Canvas API（クライアント側合成）                                     | 旅のしおりを 1 枚画像で Web Share API → SNS へ                      |
-| ホスティング | **Vercel**                                                           | Image Optimization・Functions・Spend Management で運用負荷を最小化  |
+| ホスティング | **Netlify**                                                          | Next.js Runtime・Functions・Usage notifications で運用負荷を最小化  |
 | データ収集   | Python（scrape → normalize → geocode → validate → upload の 5 段）   | 公式 URL / 出典明記を validate 段階で必須化                         |
 
 **想定月額コスト（MAU 5,000）**: ¥3,000〜21,800（無料枠運用 → スケールで Pro 移行）

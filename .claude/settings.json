@@ -13,6 +13,18 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-model.sh",
+            "timeout": 10,
+            "statusMessage": "Checking required model for task..."
+          }
+        ]
+      }
     ]
   }
 }
