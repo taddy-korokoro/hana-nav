@@ -129,7 +129,7 @@
 }
 ```
 
-`showAdReward: true` のとき、クライアントは広告視聴による追加回数付与 UI を表示する。
+`showAdReward` は将来的な広告視聴フロー用の予約フィールドで、現時点ではクライアント側に消費者は存在しない。
 
 ---
 
@@ -146,7 +146,7 @@
 | 未ログイン   | 1/日     | `anonId` |
 | ログイン済み | 3/日     | `userId` |
 
-広告視聴報酬（`reward_unlocked = true`）が付与されるたびに上限 +5 回加算される。
+`ai_usage_logs.reward_unlocked = true` の当日行数に応じて上限が +5 回ずつ加算される。
 
 ```
 本日の上限 = 基本上限 + (reward_unlocked な行数) × 5
