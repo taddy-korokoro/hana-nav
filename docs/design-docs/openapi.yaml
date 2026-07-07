@@ -1311,7 +1311,11 @@ components:
       type: apiKey
       in: cookie
       name: sb-auth-token
-      description: Supabase Auth のセッション Cookie
+      description: |
+        Supabase Auth のセッション Cookie
+
+        ※ `name` はプレースホルダー。実際の Cookie 名は Supabase プロジェクト ref 依存で `sb-<project-ref>-auth-token` 形式となる<br>
+        ※ セッションサイズによっては `sb-<project-ref>-auth-token.0` / `.1` のように複数チャンクに分割される場合がある
 
   parameters:
     SpotIdPath:
@@ -2301,7 +2305,7 @@ components:
       type: object
       description: スポット新規作成入力
       required:
-        [name, prefectureId, location, latitude, longitude, bestSeasonStart, bestSeasonEnd, isPublished]
+        [name, prefectureId, location, latitude, longitude, bestSeasonStart, bestSeasonEnd]
       properties:
         name:
           type: string
@@ -2361,7 +2365,8 @@ components:
           description: 入場料
         isPublished:
           type: boolean
-          description: 公開状態
+          default: false
+          description: 公開状態（未送信時は false 扱い）
         images:
           type: array
           description: 登録するスポット画像
@@ -2645,51 +2650,153 @@ components:
     AdminUserDetail:
       type: object
       description: 管理用ユーザー詳細
-      required: [id, role]
+      required:
+        [id, username, email, avatarUrl, role, isWithdrawn, createdAt, updatedAt, reviews, bookmarks, aiUsage, aiUsageTotal]
       properties:
         id:
           allOf: [$ref: '#/components/schemas/UUID']
           description: ユーザー ID
+        username:
+          type: string
+          nullable: true
+          description: ユーザー名
         email:
           type: string
           format: email
           nullable: true
           description: メールアドレス
-        username:
+        avatarUrl:
           type: string
+          format: uri
           nullable: true
-          description: ユーザー名
+          description: アバター画像 URL
         role:
           type: string
           enum: [user, admin]
           description: 権限
-        deleted_at:
+        isWithdrawn:
+          type: boolean
+          description: 退会フラグ
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        deletedAt:
           type: string
           format: date-time
           nullable: true
           description: 退会日時
-        profile:
-          type: object
-          description: プロフィール情報一式
-          additionalProperties: true
+        authCreatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 認証アカウント作成日時
+        lastSignInAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最終ログイン日時
         reviews:
           type: array
-          description: 投稿レビュー一覧
+          description: 投稿レビュー一覧（最新 100 件）
           items:
-            type: object
-            additionalProperties: true
+            $ref: '#/components/schemas/AdminUserReviewRow'
         bookmarks:
           type: array
-          description: ブックマーク一覧
+          description: ブックマーク一覧（最新 100 件）
           items:
-            type: object
-            additionalProperties: true
-        ai_usage:
+            $ref: '#/components/schemas/AdminUserBookmarkRow'
+        aiUsage:
           type: array
-          description: AI 利用ログ一覧
+          description: AI 利用ログ一覧（最新 50 件）
           items:
-            type: object
-            additionalProperties: true
+            $ref: '#/components/schemas/AdminUserAiUsageRow'
+        aiUsageTotal:
+          type: integer
+          minimum: 0
+          description: AI 利用ログの総件数
+
+    AdminUserReviewRow:
+      type: object
+      description: 管理用ユーザー詳細内のレビュー行
+      required: [id, spotId, spotName, rating, createdAt, isDeleted]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: レビュー ID
+        spotId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 対象スポット ID
+        spotName:
+          type: string
+          description: 対象スポット名
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          nullable: true
+          description: コメント
+        visitedAt:
+          type: string
+          format: date
+          nullable: true
+          description: 訪問日
+        createdAt:
+          type: string
+          format: date-time
+          description: 投稿日時
+        isDeleted:
+          type: boolean
+          description: 削除フラグ
+
+    AdminUserBookmarkRow:
+      type: object
+      description: 管理用ユーザー詳細内のブックマーク行
+      required: [id, spotId, createdAt, isDeleted]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: ブックマーク ID
+        spotId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 対象スポット ID
+        spotName:
+          type: string
+          nullable: true
+          description: 対象スポット名
+        createdAt:
+          type: string
+          format: date-time
+          description: ブックマーク日時
+        isDeleted:
+          type: boolean
+          description: 削除フラグ
+
+    AdminUserAiUsageRow:
+      type: object
+      description: 管理用ユーザー詳細内の AI 利用ログ行
+      required: [id, usedAt, rewardUnlocked, isAnonymous]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 利用ログ ID
+        usedAt:
+          type: string
+          format: date-time
+          description: 利用日時
+        rewardUnlocked:
+          type: boolean
+          description: 報酬解放フラグ
+        isAnonymous:
+          type: boolean
+          description: 匿名ユーザー利用フラグ
 
     # ---------- 管理者: レビュー ----------
     AdminReview:
