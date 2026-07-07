@@ -1,0 +1,2927 @@
+openapi: 3.1.0
+
+info:
+  title: hana-nav API
+  version: 0.1.0
+  description: |
+    hana-nav（花畑スポット検索サービス）の Route Handler API 仕様。
+
+    ## 認証
+
+    Supabase Auth のセッション Cookie でユーザーを識別する。詳細は [`docs/specs/supabase-auth.md`](../specs/supabase-auth.md) 参照。
+
+    ## AI 花判定のレート制限
+
+    - 匿名ユーザー: 1 回/日
+    - ログインユーザー: 3 回/日
+    - 報酬解放（`reward_unlocked = true`）が付与された利用ログ 1 件につき、上限に +5 回加算
+  contact:
+    name: hana-nav 開発チーム
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://hana-nav.netlify.app
+    description: 本番環境（Netlify）
+  - url: http://localhost:3000
+    description: ローカル開発環境
+
+tags:
+  - name: Public
+    description: 認証不要の公開エンドポイント
+  - name: AI
+    description: AI 花判定（レート制限あり）
+  - name: User
+    description: ログインユーザー向け
+  - name: Admin
+    description: 管理者向け
+
+security:
+  - cookieAuth: []
+
+paths:
+  # ============================================================
+  # 公開エンドポイント
+  # ============================================================
+
+  /api/spots/{id}:
+    get:
+      tags: [Public]
+      summary: スポット詳細取得
+      description: スポットの詳細情報（スポット画像・花構成・レビュー・レビュー集計・関連スポット）を返却
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPath'
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'public, s-maxage=60, stale-while-revalidate=300'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotDetailBundle'
+        '404':
+          description: 対象スポットが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: spot_not_found
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/flowers:
+    get:
+      tags: [Public]
+      summary: 花マスター一覧取得
+      description: 花マスターを全件返却
+      security: []
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'public, s-maxage=60, stale-while-revalidate=300'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [flowers]
+                properties:
+                  flowers:
+                    type: array
+                    description: 花マスター一覧
+                    items:
+                      $ref: '#/components/schemas/FlowerListItem'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/flowers/{id}:
+    get:
+      tags: [Public]
+      summary: 花詳細取得
+      description: 花の詳細情報（花マスター・別名・花画像・関連スポット）を返却
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/FlowerIdPath'
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'public, s-maxage=60, stale-while-revalidate=300'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowerDetailBundle'
+        '404':
+          description: 対象の花が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: flower_not_found
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/prefectures:
+    get:
+      tags: [Public]
+      summary: 都道府県マスター取得
+      description: 47 都道府県を地方区分の情報付きで返却
+      security: []
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'public, s-maxage=3600, stale-while-revalidate=86400'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [prefectures]
+                properties:
+                  prefectures:
+                    type: array
+                    description: 都道府県一覧
+                    items:
+                      $ref: '#/components/schemas/Prefecture'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================
+  # AI 花判定
+  # ============================================================
+
+  /api/ai/identify-flower:
+    get:
+      tags: [AI]
+      summary: AI 花判定のレート制限状態を取得
+      description: |
+        本日の消費数・上限・残回数を返却
+
+        ※ 判定リクエスト前の UI 表示用
+      security: []
+      parameters:
+        - name: anonId
+          in: query
+          description: 匿名ユーザー識別子。ログイン時は無視される。
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'private, no-store'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authenticated, used, limit, remaining]
+                properties:
+                  authenticated:
+                    type: boolean
+                    description: 認証状態
+                  used:
+                    type: integer
+                    description: 本日の消費数
+                  limit:
+                    type: integer
+                    description: 本日の上限
+                  remaining:
+                    type: integer
+                    description: 残回数
+              example:
+                authenticated: false
+                used: 0
+                limit: 1
+                remaining: 1
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [AI]
+      summary: 画像から花を判定
+      description: |
+        画像から花情報と関連スポットを返却
+
+        ※ 未ログイン時は匿名ユーザー識別子（anonId）が必須<br>
+        ※ 画像は 5MB 以下
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: 判定対象画像（最大 5MB）
+                anonId:
+                  type: string
+                  format: uuid
+                  description: 匿名ユーザー識別子。未ログイン時のみ必須。
+      responses:
+        '200':
+          description: 判定成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentifyFlowerResponse'
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidFormData:
+                  value:
+                    error: invalid_form_data
+                imageRequired:
+                  value:
+                    error: image_required
+                anonIdRequired:
+                  value:
+                    error: anon_id_required
+        '413':
+          description: 画像サイズ超過（5MB 超）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: image_too_large
+        '429':
+          description: 本日のレート制限に到達
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error, message, remaining, limit]
+                properties:
+                  error:
+                    type: string
+                    const: rate_limit_exceeded
+                    description: エラーコード
+                  message:
+                    type: string
+                    description: ユーザー向けメッセージ
+                  remaining:
+                    type: integer
+                    const: 0
+                    description: 残回数
+                  limit:
+                    type: integer
+                    description: 本日の上限
+                  showAdReward:
+                    type: boolean
+                    description: 広告視聴フロー用の予約フィールド（現時点で消費者は未実装）
+        '502':
+          description: AI 判定結果のパースに失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: ai_response_parse_failed
+        '503':
+          description: AI サービス設定不備
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: gemini_api_key_missing
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================
+  # ログインユーザー向け
+  # ============================================================
+
+  /api/me/profile:
+    get:
+      tags: [User]
+      summary: 自身のプロフィール取得
+      description: |
+        自身のプロフィール情報を返却
+
+        ※ 未認証時は null を返却
+      security: []
+      responses:
+        '200':
+          description: 取得成功（未認証時は null）
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'private, no-store'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MyProfile'
+                  - type: 'null'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [User]
+      summary: 自身のプロフィール更新
+      description: |
+        自身のプロフィールを更新
+
+        ※ ユーザー名・アバター画像 URL のいずれか 1 項目以上の指定が必須
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                username:
+                  type: string
+                  description: ユーザー名
+                avatar_url:
+                  type: string
+                  nullable: true
+                  maxLength: 2048
+                  description: アバター画像 URL
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson: { value: { error: invalid_json } }
+                invalidInput: { value: { error: invalid_input } }
+                invalidUsername: { value: { error: invalid_username } }
+                nothingToUpdate: { value: { error: nothing_to_update } }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: ユーザー名重複
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: username_taken
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/me/bookmarks:
+    get:
+      tags: [User]
+      summary: 自身のブックマーク一覧取得
+      description: 自身がブックマークしたスポット一覧を返却
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'private, no-store'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bookmarks]
+                properties:
+                  bookmarks:
+                    type: array
+                    description: ブックマーク一覧
+                    items:
+                      $ref: '#/components/schemas/BookmarkListItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/bookmarks:
+    post:
+      tags: [User]
+      summary: ブックマーク追加
+      description: |
+        指定スポットを自身のブックマークに追加
+
+        ※ 既にブックマーク済みの場合も成功を返却（冪等）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [spot_id]
+              properties:
+                spot_id:
+                  allOf:
+                    - $ref: '#/components/schemas/UUID'
+                  description: 対象スポット ID
+      responses:
+        '200':
+          description: 追加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, spot_id]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                    description: 成功フラグ
+                  spot_id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: 対象スポット ID
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson: { value: { error: invalid_json } }
+                invalidSpotId: { value: { error: invalid_spot_id } }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/bookmarks/{spot_id}:
+    get:
+      tags: [User]
+      summary: 特定スポットのブックマーク状態確認
+      description: |
+        指定スポットのブックマーク状態を返却
+
+        ※ 未認証時は認証状態・ブックマーク状態ともに false を返却
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPathQ'
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'private, no-store'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [isAuthenticated, bookmarked]
+                properties:
+                  isAuthenticated:
+                    type: boolean
+                    description: 認証状態
+                  bookmarked:
+                    type: boolean
+                    description: ブックマーク状態
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: invalid_spot_id
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [User]
+      summary: ブックマーク削除
+      description: |
+        指定スポットを自身のブックマークから削除
+
+        ※ 既に削除済みの場合も成功を返却（冪等）
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPathQ'
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, spot_id]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                    description: 成功フラグ
+                  spot_id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: 対象スポット ID
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: invalid_spot_id
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/reviews:
+    post:
+      tags: [User]
+      summary: レビュー投稿
+      description: |
+        指定スポットへのレビューを投稿
+
+        ※ 同一スポットへの既存レビューがある場合は上書き<br>
+        ※ コメントは NG ワードでフィルタ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreateInput'
+      responses:
+        '200':
+          description: 投稿成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, spot_id]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                    description: 成功フラグ
+                  spot_id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: 対象スポット ID
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson: { value: { error: invalid_json } }
+                invalidRating: { value: { error: invalid_rating } }
+                invalidComment: { value: { error: invalid_comment } }
+                invalidVisitedAt: { value: { error: invalid_visited_at } }
+                ngWord: { value: { error: ng_word } }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/reviews/{id}:
+    patch:
+      tags: [User]
+      summary: 自身のレビュー編集
+      description: |
+        レビューの評価点・コメント・訪問日を部分更新
+
+        ※ 自身のアクティブなレビューのみ編集可能
+      parameters:
+        - $ref: '#/components/parameters/ReviewIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdateInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, id]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                    description: 成功フラグ
+                  id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: レビュー ID
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson: { value: { error: invalid_json } }
+                invalidId: { value: { error: invalid_id } }
+                ngWord: { value: { error: ng_word } }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [User]
+      summary: 自身のレビュー削除
+      description: |
+        指定レビューを削除
+
+        ※ 自身のアクティブなレビューのみ削除可能（冪等）
+      parameters:
+        - $ref: '#/components/parameters/ReviewIdPath'
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, id]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                    description: 成功フラグ
+                  id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: レビュー ID
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: invalid_id
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/me/reviews/by-spot/{spot_id}:
+    get:
+      tags: [User]
+      summary: 特定スポットへの自身のレビュー取得
+      description: |
+        指定スポットへの自身のレビューを返却
+
+        ※ 未認証時は認証状態 false・レビュー null を返却<br>
+        ※ レビュー未投稿時はレビュー null を返却
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPathQ'
+      responses:
+        '200':
+          description: 取得成功
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'private, no-store'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [isAuthenticated, review]
+                properties:
+                  isAuthenticated:
+                    type: boolean
+                    description: 認証状態
+                  review:
+                    oneOf:
+                      - $ref: '#/components/schemas/MyReviewForSpot'
+                      - type: 'null'
+                    description: 自身のレビュー（未投稿・未認証時は null）
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: invalid_spot_id
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================
+  # 管理者向け
+  # ============================================================
+
+  /api/admin/spots:
+    get:
+      tags: [Admin]
+      summary: スポット一覧取得
+      description: |
+        フィルタ条件に合致するスポット一覧を返却
+
+        ※ 未公開・削除済みも含む
+      parameters:
+        - name: status
+          in: query
+          description: 公開状態フィルタ
+          schema:
+            type: string
+            enum: [published, unpublished, all]
+        - name: prefecture
+          in: query
+          description: 都道府県 ID
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 47
+        - name: q
+          in: query
+          description: 検索キーワード（スポット名・所在地）
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    description: スポット一覧
+                    items:
+                      $ref: '#/components/schemas/AdminSpot'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Admin]
+      summary: スポット新規作成
+      description: |
+        スポットを新規登録
+
+        ※ 公式サイト URL 未指定時は情報出典が必須
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminSpotCreateInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: 作成されたスポット ID
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/spots/{id}:
+    get:
+      tags: [Admin]
+      summary: スポット詳細取得
+      description: |
+        指定スポットの詳細情報（スポット画像・花構成を含む）を返却
+
+        ※ 未公開・削除済みも含めて取得可能
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPath'
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [spot]
+                properties:
+                  spot:
+                    $ref: '#/components/schemas/AdminSpotDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [Admin]
+      summary: スポット更新
+      description: |
+        指定スポットを更新
+
+        ※ 公開状態のみを送信すると公開フラグの切替として動作<br>
+        ※ 全項目を送信するとスポット全体を上書き更新
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AdminSpotTogglePublishedInput'
+                - $ref: '#/components/schemas/AdminSpotUpdateInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Admin]
+      summary: スポット削除
+      description: |
+        指定スポットを削除
+
+        ※ 子スポット画像もカスケードで削除
+      parameters:
+        - $ref: '#/components/parameters/SpotIdPath'
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/flowers:
+    get:
+      tags: [Admin]
+      summary: 花マスター一覧取得
+      description: フィルタ条件に合致する花マスター一覧を返却
+      parameters:
+        - name: q
+          in: query
+          description: 検索キーワード（花名・別名）
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    description: 花マスター一覧
+                    items:
+                      $ref: '#/components/schemas/AdminFlower'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Admin]
+      summary: 花マスター新規作成
+      description: 花マスターを新規登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminFlowerCreateInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id:
+                    allOf:
+                      - $ref: '#/components/schemas/UUID'
+                    description: 作成された花 ID
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/flowers/{id}:
+    get:
+      tags: [Admin]
+      summary: 花マスター詳細取得
+      description: 指定した花マスターの詳細情報（別名・花画像を含む）を返却
+      parameters:
+        - $ref: '#/components/parameters/FlowerIdPath'
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [flower]
+                properties:
+                  flower:
+                    $ref: '#/components/schemas/AdminFlowerDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [Admin]
+      summary: 花マスター更新
+      description: |
+        指定した花マスターを更新
+
+        ※ 別名・花画像を含めて部分更新可能
+      parameters:
+        - $ref: '#/components/parameters/FlowerIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminFlowerUpdateInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Admin]
+      summary: 花マスター削除
+      description: |
+        指定した花マスターを削除
+
+        ※ 子花画像もカスケードで削除
+      parameters:
+        - $ref: '#/components/parameters/FlowerIdPath'
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/users:
+    get:
+      tags: [Admin]
+      summary: ユーザー一覧取得
+      description: |
+        フィルタ条件に合致するユーザー一覧を返却
+
+        ※ 退会済みユーザーも含む
+      parameters:
+        - name: status
+          in: query
+          description: 在籍状態フィルタ
+          schema:
+            type: string
+            enum: [active, withdrawn, all]
+        - name: role
+          in: query
+          description: 権限フィルタ
+          schema:
+            type: string
+            enum: [user, admin, all]
+        - name: q
+          in: query
+          description: 検索キーワード（ユーザー名・メールアドレス）
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    description: ユーザー一覧
+                    items:
+                      $ref: '#/components/schemas/AdminUser'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/users/{id}:
+    get:
+      tags: [Admin]
+      summary: ユーザー詳細取得
+      description: 指定ユーザーの詳細情報（プロフィール・レビュー・ブックマーク・AI 利用ログを含む）を返却
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: '#/components/schemas/AdminUserDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [Admin]
+      summary: ユーザー権限変更・退会処理
+      description: |
+        指定ユーザーの権限変更・退会処理・退会復元を実施
+
+        ※ 自身への降格・退会処理は不可
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                role:
+                  type: string
+                  enum: [user, admin]
+                  description: 権限
+                deletedAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: 退会日時（null 指定で復元）
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson: { value: { error: invalid_json } }
+                invalidInput: { value: { error: invalid_input } }
+                cannotSelfModify: { value: { error: cannot_self_modify } }
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/reviews:
+    get:
+      tags: [Admin]
+      summary: 全レビュー一覧取得
+      description: |
+        フィルタ条件に合致するレビュー一覧を返却
+
+        ※ NG ワード検知レビューのみに絞り込み可能
+      parameters:
+        - name: status
+          in: query
+          description: 削除状態フィルタ
+          schema:
+            type: string
+            enum: [active, deleted, all]
+        - name: ngOnly
+          in: query
+          description: NG ワード検知レビューのみに絞る
+          schema:
+            type: string
+            enum: ['true', 'false']
+        - name: q
+          in: query
+          description: 検索キーワード（コメント）
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    description: レビュー一覧
+                    items:
+                      $ref: '#/components/schemas/AdminReview'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/reviews/{id}:
+    delete:
+      tags: [Admin]
+      summary: レビュー強制削除
+      description: |
+        指定レビューを削除
+
+        ※ NG ワード検知・通報などを受けた強制削除用
+      parameters:
+        - $ref: '#/components/parameters/ReviewIdPath'
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Admin]
+      summary: レビュー復元
+      description: |
+        指定した削除済みレビューを復元
+
+        ※ 誤削除・異議申立てなどからの復元用
+      parameters:
+        - $ref: '#/components/parameters/ReviewIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  const: restore
+                  description: 復元アクション
+      responses:
+        '200':
+          description: 復元成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        '403':
+          $ref: '#/components/responses/GuestReadOnly'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/ai-usage/stats:
+    get:
+      tags: [Admin]
+      summary: AI 利用状況の集計取得
+      description: AI 利用状況の日別集計・月別集計・利用ランキング・推計コストを返却
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiUsageStats'
+        '302':
+          $ref: '#/components/responses/AdminRedirect'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+# ============================================================
+# 再利用可能なコンポーネント
+# ============================================================
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sb-auth-token
+      description: |
+        Supabase Auth のセッション Cookie
+
+        ※ `name` はプレースホルダー。実際の Cookie 名は Supabase プロジェクト ref 依存で `sb-<project-ref>-auth-token` 形式となる<br>
+        ※ セッションサイズによっては `sb-<project-ref>-auth-token.0` / `.1` のように複数チャンクに分割される場合がある
+
+  parameters:
+    SpotIdPath:
+      name: id
+      in: path
+      required: true
+      description: スポット ID
+      schema:
+        $ref: '#/components/schemas/UUID'
+    SpotIdPathQ:
+      name: spot_id
+      in: path
+      required: true
+      description: スポット ID
+      schema:
+        $ref: '#/components/schemas/UUID'
+    FlowerIdPath:
+      name: id
+      in: path
+      required: true
+      description: 花 ID
+      schema:
+        $ref: '#/components/schemas/UUID'
+    ReviewIdPath:
+      name: id
+      in: path
+      required: true
+      description: レビュー ID
+      schema:
+        $ref: '#/components/schemas/UUID'
+    UserIdPath:
+      name: id
+      in: path
+      required: true
+      description: ユーザー ID
+      schema:
+        $ref: '#/components/schemas/UUID'
+
+  responses:
+    Unauthorized:
+      description: 未認証
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: unauthorized
+    NotFound:
+      description: 対象リソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: not_found
+    BadRequest:
+      description: リクエスト不正
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidJson: { value: { error: invalid_json } }
+            invalidBody: { value: { error: invalid_body } }
+    InternalServerError:
+      description: サーバー内部エラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: internal_server_error
+    AdminRedirect:
+      description: 管理者権限なし（ログイン画面へリダイレクト）
+    GuestReadOnly:
+      description: ゲスト管理者は書き込み不可
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: guest_read_only
+
+  schemas:
+    # ---------- 基本型 ----------
+    UUID:
+      type: string
+      format: uuid
+      description: 汎用 UUID
+      example: 550e8400-e29b-41d4-a716-446655440000
+
+    OkResponse:
+      type: object
+      description: 成功レスポンス
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          const: true
+          description: 成功フラグ
+
+    ErrorResponse:
+      type: object
+      description: エラーレスポンス
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: エラーコード
+
+    # ---------- 公開: 都道府県 ----------
+    Prefecture:
+      type: object
+      description: 都道府県
+      required: [id, name, region]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          maximum: 47
+          description: 都道府県 ID
+        name:
+          type: string
+          description: 都道府県名
+          example: 東京都
+        region:
+          type: string
+          description: 地方区分
+          example: 関東
+
+    # ---------- 公開: スポット ----------
+    SpotDetail:
+      type: object
+      description: スポット詳細
+      required:
+        [id, name, prefectureId, prefectureName, prefectureRegion, location, bestSeasonStart, bestSeasonEnd, updatedAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: スポット ID
+        name:
+          type: string
+          description: スポット名
+        nameKana:
+          type: string
+          nullable: true
+          description: スポット名（カナ）
+        description:
+          type: string
+          nullable: true
+          description: スポット説明
+        prefectureId:
+          type: integer
+          minimum: 1
+          maximum: 47
+          description: 都道府県 ID
+        prefectureName:
+          type: string
+          description: 都道府県名
+        prefectureRegion:
+          type: string
+          description: 地方区分
+        location:
+          type: string
+          description: 所在地（住所テキスト）
+        latitude:
+          type: number
+          nullable: true
+          description: 緯度
+        longitude:
+          type: number
+          nullable: true
+          description: 経度
+        officialUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: 公式サイト URL
+        accessInfo:
+          type: string
+          nullable: true
+          description: アクセス情報
+        parkingInfo:
+          type: string
+          nullable: true
+          description: 駐車場情報
+        entranceFee:
+          type: string
+          nullable: true
+          description: 入場料
+        bestSeasonStart:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃開始月
+        bestSeasonEnd:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃終了月
+        source:
+          type: string
+          nullable: true
+          description: 情報出典
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最終更新日時
+
+    SpotImage:
+      type: object
+      description: スポット画像
+      required: [id, url, displayOrder]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 画像 ID
+        url:
+          type: string
+          format: uri
+          description: 画像 URL
+        caption:
+          type: string
+          nullable: true
+          description: 画像キャプション
+        displayOrder:
+          type: integer
+          description: 表示順
+
+    SpotFlowerEntry:
+      type: object
+      description: スポットで見られる花
+      required: [flowerId, flowerName]
+      properties:
+        flowerId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 花 ID
+        flowerName:
+          type: string
+          description: 花名
+        defaultSeasonStart:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 花の一般的な開花開始月
+        defaultSeasonEnd:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 花の一般的な開花終了月
+        bloomStartMonth:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: このスポットでの開花開始月
+        bloomEndMonth:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: このスポットでの開花終了月
+
+    SpotReview:
+      type: object
+      description: スポットレビュー
+      required: [id, rating, createdAt, reviewer]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: レビュー ID
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          nullable: true
+          description: コメント
+        visitedAt:
+          type: string
+          format: date
+          nullable: true
+          description: 訪問日
+        createdAt:
+          type: string
+          format: date-time
+          description: 投稿日時
+        reviewer:
+          nullable: true
+          type: object
+          description: 投稿者情報（退会済みの場合は null）
+          required: [username, avatarUrl]
+          properties:
+            username:
+              type: string
+              nullable: true
+              description: ユーザー名
+            avatarUrl:
+              type: string
+              format: uri
+              nullable: true
+              description: アバター画像 URL
+
+    RelatedSpot:
+      type: object
+      description: 関連スポット
+      required: [id, name, prefectureName, bestSeasonStart, bestSeasonEnd, reason]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: スポット ID
+        name:
+          type: string
+          description: スポット名
+        prefectureName:
+          type: string
+          description: 都道府県名
+        bestSeasonStart:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃開始月
+        bestSeasonEnd:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃終了月
+        coverImageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: カバー画像 URL
+        coverImageCaption:
+          type: string
+          nullable: true
+          description: カバー画像キャプション
+        reason:
+          type: string
+          enum: [prefecture, flower]
+          description: 関連理由（同都道府県 / 同花）
+
+    SpotDetailBundle:
+      type: object
+      description: スポット詳細一式
+      required: [spot, images, flowers, reviews, reviewSummary, relatedSpots]
+      properties:
+        spot:
+          allOf: [$ref: '#/components/schemas/SpotDetail']
+          description: スポット詳細
+        images:
+          type: array
+          description: スポット画像一覧
+          items:
+            $ref: '#/components/schemas/SpotImage'
+        flowers:
+          type: array
+          description: 花構成
+          items:
+            $ref: '#/components/schemas/SpotFlowerEntry'
+        reviews:
+          type: array
+          description: レビュー一覧
+          items:
+            $ref: '#/components/schemas/SpotReview'
+        reviewSummary:
+          type: object
+          description: レビュー集計
+          required: [count, average]
+          properties:
+            count:
+              type: integer
+              minimum: 0
+              description: レビュー件数
+            average:
+              type: number
+              nullable: true
+              minimum: 1
+              maximum: 5
+              description: 平均評価点
+        relatedSpots:
+          type: array
+          description: 関連スポット一覧
+          items:
+            $ref: '#/components/schemas/RelatedSpot'
+
+    # ---------- 公開: 花 ----------
+    FlowerListItem:
+      type: object
+      description: 花マスター一覧項目
+      required: [id, name]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 花 ID
+        name:
+          type: string
+          description: 花名
+        nameKana:
+          type: string
+          nullable: true
+          description: 花名（カナ）
+        defaultSeasonStart:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花開始月
+        defaultSeasonEnd:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花終了月
+        coverImageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: カバー画像 URL
+        coverImageCaption:
+          type: string
+          nullable: true
+          description: カバー画像キャプション
+
+    FlowerImage:
+      type: object
+      description: 花画像
+      required: [id, url, displayOrder]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 画像 ID
+        url:
+          type: string
+          format: uri
+          description: 画像 URL
+        caption:
+          type: string
+          nullable: true
+          description: 画像キャプション
+        displayOrder:
+          type: integer
+          description: 表示順
+
+    FlowerAlias:
+      type: object
+      description: 花の別名
+      required: [id, alias]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 別名 ID
+        alias:
+          type: string
+          description: 別名
+
+    FlowerSpot:
+      type: object
+      description: この花が見られるスポット
+      required: [id, name, prefectureName, bestSeasonStart, bestSeasonEnd]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: スポット ID
+        name:
+          type: string
+          description: スポット名
+        prefectureName:
+          type: string
+          description: 都道府県名
+        bestSeasonStart:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃開始月
+        bestSeasonEnd:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃終了月
+        coverImageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: カバー画像 URL
+        coverImageCaption:
+          type: string
+          nullable: true
+          description: カバー画像キャプション
+        bloomStartMonth:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: このスポットでの開花開始月
+        bloomEndMonth:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: このスポットでの開花終了月
+
+    FlowerDetail:
+      type: object
+      description: 花詳細
+      required: [id, name, updatedAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 花 ID
+        name:
+          type: string
+          description: 花名
+        nameKana:
+          type: string
+          nullable: true
+          description: 花名（カナ）
+        description:
+          type: string
+          nullable: true
+          description: 花の説明
+        defaultSeasonStart:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花開始月
+        defaultSeasonEnd:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花終了月
+        cultivationDifficulty:
+          type: string
+          nullable: true
+          enum: [EASY, SLIGHTLY_EASY, NORMAL, SLIGHTLY_HARD, HARD]
+          description: 栽培難易度
+        coldTolerance:
+          type: string
+          nullable: true
+          enum: [STRONG, SLIGHTLY_STRONG, NORMAL, SLIGHTLY_WEAK, WEAK]
+          description: 耐寒性
+        heatTolerance:
+          type: string
+          nullable: true
+          enum: [STRONG, SLIGHTLY_STRONG, NORMAL, SLIGHTLY_WEAK, WEAK]
+          description: 耐暑性
+        shadeTolerance:
+          type: string
+          nullable: true
+          enum: [AVAILABLE, UNAVAILABLE]
+          description: 日陰耐性
+        updatedAt:
+          type: string
+          format: date-time
+          description: 最終更新日時
+
+    FlowerDetailBundle:
+      type: object
+      description: 花詳細一式
+      required: [flower, aliases, images, spots]
+      properties:
+        flower:
+          allOf: [$ref: '#/components/schemas/FlowerDetail']
+          description: 花詳細
+        aliases:
+          type: array
+          description: 別名一覧
+          items:
+            $ref: '#/components/schemas/FlowerAlias'
+        images:
+          type: array
+          description: 花画像一覧
+          items:
+            $ref: '#/components/schemas/FlowerImage'
+        spots:
+          type: array
+          description: 関連スポット一覧
+          items:
+            $ref: '#/components/schemas/FlowerSpot'
+
+    # ---------- AI 花判定 ----------
+    AIResult:
+      type: object
+      description: AI 判定結果
+      required: [flower_name, flower_variety, confidence, is_flower]
+      properties:
+        flower_name:
+          type: string
+          description: 花の総称（マッチング用）
+          example: 桜
+        flower_variety:
+          type: string
+          description: 品種名（表示用）
+          example: ソメイヨシノ
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: 判定信頼度
+        bloom_status:
+          type: string
+          enum: [つぼみ, 見頃, 終わりかけ]
+          description: 開花状況
+        description:
+          type: string
+          description: 花の特徴
+        flower_language:
+          type: string
+          description: 花言葉
+        fun_fact:
+          type: string
+          description: 豆知識
+        best_viewing_months:
+          type: string
+          description: 一般的な開花時期
+          example: 4月〜5月
+        is_flower:
+          type: boolean
+          description: 花判定フラグ（花以外の画像なら false）
+
+    IdentifyFlowerResponse:
+      type: object
+      description: AI 花判定レスポンス
+      required: [success, ai_result, flower_master, flower_images, recommended_spots, rate_limit]
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: 成功フラグ
+        ai_result:
+          allOf: [$ref: '#/components/schemas/AIResult']
+          description: AI 判定結果
+        flower_master:
+          nullable: true
+          type: object
+          description: 花マスター照合結果（未マッチ時は null）
+          required: [id, name]
+          properties:
+            id:
+              allOf: [$ref: '#/components/schemas/UUID']
+              description: 花 ID
+            name:
+              type: string
+              description: 花名
+            description:
+              type: string
+              nullable: true
+              description: 花の説明
+            default_season_start:
+              type: integer
+              nullable: true
+              minimum: 1
+              maximum: 12
+              description: 一般的な開花開始月
+            default_season_end:
+              type: integer
+              nullable: true
+              minimum: 1
+              maximum: 12
+              description: 一般的な開花終了月
+        flower_images:
+          type: array
+          description: 花マスターの画像一覧（未マッチ時は空配列）
+          items:
+            type: object
+            required: [id, url, display_order]
+            properties:
+              id:
+                allOf: [$ref: '#/components/schemas/UUID']
+                description: 画像 ID
+              url:
+                type: string
+                format: uri
+                description: 画像 URL
+              caption:
+                type: string
+                nullable: true
+                description: 画像キャプション
+              display_order:
+                type: integer
+                description: 表示順
+        recommended_spots:
+          type: array
+          description: 関連スポット（最大 5 件、未マッチ時は空配列）
+          items:
+            type: object
+            required: [id, name, location, best_season_start, best_season_end, prefecture_name]
+            properties:
+              id:
+                allOf: [$ref: '#/components/schemas/UUID']
+                description: スポット ID
+              name:
+                type: string
+                description: スポット名
+              location:
+                type: string
+                description: 所在地
+              official_url:
+                type: string
+                format: uri
+                nullable: true
+                description: 公式サイト URL
+              best_season_start:
+                type: integer
+                minimum: 1
+                maximum: 12
+                description: 見頃開始月
+              best_season_end:
+                type: integer
+                minimum: 1
+                maximum: 12
+                description: 見頃終了月
+              prefecture_name:
+                type: string
+                description: 都道府県名
+              cover_image_url:
+                type: string
+                format: uri
+                nullable: true
+                description: カバー画像 URL
+        rate_limit:
+          type: object
+          description: レート制限状態
+          required: [used, limit, remaining]
+          properties:
+            used:
+              type: integer
+              minimum: 0
+              description: 本日の消費数
+            limit:
+              type: integer
+              minimum: 0
+              description: 本日の上限
+            remaining:
+              type: integer
+              minimum: 0
+              description: 残回数
+
+    # ---------- ユーザー ----------
+    MyProfile:
+      type: object
+      description: 自身のプロフィール
+      required: [email, isAdmin]
+      properties:
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        username:
+          type: string
+          nullable: true
+          description: ユーザー名
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: アバター画像 URL
+        isAdmin:
+          type: boolean
+          description: 管理者フラグ
+
+    BookmarkListItem:
+      type: object
+      description: ブックマーク一覧項目
+      required: [spotId, spotName, prefectureName, bestSeasonStart, bestSeasonEnd, flowerNames, bookmarkedAt]
+      properties:
+        spotId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: スポット ID
+        spotName:
+          type: string
+          description: スポット名
+        prefectureName:
+          type: string
+          description: 都道府県名
+        bestSeasonStart:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃開始月
+        bestSeasonEnd:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃終了月
+        flowerNames:
+          type: array
+          description: このスポットで見られる花名一覧
+          items:
+            type: string
+        coverImageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: カバー画像 URL
+        coverImageCaption:
+          type: string
+          nullable: true
+          description: カバー画像キャプション
+        bookmarkedAt:
+          type: string
+          format: date-time
+          description: ブックマーク日時
+
+    MyReviewForSpot:
+      type: object
+      description: 自身のレビュー
+      required: [id, rating, createdAt, updatedAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: レビュー ID
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          nullable: true
+          description: コメント
+        visitedAt:
+          type: string
+          format: date
+          nullable: true
+          description: 訪問日
+        createdAt:
+          type: string
+          format: date-time
+          description: 投稿日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+
+    ReviewCreateInput:
+      type: object
+      description: レビュー投稿入力
+      required: [spot_id, rating]
+      properties:
+        spot_id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 対象スポット ID
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          maxLength: 200
+          description: コメント（NG ワード検知でリジェクト）
+        visited_at:
+          type: string
+          format: date
+          description: 訪問日
+
+    ReviewUpdateInput:
+      type: object
+      description: レビュー編集入力
+      minProperties: 1
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          maxLength: 200
+          description: コメント
+        visited_at:
+          type: string
+          format: date
+          description: 訪問日
+
+    # ---------- 管理者: スポット ----------
+    AdminSpot:
+      type: object
+      description: 管理用スポット一覧項目
+      required: [id, name, prefectureId, prefectureName, isPublished, createdAt, updatedAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: スポット ID
+        name:
+          type: string
+          description: スポット名
+        nameKana:
+          type: string
+          nullable: true
+          description: スポット名（カナ）
+        prefectureId:
+          type: integer
+          minimum: 1
+          maximum: 47
+          description: 都道府県 ID
+        prefectureName:
+          type: string
+          description: 都道府県名
+        location:
+          type: string
+          description: 所在地
+        officialUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: 公式サイト URL
+        source:
+          type: string
+          nullable: true
+          description: 情報出典
+        isPublished:
+          type: boolean
+          description: 公開状態
+        bestSeasonStart:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃開始月
+        bestSeasonEnd:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃終了月
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 削除日時
+
+    AdminSpotDetail:
+      allOf:
+        - $ref: '#/components/schemas/AdminSpot'
+        - type: object
+          description: 管理用スポット詳細
+          properties:
+            description:
+              type: string
+              nullable: true
+              description: スポット説明
+            latitude:
+              type: number
+              nullable: true
+              description: 緯度
+            longitude:
+              type: number
+              nullable: true
+              description: 経度
+            accessInfo:
+              type: string
+              nullable: true
+              description: アクセス情報
+            parkingInfo:
+              type: string
+              nullable: true
+              description: 駐車場情報
+            entranceFee:
+              type: string
+              nullable: true
+              description: 入場料
+            images:
+              type: array
+              description: スポット画像一覧
+              items:
+                $ref: '#/components/schemas/SpotImage'
+            flowers:
+              type: array
+              description: 花構成
+              items:
+                $ref: '#/components/schemas/SpotFlowerEntry'
+
+    AdminSpotCreateInput:
+      type: object
+      description: スポット新規作成入力
+      required:
+        [name, prefectureId, location, latitude, longitude, bestSeasonStart, bestSeasonEnd]
+      properties:
+        name:
+          type: string
+          description: スポット名
+        nameKana:
+          type: string
+          nullable: true
+          description: スポット名（カナ）
+        description:
+          type: string
+          nullable: true
+          description: スポット説明
+        prefectureId:
+          type: integer
+          minimum: 1
+          maximum: 47
+          description: 都道府県 ID
+        location:
+          type: string
+          description: 所在地
+        latitude:
+          type: number
+          description: 緯度
+        longitude:
+          type: number
+          description: 経度
+        bestSeasonStart:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃開始月
+        bestSeasonEnd:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: 見頃終了月
+        officialUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: 公式サイト URL
+        source:
+          type: string
+          nullable: true
+          description: 情報出典（公式サイト URL 未指定時は必須）
+        accessInfo:
+          type: string
+          nullable: true
+          description: アクセス情報
+        parkingInfo:
+          type: string
+          nullable: true
+          description: 駐車場情報
+        entranceFee:
+          type: string
+          nullable: true
+          description: 入場料
+        isPublished:
+          type: boolean
+          default: false
+          description: 公開状態（未送信時は false 扱い）
+        images:
+          type: array
+          description: 登録するスポット画像
+          items:
+            type: object
+            required: [url, displayOrder]
+            properties:
+              url:
+                type: string
+                format: uri
+                description: 画像 URL
+              caption:
+                type: string
+                nullable: true
+                description: 画像キャプション
+              displayOrder:
+                type: integer
+                description: 表示順
+        flowers:
+          type: array
+          description: 登録する花構成
+          items:
+            type: object
+            required: [flowerId]
+            properties:
+              flowerId:
+                allOf: [$ref: '#/components/schemas/UUID']
+                description: 花 ID
+              bloomStartMonth:
+                type: integer
+                nullable: true
+                minimum: 1
+                maximum: 12
+                description: このスポットでの開花開始月
+              bloomEndMonth:
+                type: integer
+                nullable: true
+                minimum: 1
+                maximum: 12
+                description: このスポットでの開花終了月
+
+    AdminSpotUpdateInput:
+      allOf:
+        - $ref: '#/components/schemas/AdminSpotCreateInput'
+        - type: object
+          description: スポット全体更新入力
+
+    AdminSpotTogglePublishedInput:
+      type: object
+      description: スポット公開状態切替入力
+      required: [isPublished]
+      properties:
+        isPublished:
+          type: boolean
+          description: 公開状態
+
+    # ---------- 管理者: 花 ----------
+    AdminFlower:
+      type: object
+      description: 管理用花マスター一覧項目
+      required: [id, name, createdAt, updatedAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 花 ID
+        name:
+          type: string
+          description: 花名
+        nameKana:
+          type: string
+          nullable: true
+          description: 花名（カナ）
+        defaultSeasonStart:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花開始月
+        defaultSeasonEnd:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花終了月
+        aliasCount:
+          type: integer
+          minimum: 0
+          description: 別名件数
+        imageCount:
+          type: integer
+          minimum: 0
+          description: 花画像件数
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 削除日時
+
+    AdminFlowerDetail:
+      allOf:
+        - $ref: '#/components/schemas/AdminFlower'
+        - type: object
+          description: 管理用花マスター詳細
+          properties:
+            description:
+              type: string
+              nullable: true
+              description: 花の説明
+            aliases:
+              type: array
+              description: 別名一覧
+              items:
+                $ref: '#/components/schemas/FlowerAlias'
+            images:
+              type: array
+              description: 花画像一覧
+              items:
+                $ref: '#/components/schemas/FlowerImage'
+
+    AdminFlowerCreateInput:
+      type: object
+      description: 花マスター新規作成入力
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: 花名
+        nameKana:
+          type: string
+          nullable: true
+          description: 花名（カナ）
+        description:
+          type: string
+          nullable: true
+          description: 花の説明
+        defaultSeasonStart:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花開始月
+        defaultSeasonEnd:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花終了月
+        images:
+          type: array
+          description: 登録する花画像
+          items:
+            type: object
+            required: [url, displayOrder]
+            properties:
+              url:
+                type: string
+                format: uri
+                description: 画像 URL
+              caption:
+                type: string
+                nullable: true
+                description: 画像キャプション
+              displayOrder:
+                type: integer
+                description: 表示順
+        aliases:
+          type: array
+          description: 登録する別名
+          items:
+            type: object
+            required: [alias]
+            properties:
+              alias:
+                type: string
+                description: 別名
+
+    AdminFlowerUpdateInput:
+      type: object
+      description: 花マスター編集入力
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          description: 花名
+        nameKana:
+          type: string
+          nullable: true
+          description: 花名（カナ）
+        description:
+          type: string
+          nullable: true
+          description: 花の説明
+        defaultSeasonStart:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花開始月
+        defaultSeasonEnd:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 12
+          description: 一般的な開花終了月
+        images:
+          type: array
+          description: 花画像
+          items:
+            type: object
+            required: [url, displayOrder]
+            properties:
+              url:
+                type: string
+                format: uri
+                description: 画像 URL
+              caption:
+                type: string
+                nullable: true
+                description: 画像キャプション
+              displayOrder:
+                type: integer
+                description: 表示順
+        aliases:
+          type: array
+          description: 別名
+          items:
+            type: object
+            required: [alias]
+            properties:
+              alias:
+                type: string
+                description: 別名
+
+    # ---------- 管理者: ユーザー ----------
+    AdminUser:
+      type: object
+      description: 管理用ユーザー一覧項目
+      required: [id, role, isWithdrawn, createdAt, updatedAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: ユーザー ID
+        username:
+          type: string
+          nullable: true
+          description: ユーザー名
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: メールアドレス
+        role:
+          type: string
+          enum: [user, admin]
+          description: 権限
+        isWithdrawn:
+          type: boolean
+          description: 退会フラグ
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 退会日時
+
+    AdminUserDetail:
+      type: object
+      description: 管理用ユーザー詳細
+      required:
+        [id, username, email, avatarUrl, role, isWithdrawn, createdAt, updatedAt, reviews, bookmarks, aiUsage, aiUsageTotal]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: ユーザー ID
+        username:
+          type: string
+          nullable: true
+          description: ユーザー名
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: メールアドレス
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: アバター画像 URL
+        role:
+          type: string
+          enum: [user, admin]
+          description: 権限
+        isWithdrawn:
+          type: boolean
+          description: 退会フラグ
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 退会日時
+        authCreatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 認証アカウント作成日時
+        lastSignInAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最終ログイン日時
+        reviews:
+          type: array
+          description: 投稿レビュー一覧（最新 100 件）
+          items:
+            $ref: '#/components/schemas/AdminUserReviewRow'
+        bookmarks:
+          type: array
+          description: ブックマーク一覧（最新 100 件）
+          items:
+            $ref: '#/components/schemas/AdminUserBookmarkRow'
+        aiUsage:
+          type: array
+          description: AI 利用ログ一覧（最新 50 件）
+          items:
+            $ref: '#/components/schemas/AdminUserAiUsageRow'
+        aiUsageTotal:
+          type: integer
+          minimum: 0
+          description: AI 利用ログの総件数
+
+    AdminUserReviewRow:
+      type: object
+      description: 管理用ユーザー詳細内のレビュー行
+      required: [id, spotId, spotName, rating, createdAt, isDeleted]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: レビュー ID
+        spotId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 対象スポット ID
+        spotName:
+          type: string
+          description: 対象スポット名
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          nullable: true
+          description: コメント
+        visitedAt:
+          type: string
+          format: date
+          nullable: true
+          description: 訪問日
+        createdAt:
+          type: string
+          format: date-time
+          description: 投稿日時
+        isDeleted:
+          type: boolean
+          description: 削除フラグ
+
+    AdminUserBookmarkRow:
+      type: object
+      description: 管理用ユーザー詳細内のブックマーク行
+      required: [id, spotId, createdAt, isDeleted]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: ブックマーク ID
+        spotId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 対象スポット ID
+        spotName:
+          type: string
+          nullable: true
+          description: 対象スポット名
+        createdAt:
+          type: string
+          format: date-time
+          description: ブックマーク日時
+        isDeleted:
+          type: boolean
+          description: 削除フラグ
+
+    AdminUserAiUsageRow:
+      type: object
+      description: 管理用ユーザー詳細内の AI 利用ログ行
+      required: [id, usedAt, rewardUnlocked, isAnonymous]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 利用ログ ID
+        usedAt:
+          type: string
+          format: date-time
+          description: 利用日時
+        rewardUnlocked:
+          type: boolean
+          description: 報酬解放フラグ
+        isAnonymous:
+          type: boolean
+          description: 匿名ユーザー利用フラグ
+
+    # ---------- 管理者: レビュー ----------
+    AdminReview:
+      type: object
+      description: 管理用レビュー一覧項目
+      required: [id, rating, spotId, userId, createdAt]
+      properties:
+        id:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: レビュー ID
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 評価点
+        comment:
+          type: string
+          nullable: true
+          description: コメント
+        visitedAt:
+          type: string
+          format: date
+          nullable: true
+          description: 訪問日
+        containsNgWord:
+          type: boolean
+          description: NG ワード検知フラグ
+        spotId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 対象スポット ID
+        spotName:
+          type: string
+          description: 対象スポット名
+        userId:
+          allOf: [$ref: '#/components/schemas/UUID']
+          description: 投稿者 ID
+        username:
+          type: string
+          nullable: true
+          description: 投稿者名
+        createdAt:
+          type: string
+          format: date-time
+          description: 投稿日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 削除日時
+
+    # ---------- 管理者: AI 利用状況 ----------
+    AiUsageStats:
+      type: object
+      description: AI 利用状況の集計
+      required: [daily, monthly, ranking, summary]
+      properties:
+        daily:
+          type: array
+          description: 直近 30 日の日別集計
+          items:
+            type: object
+            required: [date, count]
+            properties:
+              date:
+                type: string
+                format: date
+                description: 対象日
+              count:
+                type: integer
+                minimum: 0
+                description: 利用回数
+        monthly:
+          type: array
+          description: 直近 6 ヶ月の月別集計
+          items:
+            type: object
+            required: [month, count]
+            properties:
+              month:
+                type: string
+                description: 対象月（YYYY-MM）
+                example: '2026-07'
+              count:
+                type: integer
+                minimum: 0
+                description: 利用回数
+        ranking:
+          type: array
+          description: 利用ランキング（認証済みユーザー上位 20 名）
+          items:
+            type: object
+            required: [user_id, count]
+            properties:
+              user_id:
+                allOf: [$ref: '#/components/schemas/UUID']
+                description: ユーザー ID
+              username:
+                type: string
+                nullable: true
+                description: ユーザー名
+              count:
+                type: integer
+                minimum: 0
+                description: 利用回数
+        summary:
+          type: object
+          description: サマリー
+          required: [7d, 30d, current_month, estimated_cost]
+          properties:
+            '7d':
+              type: integer
+              minimum: 0
+              description: 直近 7 日の合計利用回数
+            '30d':
+              type: integer
+              minimum: 0
+              description: 直近 30 日の合計利用回数
+            current_month:
+              type: integer
+              minimum: 0
+              description: 今月の合計利用回数
+            estimated_cost:
+              type: number
+              description: 推計コスト（円）
