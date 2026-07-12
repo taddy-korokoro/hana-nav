@@ -134,40 +134,34 @@ function getCanShareFilesServerSnapshot(): boolean {
   return false;
 }
 
-// カード本文のフォント選択肢。Google Fonts CSS を <link> で読み込み、
-// 選択中のフォントを Canvas に反映する。characteristic は UI に表示する短い特徴文。
+// カード本文のフォント選択肢。実際の font-family 文字列は page.tsx で
+// next/font/google が生成した値を fontFamilies prop で受け取る（Google Fonts CDN
+// 直読みはプライバシー・パフォーマンス面で app/layout.tsx の方針と不整合のため）。
+// characteristic は UI に表示する短い特徴文。
 type CardFont = 'noto-sans-jp' | 'noto-serif-jp' | 'zen-kaku' | 'klee' | 'shippori';
 
-const CARD_FONTS: Record<CardFont, { label: string; family: string; characteristic: string }> = {
+const CARD_FONTS: Record<CardFont, { label: string; characteristic: string }> = {
   'noto-sans-jp': {
     label: 'Noto Sans JP',
-    family: '"Noto Sans JP", sans-serif',
     characteristic: 'シンプルで読みやすい',
   },
   'noto-serif-jp': {
     label: 'Noto Serif JP',
-    family: '"Noto Serif JP", serif',
     characteristic: '上品でクラシック',
   },
   'zen-kaku': {
     label: 'Zen Kaku Gothic New',
-    family: '"Zen Kaku Gothic New", sans-serif',
     characteristic: '洗練されたモダン',
   },
   klee: {
     label: 'Klee One',
-    family: '"Klee One", serif',
     characteristic: 'やさしく温かい',
   },
   shippori: {
     label: 'Shippori Mincho',
-    family: '"Shippori Mincho", serif',
     characteristic: '落ち着いた和の趣',
   },
 };
-
-const GOOGLE_FONTS_URL =
-  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700&family=Klee+One:wght@400;600&family=Shippori+Mincho:wght@400;700&display=swap';
 
 const COMMENT_MAX = 200;
 
@@ -216,7 +210,14 @@ function formatDate(iso: string): string {
   return iso.replaceAll('-', '.');
 }
 
-export function StoryCardGenerator() {
+type StoryCardGeneratorProps = {
+  // 各 CardFont の実際の CSS font-family 文字列。page.tsx で next/font/google が
+  // 生成した値（例: '"__Noto_Sans_JP_abc", ...'）をそのまま受け取り、
+  // Canvas 描画とフォント選択 UI の見本表示に用いる。
+  fontFamilies: Record<CardFont, string>;
+};
+
+export function StoryCardGenerator({ fontFamilies }: StoryCardGeneratorProps) {
   const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   // Web Share API がファイル共有に対応しているか。非対応環境ではボタンラベルを
   // 「画像を保存」に切り替え、実挙動（ダウンロードへのフォールバック）と一致させる。
@@ -333,7 +334,7 @@ export function StoryCardGenerator() {
       // Google Fonts がロードされるのを待ってから描画。document.fonts.ready は
       // 全ての pending font load を待つため、テキスト描画前に呼んでおけば選択した
       // フォントが確実に反映される（未ロード時は sans-serif フォールバック）。
-      const fontFamily = CARD_FONTS[cardFont].family;
+      const fontFamily = fontFamilies[cardFont];
       if (typeof document !== 'undefined' && document.fonts) {
         try {
           await document.fonts.load(`bold ${Math.round(72 * (width / FULL_W))}px ${fontFamily}`);
@@ -490,6 +491,7 @@ export function StoryCardGenerator() {
     photoFilter,
     cardFont,
     textColor,
+    fontFamilies,
   ]);
 
   // ライブプレビュー：フォーム値またはテーマが変わったら自動再生成。
@@ -582,9 +584,6 @@ export function StoryCardGenerator() {
           grid の単一セルだと sticky の containing block がセルに閉じてしまい
           スクロール時に固定できないため、モバイルは flex-col にする。 */}
       <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-8">
-        {/* Google Fonts CSS。React 19 が自動で <head> にホイストする。 */}
-        <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
-
         {/* フォーム：モバイルはプレビューの下、デスクトップは左カラム */}
         <div className="order-2 space-y-5 rounded-card-lg border border-line bg-white p-6 md:order-1">
           {/* テーマセレクター */}
@@ -684,7 +683,7 @@ export function StoryCardGenerator() {
             </legend>
             <div className="flex flex-col gap-2">
               {(Object.entries(CARD_FONTS) as [CardFont, (typeof CARD_FONTS)[CardFont]][]).map(
-                ([id, { label, family, characteristic }]) => (
+                ([id, { label, characteristic }]) => (
                   <button
                     key={id}
                     type="button"
@@ -698,7 +697,7 @@ export function StoryCardGenerator() {
                   >
                     <span
                       className="min-w-0 flex-1 truncate text-base font-medium text-ink"
-                      style={{ fontFamily: family }}
+                      style={{ fontFamily: fontFamilies[id] }}
                     >
                       {label}
                     </span>
