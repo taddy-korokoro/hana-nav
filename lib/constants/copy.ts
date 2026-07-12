@@ -755,10 +755,14 @@ export const COPY = {
       generating: '生成中',
       regenerate: '作り直す',
       share: 'SNS にシェア',
-      download: '画像をダウンロード',
+      // Web Share API 非対応端末（主に PC ブラウザ）でシェアボタンに出す代替ラベル。
+      // 実際の挙動はダウンロードにフォールバックするため、ユーザーへの表示を合わせる。
+      shareFallback: '画像を保存',
+      download: '画像を保存',
       shareText: (flowerName: string) => `${flowerName}を見つけました🌸 #花ナビ`,
       shareTitle: '旅のしおり | hana nav',
       previewAlt: 'しおりプレビュー',
+      miniPreviewAria: 'プレビューへ戻る',
       previewPlaceholder: '生成するとここにプレビューが表示されます。',
       perfHint: '端末性能に応じて 720×1280 で生成する場合があります。',
       backToResult: '判定結果に戻る',
